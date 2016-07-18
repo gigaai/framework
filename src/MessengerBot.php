@@ -145,7 +145,7 @@ class MessengerBot
 				'message' => $response
 			);
 
-			$this->request->send("https://graph.facebook.com/v2.6/me/messages?access_token=" . PAGE_ACCESS_TOKEN, $body);
+			$this->request->send("https://graph.facebook.com/v2.6/me/messages?access_token=" . $this->config->get('page_access_token'), $body);
 		}
 	}
 
