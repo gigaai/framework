@@ -36,11 +36,7 @@ class Storage
         $name = isset($name) ? $name : Config::get('storage_driver');
 
         $driver_name = $this->getDriverClassName($name);
-
-        // Load driver class if it isn't loaded
-//        if (file_exists(GIGA_STORAGE_PATH . $driver_name . '.php') && ! class_exists($driver_name))
-//            require_once GIGA_STORAGE_PATH . $driver_name . '.php';
-
+        
         $class = __NAMESPACE__ . '\\' . $driver_name;
 
         if (class_exists($class) && in_array('GigaAI\Storage\StorageInterface', class_implements($class)))

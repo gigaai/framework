@@ -42,8 +42,10 @@ class Parser
 				$message['attachment']['payload']['template_type'] = $template_type;
 		}
 
-		if (isset($answer['quick_replies']))
+		if (is_array($answer) && array_key_exists($answer, 'quick_replies'))
+		{
 			$message = $answer;
+		}
 
 		if (self::isAttachmentMessage($answer))
 		{
@@ -77,6 +79,7 @@ class Parser
 
 			// If it's plain text
 			unset($message['attachment']);
+
 			$message['text'] = $answer;
 		}
 

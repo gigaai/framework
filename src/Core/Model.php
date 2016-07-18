@@ -32,10 +32,14 @@ class Model
 
 			if (is_callable($answers))
 			{
-				$this->addAnswer(array(
-					'type' => 'callback',
-					'callback' => $answers
-				), $node_type, $asks);
+				$this->addAnswer(
+					array(
+						'type' => 'callback',
+						'callback' => $answers
+					),
+					$node_type,
+					$asks
+				);
 
 				return $this;
 			}
@@ -85,9 +89,13 @@ class Model
 	{
 		$this->current_node = compact('node_type', 'asks');
 
-		// We won't parse callback
-		if (( ! isset($answer['type']) || $answer['type'] != 'callback') && ! isset($answer['_wait']))
+		// We won't parse callback and parsed content. Note that PHP < 5.4 will treat string as array.
+		if (((is_array($answer) && array_key_exists('type', $answer)) ||
+				$answer['type'] != 'callback') &&
+			! isset($answer['_wait']))
+		{
 			$answer = Parser::parseAnswer($answer);
+		}
 
 		if ( ! isset($this->answers[$node_type][$asks]) && in_array($node_type, array('text', 'payload')))
 			$this->answers[$node_type][$asks] = array();
