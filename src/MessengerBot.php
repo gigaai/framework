@@ -100,6 +100,7 @@ class MessengerBot
 		$this->storage->pull($event);
 
 		$message_type = $event->message ? 'text' : 'payload';
+
 		$ask = $event->message ? $event->message->text : $event->postback->payload;
 
 		$this->findAndResponse($message_type, $ask);
@@ -199,7 +200,7 @@ class MessengerBot
 
 		if ($data_set_type === 'default')
 		{
-			$this->response($data_set);
+			$this->response($data_set['default']);
 
 			return;
 		}
