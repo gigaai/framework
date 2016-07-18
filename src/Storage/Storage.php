@@ -2,6 +2,7 @@
 
 namespace GigaAI\Storage;
 
+use GigaAI\Core\Config;
 use GigaAI\Http\Request;
 
 /**
@@ -32,7 +33,7 @@ class Storage
         if (is_object($this->driver))
             return;
 
-        $name = isset($name) ? $name : STORAGE_DRIVER;
+        $name = isset($name) ? $name : Config::get('storage_driver');
 
         $driver_name = $this->getDriverClassName($name);
 

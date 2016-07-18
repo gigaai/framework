@@ -47,6 +47,6 @@ if ( ! function_exists( 'dd' ) )
 if ( ! function_exists('cl')) {
 	function cl($content)
 	{
-		file_put_contents(GIGA_CACHE_PATH . 'log.txt', print_r($content, true));
+		file_put_contents(GigaAI\Core\Config::get('cache_path') . 'log.txt', print_r($content, true));
 	}
 }

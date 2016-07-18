@@ -4,6 +4,7 @@ namespace GigaAI;
 
 use GigaAI\Storage\Storage;
 use GigaAI\Http\Request;
+use GigaAI\Core\Parser;
 use GigaAI\Core\Model;
 use GigaAI\Core\Config;
 
