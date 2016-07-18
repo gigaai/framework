@@ -6,9 +6,9 @@ function giga_remote_post($url, $args = array())
 		return wp_remote_post($url, $args);
 
 	if ( ! empty( $args['body'] ) )
-		return Giga\Http::post($url, $args['body']);
+		return GigaAI\Http\Http::post($url, $args['body']);
 
-	return Giga\Http::post($url);
+	return GigaAI\Http\Http::post($url);
 }
 
 function giga_remote_get($url, $args = array())

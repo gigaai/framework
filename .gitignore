@@ -1,0 +1,5 @@
+vendor
+.idea
+cache
+config.php
+index.php

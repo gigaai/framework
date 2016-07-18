@@ -3,8 +3,11 @@
 namespace GigaAI;
 
 use GigaAI\Storage\Storage;
+use GigaAI\Http\Request;
+use GigaAI\Core\Model;
+use GigaAI\Core\Config;
 
-class Framework
+class MessengerBot
 {
 	public $request;
 
@@ -18,13 +21,17 @@ class Framework
 
 	private $model;
 
+	public $config;
+
 	public function __construct()
 	{
-		$this->request  = new Request;
+		$this->request = new Request;
 
-		$this->storage  = new Storage;
+		$this->storage = new Storage;
 
-		$this->model    = new Model;
+		$this->model = new Model;
+
+		$this->config = Config::getInstance();
 	}
 
 	public function answer($ask, $response = null)
@@ -86,18 +93,24 @@ class Framework
 		// Save user data if not exists.
 		$this->storage->pull($event);
 
-		$message_type   = $event->message ? 'text' : 'payload';
-		$ask            = $event->message ? $event->message->text : $event->postback->payload;
+		$message_type = $event->message ? 'text' : 'payload';
+		$ask = $event->message ? $event->message->text : $event->postback->payload;
 
 		$this->findAndResponse($message_type, $ask);
 	}
 
+	/**
+	 * Response sender message
+	 *
+	 * @param $node
+	 * @param null $sender_id
+	 */
 	public function response($node, $sender_id = null)
 	{
 		if (is_null($sender_id))
 			$sender_id = $this->sender_id;
 
-		$node = (array) $node;
+		$node = (array)$node;
 
 		foreach ($node as $response)
 		{
@@ -168,6 +181,7 @@ class Framework
 	 * @param String $ask Message or Payload name
 	 * @param string $data_set_type text, payload or default
 	 *
+	 * @return void
 	 */
 	private function findAndResponse($message_type, $ask, $data_set_type = 'text')
 	{
@@ -175,13 +189,13 @@ class Framework
 		if ($this->responseIntendedAction($message_type))
 			return;
 
-		$data_set       = $this->getAnswers($message_type);
+		$data_set = $this->getAnswers($message_type);
 
 		if ($data_set_type === 'default')
 		{
 			$this->response($data_set);
 
-			return true;
+			return;
 		}
 
 		$marked = false;
@@ -201,6 +215,12 @@ class Framework
 			$this->findAndResponse($ask, $this->answers['default'], 'default');
 	}
 
+	/**
+	 * Response for intended actions
+	 *
+	 * @param $message_type
+	 * @return bool
+	 */
 	private function responseIntendedAction($message_type)
 	{
 		$waiting = $this->storage->get($this->sender_id, '_wait');
@@ -217,6 +237,12 @@ class Framework
 		return false;
 	}
 
+	/**
+	 * Wait for intended actions
+	 *
+	 * @param $action
+	 * @param string $message_type
+	 */
 	public function wait($action, $message_type = '')
 	{
 		$this->model->addIntendedAction($action, $message_type);
@@ -242,5 +268,20 @@ class Framework
 		$auto_stop = $this->storage->get($event->sender->id, 'auto_stop', 0);
 
 		return $auto_stop;
+	}
+
+	/**
+	 * Verify token from Facebook
+	 *
+	 * @return void
+	 */
+	private function verifyTokenFromFacebook()
+	{
+		if (isset($_REQUEST['hub_verify_token']) && $_REQUEST['hub_verify_token'] == 'GigaAI')
+		{
+			echo $_REQUEST['hub_challenge'];
+
+			exit;
+		}
 	}
 }

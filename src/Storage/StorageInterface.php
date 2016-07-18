@@ -1,4 +1,5 @@
 <?php
+
 namespace GigaAI\Storage;
 
 interface StorageInterface
@@ -35,5 +36,12 @@ interface StorageInterface
 	 */
 	public function has($user_id, $key = '');
 
+	/**
+	 * Search in collection
+	 *
+	 * @param $terms
+	 * @param string $relation
+	 * @return mixed
+	 */
 	public function search($terms, $relation = 'and');
 }

@@ -2,7 +2,7 @@
 
 namespace GigaAI\Storage;
 
-use GigaAI\Request;
+use GigaAI\Http\Request;
 
 /**
  * Storage interacts with your client info and save it to your drivers.
@@ -72,7 +72,7 @@ class Storage
         // Then call set method
         $storage->set($profile);
     }
-    
+
     /**
      * Magic method to load storage driver methods
      *
