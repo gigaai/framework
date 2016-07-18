@@ -38,7 +38,16 @@ class Request
         if ( ! empty($body))
             $request['body'] = $body;
 
-        call_user_func_array('giga_remote_' . $method, array($end_point, $request));
+        return call_user_func_array('giga_remote_' . $method, array($end_point, $request));
+    }
+
+    public static function sendSubscribe()
+    {
+        $end_point = "https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=" . Config::get('page_access_token');
+
+        $request = new self;
+
+        return $request->send($end_point);
     }
 
     public function getUserProfile($user_id)
@@ -52,7 +61,7 @@ class Request
 
     public function updateWelcome( $node )
     {
-        $end_point = 'https://graph.facebook.com/v2.6/' . PAGE_ID . '/thread_settings?access_token=' . Config::get('page_access_token');
+        $end_point = 'https://graph.facebook.com/v2.6/' . Config::get('page_id') . '/thread_settings?access_token=' . Config::get('page_access_token');
 
         $message = $this->normalizeNode( $node );
 
