@@ -51,8 +51,13 @@ class Model
 				return $this;
 
 			// Short hand method of attachments
-			if (isset($answers['buttons']) || isset($answers['elements'])
-				|| isset($answers['title']) || isset($answers['text'])
+			if ( is_array($answers) && (
+					array_key_exists('buttons', $answers) ||
+					array_key_exists('elements', $answers) ||
+					array_key_exists('title', $answers) ||
+					array_key_exists('text', $answers) ||
+					array_key_exists('type', $answers)
+				)
 			)
 			{
 				$this->addAnswer($answers, $node_type, $asks);
@@ -90,12 +95,8 @@ class Model
 		$this->current_node = compact('node_type', 'asks');
 
 		// We won't parse callback and parsed content. Note that PHP < 5.4 will treat string as array.
-		if (((is_array($answer) && array_key_exists('type', $answer)) ||
-				$answer['type'] != 'callback') &&
-			! isset($answer['_wait']))
-		{
+		if ($this->isParsable($answer))
 			$answer = Parser::parseAnswer($answer);
-		}
 
 		if ( ! isset($this->answers[$node_type][$asks]) && in_array($node_type, array('text', 'payload')))
 			$this->answers[$node_type][$asks] = array();
@@ -108,6 +109,23 @@ class Model
 
 		if ($node_type === 'welcome')
 			$this->answers['welcome'] = $answer;
+	}
+
+	private function isParsable($answer)
+	{
+		if (is_string($answer))
+			return true;
+
+		if (isset($answer['_wait']))
+			return false;
+
+		if ($answer['type'] === 'callback')
+			return false;
+
+		if (isset($answer['attachment']))
+			return false;
+
+		return true;
 	}
 
 	public function getAnswers($node_type = null, $ask = '')
