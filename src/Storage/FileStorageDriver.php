@@ -1,6 +1,8 @@
 <?php
 
 namespace GigaAI\Storage;
+use GigaAI\Core\Config;
+
 /**
  * File Storage Driver for Messenger Bot
  *
@@ -22,7 +24,7 @@ class FileStorageDriver implements StorageInterface
 
 	public function __construct()
 	{
-		$this->file = GIGA_CACHE_PATH . 'data.json';
+		$this->file = Config::get('cache_path') . 'data.json';
 	}
 
 	/**

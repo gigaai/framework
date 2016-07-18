@@ -1,6 +1,9 @@
 <?php
 
 namespace GigaAI\Http;
+
+use GigaAI\Core\Config;
+
 /**
  * Class WebService
  *
@@ -40,7 +43,7 @@ class Request
 
     public function getUserProfile($user_id)
     {
-        $end_point  = "https://graph.facebook.com/v2.6/{$user_id}?access_token=" . PAGE_ACCESS_TOKEN;
+        $end_point  = "https://graph.facebook.com/v2.6/{$user_id}?access_token=" . Config::get('page_access_token');
 
         $data       = file_get_contents($end_point);
 
@@ -49,7 +52,7 @@ class Request
 
     public function updateWelcome( $node )
     {
-        $end_point = 'https://graph.facebook.com/v2.6/' . PAGE_ID . '/thread_settings?access_token=' . PAGE_ACCESS_TOKEN;
+        $end_point = 'https://graph.facebook.com/v2.6/' . PAGE_ID . '/thread_settings?access_token=' . Config::get('page_access_token');
 
         $message = $this->normalizeNode( $node );
 

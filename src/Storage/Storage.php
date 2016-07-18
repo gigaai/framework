@@ -37,8 +37,8 @@ class Storage
         $driver_name = $this->getDriverClassName($name);
 
         // Load driver class if it isn't loaded
-        if (file_exists(GIGA_STORAGE_PATH . $driver_name . '.php') && ! class_exists($driver_name))
-            require_once GIGA_STORAGE_PATH . $driver_name . '.php';
+//        if (file_exists(GIGA_STORAGE_PATH . $driver_name . '.php') && ! class_exists($driver_name))
+//            require_once GIGA_STORAGE_PATH . $driver_name . '.php';
 
         $class = __NAMESPACE__ . '\\' . $driver_name;
 

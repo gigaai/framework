@@ -23,7 +23,7 @@ class MessengerBot
 
 	public $config;
 
-	public function __construct()
+	public function __construct(array $config = array())
 	{
 		$this->request = new Request;
 
@@ -32,6 +32,11 @@ class MessengerBot
 		$this->model = new Model;
 
 		$this->config = Config::getInstance();
+
+		if (! empty($config))
+			$this->config->set($config);
+
+		$this->verifyTokenFromFacebook();
 	}
 
 	public function answer($ask, $response = null)
