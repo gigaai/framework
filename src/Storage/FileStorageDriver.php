@@ -1,6 +1,6 @@
 <?php
 
-namespace Giga\Storage;
+namespace GigaAI\Storage;
 /**
  * File Storage Driver for Messenger Bot
  *

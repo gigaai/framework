@@ -1,5 +1,5 @@
 <?php
-namespace Giga\Storage;
+namespace GigaAI\Storage;
 
 interface StorageInterface
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Giga\Storage;
+namespace GigaAI\Storage;
 
-use Giga\Request;
+use GigaAI\Request;
 
 /**
  * Storage interacts with your client info and save it to your drivers.
@@ -42,7 +42,7 @@ class Storage
 
         $class = __NAMESPACE__ . '\\' . $driver_name;
 
-        if (class_exists($class) && in_array('Giga\Storage\StorageInterface', class_implements($class)))
+        if (class_exists($class) && in_array('GigaAI\Storage\StorageInterface', class_implements($class)))
             $this->driver = new $class;
     }
 
@@ -72,6 +72,7 @@ class Storage
         // Then call set method
         $storage->set($profile);
     }
+    
     /**
      * Magic method to load storage driver methods
      *

@@ -1,10 +1,10 @@
 <?php
 
-namespace Giga;
+namespace GigaAI;
 
-use Giga\Storage\Storage;
+use GigaAI\Storage\Storage;
 
-class MessengerBot
+class Framework
 {
 	public $request;
 

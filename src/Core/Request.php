@@ -1,6 +1,6 @@
 <?php
 
-namespace Giga;
+namespace GigaAI\Core;
 /**
  * Class WebService
  *

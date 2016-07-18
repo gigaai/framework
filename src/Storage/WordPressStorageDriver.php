@@ -1,6 +1,6 @@
 <?php
 
-namespace Giga\Storage;
+namespace GigaAI\Storage;
 
 /**
  * WordPress Storage Driver for Messenger Bot

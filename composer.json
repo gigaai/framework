@@ -14,7 +14,7 @@
   },
   "autoload": {
     "psr-4": {
-      "GigaAI\\Messenger\\": "src/"
+      "GigaAI\\Framework\\": "src/"
     }
   }
 }
