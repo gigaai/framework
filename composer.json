@@ -1,0 +1,20 @@
+{
+  "name": "gigaai/framework",
+  "description": "Rapid Messenger Bot Framework",
+  "license": "GPL 2+",
+  "keywords": [
+    "php",
+    "messenger",
+    "bot",
+    "laravel",
+    "wordpress"
+  ],
+  "require": {
+    "php": ">=5.3.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "GigaAI\\Messenger\\": "src/"
+    }
+  }
+}
