@@ -2,23 +2,18 @@
 
 function giga_remote_post($url, $args = array())
 {
-	if (function_exists('wp_remote_post'))
-		return wp_remote_post($url, $args);
-
-	if ( ! empty( $args['body'] ) )
-		return GigaAI\Http\Http::post($url, $args['body']);
-
-	return GigaAI\Http\Http::post($url);
+	return GigaAI\Http\Http::post($url, $args);
 }
 
-function giga_remote_get($url, $args = array())
+function giga_remote_get($url)
 {
-	if (function_exists('wp_remote_get'))
-		return wp_remote_get($url, $args);
-
 	return file_get_contents($url);
 }
 
+function giga_remote_delete($url, $args = array())
+{
+	return GigaAI\Http\Http::delete($url, $args);
+}
 
 function giga_match($pattern, $string)
 {

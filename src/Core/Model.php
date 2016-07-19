@@ -8,7 +8,6 @@ class Model
 		'text' => array(),
 		'payload' => array(),
 		'default' => array(),
-		'welcome' => array(),
 	);
 
 	public $current_node = array();
@@ -20,7 +19,7 @@ class Model
 			$node_type = 'text';
 
 			// If user set payload, default, welcome message.
-			foreach (array('payload', 'default', 'welcome') as $type)
+			foreach (array('payload', 'default') as $type)
 			{
 				if (strpos($asks, $type . ':') !== false)
 				{
@@ -106,9 +105,6 @@ class Model
 
 		if ($node_type === 'default')
 			$this->answers['default'][] = $answer;
-
-		if ($node_type === 'welcome')
-			$this->answers['welcome'] = $answer;
 	}
 
 	private function isParsable($answer)

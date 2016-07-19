@@ -26,18 +26,19 @@ class MessengerBot
 
 	public function __construct(array $config = array())
 	{
+		$this->config = Config::getInstance();
+
+		if (! empty($config))
+			$this->config->set($config);
+
 		$this->request = new Request;
 
 		$this->storage = new Storage;
 
 		$this->model = new Model;
 
-		$this->config = Config::getInstance();
-
-		if (! empty($config))
-			$this->config->set($config);
-
-		$this->verifyTokenFromFacebook();
+		// Get verify token and print verify message
+		$this->request->verifyTokenFromFacebook();
 	}
 
 	public function answer($ask, $response = null)
@@ -50,6 +51,8 @@ class MessengerBot
 	 *
 	 * @param $asks
 	 * @param null $answers
+	 *
+	 * @return $this For chaining method
 	 */
 	public function answers($asks, $answers = null)
 	{
@@ -118,7 +121,7 @@ class MessengerBot
 			$sender_id = $this->sender_id;
 
 		$node = (array)$node;
-		
+
 		foreach ($node as $response)
 		{
 			if (isset($response['type']) && $response['type'] === 'callback' && is_callable($response['callback']))
@@ -277,18 +280,15 @@ class MessengerBot
 		return $auto_stop;
 	}
 
-	/**
-	 * Verify token from Facebook
-	 *
-	 * @return void
-	 */
-	private function verifyTokenFromFacebook()
+	public function setPersistentMenu()
 	{
-		if (isset($_REQUEST['hub_verify_token']) && $_REQUEST['hub_verify_token'] == 'GigaAI')
-		{
-			echo $_REQUEST['hub_challenge'];
+		$menu = $this->config->get('persistent_menu');
 
-			exit;
+		if ( ! empty($menu) && is_array($menu))
+		{
+			$data = $this->request->updatePersistentMenu($menu);
+
+			echo json_decode($data);
 		}
 	}
 }
