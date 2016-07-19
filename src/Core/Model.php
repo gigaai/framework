@@ -52,8 +52,8 @@ class Model
 			// Short hand method of attachments
 			if (is_array($answers) && (
 					array_key_exists('buttons', $answers) ||
-					array_key_exists('elements', $answers) || // For Generic
-					array_key_exists('title', $answers[0]) || // For Generic
+					array_key_exists('elements', $answers) || // For Generic or Receipt
+					(is_array($answers[0]) && array_key_exists('title', $answers[0])) || // For Generic
 					array_key_exists('text', $answers) || // For Button
 					array_key_exists('type', $answers)
 				)
@@ -143,9 +143,18 @@ class Model
 		if (isset($answers['buttons']) || isset($answers['elements'])
 			|| isset($answers['title']) || isset($answers['text']) || is_string($answers)
 		)
+		{
 			return array(Parser::parseAnswer($answers));
+		}
 
-		return array_map(array('Parser', 'parseAnswer'), $answers);
+		$output = array();
+
+		foreach ($answers as $answer)
+		{
+			$output[] = Parser::parseAnswer($answer);
+		}
+
+		return $output;
 	}
 
 	public function addIntendedAction($action, $message_type = '')

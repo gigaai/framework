@@ -121,7 +121,7 @@ class MessengerBot
 			$sender_id = $this->sender_id;
 
 		$node = (array)$node;
-		
+
 		foreach ($node as $response)
 		{
 			if (isset($response['type']) && $response['type'] === 'callback' && is_callable($response['callback']))
@@ -173,15 +173,6 @@ class MessengerBot
 		$messages = $this->model->addReply($messages);
 
 		$this->response($messages);
-	}
-
-	public function sendToSubscribers($messages)
-	{
-		$messages = $this->model->addReply($messages);
-
-		$subscribers = $this->storage->search(array(
-			'subscribed' => 1
-		));
 	}
 
 	/**
@@ -278,17 +269,5 @@ class MessengerBot
 		$auto_stop = $this->storage->get($event->sender->id, 'auto_stop', 0);
 
 		return $auto_stop;
-	}
-
-	public function setPersistentMenu()
-	{
-		$menu = $this->config->get('persistent_menu');
-
-		if ( ! empty($menu) && is_array($menu))
-		{
-			$data = $this->request->updatePersistentMenu($menu);
-
-			echo json_decode($data);
-		}
 	}
 }

@@ -41,7 +41,7 @@ class Parser
 			if ( ! isset($answer['template_type']))
 				$message['attachment']['payload']['template_type'] = $template_type;
 		}
-		
+
 		if (is_array($answer) && array_key_exists('quick_replies', $answer))
 		{
 			$message = $answer;
