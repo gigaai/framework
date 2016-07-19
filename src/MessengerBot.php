@@ -121,7 +121,7 @@ class MessengerBot
 			$sender_id = $this->sender_id;
 
 		$node = (array)$node;
-
+		
 		foreach ($node as $response)
 		{
 			if (isset($response['type']) && $response['type'] === 'callback' && is_callable($response['callback']))

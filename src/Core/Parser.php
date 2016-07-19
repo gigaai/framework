@@ -25,13 +25,13 @@ class Parser
 			$template_type = 'generic';
 
 			// If it's generic and super short hand.
-			if (isset($answer['title']))
+			if (is_array($answer[0]) && array_key_exists('title', $answer[0]))
 			{
 				$message['attachment']['payload'] = array();
 				$message['attachment']['payload']['elements'] = $answer;
 			}
 
-			if (isset($answer['buttons']))
+			if (isset($answer['buttons']) && ! array_key_exists('title', $answer))
 				$template_type = 'button';
 
 			if (isset($answer['order_number']))
@@ -41,7 +41,7 @@ class Parser
 			if ( ! isset($answer['template_type']))
 				$message['attachment']['payload']['template_type'] = $template_type;
 		}
-
+		
 		if (is_array($answer) && array_key_exists('quick_replies', $answer))
 		{
 			$message = $answer;

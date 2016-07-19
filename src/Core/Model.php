@@ -50,11 +50,11 @@ class Model
 				return $this;
 
 			// Short hand method of attachments
-			if ( is_array($answers) && (
+			if (is_array($answers) && (
 					array_key_exists('buttons', $answers) ||
-					array_key_exists('elements', $answers) ||
-					array_key_exists('title', $answers) ||
-					array_key_exists('text', $answers) ||
+					array_key_exists('elements', $answers) || // For Generic
+					array_key_exists('title', $answers[0]) || // For Generic
+					array_key_exists('text', $answers) || // For Button
 					array_key_exists('type', $answers)
 				)
 			)
@@ -92,7 +92,7 @@ class Model
 	public function addAnswer($answer, $node_type, $asks = null)
 	{
 		$this->current_node = compact('node_type', 'asks');
-
+		
 		// We won't parse callback and parsed content. Note that PHP < 5.4 will treat string as array.
 		if ($this->isParsable($answer))
 			$answer = Parser::parseAnswer($answer);

@@ -37,19 +37,6 @@ class Request
 
     public function send($end_point, $body = array(), $method = 'post')
     {
-//        $request = array(
-//            'timeout' => 120,
-//            'redirection' => 5,
-//            'httpversion' => '1.0',
-//            'blocking' => true,
-//            'headers'     => array(
-//                'Content-Type' => 'application/json'
-//            )
-//        );
-//
-//        if ( ! empty($body))
-//            $request['body'] = $body;
-
         return call_user_func_array('giga_remote_' . $method, array($end_point, $body));
     }
 
