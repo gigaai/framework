@@ -3,6 +3,5 @@ vendor
 cache
 bootstrap
 public
-config.php
 index.php
 subscribe.php
