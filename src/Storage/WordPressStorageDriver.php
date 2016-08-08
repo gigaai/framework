@@ -1,7 +1,4 @@
 <?php
-
-namespace GigaAI\Storage;
-
 /**
  * WordPress Storage Driver for Messenger Bot
  *
@@ -14,6 +11,9 @@ namespace GigaAI\Storage;
  * Class FileStorageDriver
  * @package Giga
  */
+
+namespace GigaAI\Storage;
+
 class WordPressStorageDriver implements StorageInterface
 {
 	private $db;

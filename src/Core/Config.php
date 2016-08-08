@@ -1,13 +1,13 @@
 <?php
-
-namespace GigaAI\Core;
-
 /**
  * Singleton Configuration Class
  *
  * Class Config
  * @package GigaAI\Core
  */
+
+namespace GigaAI\Core;
+
 class Config
 {
 	private static $instance;

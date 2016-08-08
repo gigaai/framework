@@ -1,8 +1,4 @@
 <?php
-
-namespace GigaAI\Storage;
-use GigaAI\Core\Config;
-
 /**
  * File Storage Driver for Messenger Bot
  *
@@ -13,6 +9,11 @@ use GigaAI\Core\Config;
  * Class FileStorageDriver
  * @package FMB
  */
+
+namespace GigaAI\Storage;
+
+use GigaAI\Core\Config;
+
 class FileStorageDriver implements StorageInterface
 {
 	/**

@@ -50,13 +50,12 @@ class Model
 				return $this;
 
 			// Short hand method of attachments
-			if (is_array($answers) && (
-					array_key_exists('buttons', $answers) ||
-					array_key_exists('elements', $answers) || // For Generic or Receipt
-					(is_array($answers[0]) && array_key_exists('title', $answers[0])) || // For Generic
-					array_key_exists('text', $answers) || // For Button
-					array_key_exists('type', $answers)
-				)
+			if (array_key_exists('buttons', $answers) ||
+				array_key_exists('elements', $answers) || // For Generic or Receipt
+				(is_array($answers[0]) && array_key_exists('title', $answers[0])) || // For Generic
+				array_key_exists('text', $answers) || // For Button
+				array_key_exists('type', $answers) ||
+				array_key_exists('quick_replies', $answers)
 			)
 			{
 				$this->addAnswer($answers, $node_type, $asks);
@@ -70,6 +69,7 @@ class Model
 			}
 		}
 
+		// Todo: Support code from WordPress
 		// Recursive if we set multiple asks, responses
 		if (is_array($asks) && is_null($answers))
 		{
@@ -115,7 +115,7 @@ class Model
 		if (isset($answer['_wait']))
 			return false;
 
-		if ($answer['type'] === 'callback')
+		if (isset($answer['type']) && $answer['type'] === 'callback')
 			return false;
 
 		if (isset($answer['attachment']))

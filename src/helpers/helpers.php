@@ -15,6 +15,15 @@ function giga_remote_delete($url, $args = array())
 	return GigaAI\Http\Http::delete($url, $args);
 }
 
+/**
+ * Match user entered text with bot pattern
+ *
+ * @todo  Fix ? sign
+ * @param  String $pattern Pattern
+ * @param  String $string  User Text
+ * 
+ * @return bool
+ */
 function giga_match($pattern, $string)
 {
 	if (strpos($pattern, 'regex:') !== false)

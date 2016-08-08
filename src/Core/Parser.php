@@ -44,7 +44,11 @@ class Parser
 
 		if (is_array($answer) && array_key_exists('quick_replies', $answer))
 		{
-			$message = $answer;
+			$quick_replies = $answer['quick_replies'];
+
+			$content = self::parseAnswer($answer[0]);
+
+			return $content + array('quick_replies' => $quick_replies);
 		}
 
 		if (self::isAttachmentMessage($answer))
@@ -102,7 +106,8 @@ class Parser
 
 	public static function isAttachmentMessage($answer)
 	{
-		return is_array($answer) && in_array($answer['type'], array('image', 'video', 'audio', 'file'));
+		return is_array($answer) && 
+				in_array($answer['type'], array('image', 'video', 'audio', 'file'));
 	}
 
 	public static function parseShortcodes($response, $dictionary = array())
@@ -118,11 +123,11 @@ class Parser
 		}
 
 		// Replace in Text
-		if ($response['text'])
+		if ( ! empty($response['text']))
 			$response['text'] = strtr($response['text'], $dictionary);
 
 		// Replace in Button
-		if ($response['attachment']['text'])
+		if (! empty($response['attachment']['text']))
 			$response['attachment']['text'] = strtr($response['text'], $dictionary);
 
 		// Replace in Generic

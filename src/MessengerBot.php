@@ -70,7 +70,7 @@ class MessengerBot
 	{
 		$received = $this->request->getReceivedData();
 
-		if ($received->object != 'page' || ! $received)
+		if ( ! $received || $received->object != 'page')
 			return;
 
 		$this->received = $received;
@@ -92,7 +92,7 @@ class MessengerBot
 	public function responseEvent($event)
 	{
 		// Currently, we only handle message and postback
-		if ( ! ($event->message || $event->postback))
+		if ( ! isset($event->message) && ! isset($event->postback))
 			return;
 
 		// If human reply with Text. Stop the bot, with empty text. Re-enable the bot.
@@ -192,13 +192,6 @@ class MessengerBot
 
 		$data_set = $this->getAnswers($message_type);
 
-		if ($data_set_type === 'default')
-		{
-			$this->response($data_set['default']);
-
-			return;
-		}
-
 		$marked = false;
 
 		foreach ($data_set as $node_name => $node_content)
@@ -213,7 +206,7 @@ class MessengerBot
 
 		// If not found any response. Run this method again to send default message.
 		if ( ! $marked)
-			$this->findAndResponse($ask, $this->answers['default'], 'default');
+			$this->response($this->getAnswers('default'));
 	}
 
 	/**
@@ -257,7 +250,7 @@ class MessengerBot
 	 */
 	public function verifyAutoStop($event)
 	{
-		if ($event->message && $event->message->is_echo && ! isset($event->message->app_id))
+		if (isset($event->message) && isset($event->message->is_echo) && ! isset($event->message->app_id))
 		{
 			$auto_stop = $event->message->text != '';
 

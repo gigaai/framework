@@ -43,21 +43,17 @@ class Storage
             $this->driver = new $class;
     }
 
-    public function pull($event)
+    private function pull($event)
     {
-        // Handle static context
-        if ( ! isset($this) && ! $this instanceof Storage)
-            $storage = new Storage;
-        else
-            $storage = $this;
-
         $user_id = $event->sender->id;
 
         // Todo: Check cache time and fetch new data
-        if ($storage->has($user_id))
+        if ($this->has($user_id))
             return;
 
-        $profile = Request::getUserProfile($user_id);
+        $request = new Request;
+
+        $profile = $request->getUserProfile($user_id);
 
         if (empty($profile['first_name']))
             return;
@@ -67,7 +63,7 @@ class Storage
         $profile['subscribed'] = 1;
 
         // Then call set method
-        $storage->set($profile);
+        $this->set($profile);
     }
 
     /**
@@ -81,6 +77,9 @@ class Storage
     {
         if ( $this->driver === null )
             $this->createConnection();
+        
+        if (method_exists($this, $name))
+            return call_user_func_array(array($this, $name), $args);
 
         return call_user_func_array(array($this->driver, $name), $args);
     }
