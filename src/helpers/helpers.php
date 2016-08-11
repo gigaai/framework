@@ -18,7 +18,6 @@ function giga_remote_delete($url, $args = array())
 /**
  * Match user entered text with bot pattern
  *
- * @todo  Fix ? sign
  * @param  String $pattern Pattern
  * @param  String $string  User Text
  * 
@@ -33,7 +32,13 @@ function giga_match($pattern, $string)
 		return preg_match($pattern, $string);
 	}
 
-	$pattern = str_replace('%', "[\s\S]*", $pattern);
+	$pattern = strtr($pattern, array(
+		'%' => '[\s\S]*',
+		'?' => '\?',
+		'*' => '\*',
+		'+' => '\+',
+		'.' => '\.'
+	));
 
 	return preg_match("/$pattern$/i", $string);
 }
