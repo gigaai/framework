@@ -153,7 +153,9 @@ class MessengerBot
 	 */
 	public function say($messages)
 	{
-		return $this->says($messages);
+		$this->says($messages);
+
+		return $this;
 	}
 
 	/**
@@ -166,6 +168,8 @@ class MessengerBot
 		$messages = $this->model->addReply($messages);
 
 		$this->response($messages);
+
+		return $this;
 	}
 
 	/**
@@ -231,7 +235,10 @@ class MessengerBot
 	 */
 	public function wait($action, $message_type = '')
 	{
-		$this->model->addIntendedAction($action, $message_type);
+		if (isset($this->sender_id) && ! empty($this->sender_id))
+			$this->storage->set($this->sender_id, '_wait', $action);
+		else
+			$this->model->addIntendedAction($action, $message_type);
 	}
 
 	/**
@@ -242,6 +249,7 @@ class MessengerBot
 	 */
 	public function verifyAutoStop($event)
 	{
+
 		if (isset($event->message) && isset($event->message->is_echo) && ! isset($event->message->app_id)) {
 			$auto_stop = $event->message->text != '';
 
