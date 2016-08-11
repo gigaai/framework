@@ -143,14 +143,12 @@ class Model
 		if (isset($answers['buttons']) || isset($answers['elements'])
 			|| isset($answers['title']) || isset($answers['text']) || is_string($answers)
 		)
-		{
 			return array(Parser::parseAnswer($answers));
-		}
+
 
 		$output = array();
 
-		foreach ($answers as $answer)
-		{
+		foreach ($answers as $answer) {
 			$output[] = Parser::parseAnswer($answer);
 		}
 

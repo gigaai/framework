@@ -25,7 +25,7 @@ class Parser
 			$template_type = 'generic';
 
 			// If it's generic and super short hand.
-			if (is_array($answer[0]) && array_key_exists('title', $answer[0]))
+			if ( ! empty($answer[0]) && array_key_exists('title', $answer[0]))
 			{
 				$message['attachment']['payload'] = array();
 				$message['attachment']['payload']['elements'] = $answer;
@@ -106,7 +106,8 @@ class Parser
 
 	public static function isAttachmentMessage($answer)
 	{
-		return is_array($answer) && 
+		return is_array($answer) &&
+				isset($answer['type']) &&
 				in_array($answer['type'], array('image', 'video', 'audio', 'file'));
 	}
 

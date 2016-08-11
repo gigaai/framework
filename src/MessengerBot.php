@@ -28,7 +28,7 @@ class MessengerBot
 	{
 		$this->config = Config::getInstance();
 
-		if (! empty($config))
+		if ( ! empty($config))
 			$this->config->set($config);
 
 		$this->request = new Request;
@@ -70,15 +70,13 @@ class MessengerBot
 	{
 		$received = $this->request->getReceivedData();
 
-		if ( ! $received || $received->object != 'page')
+		if ( ! $received || empty($received->object) || $received->object != 'page')
 			return;
 
 		$this->received = $received;
 
-		foreach ($received->entry as $entry)
-		{
-			foreach ($entry->messaging as $event)
-			{
+		foreach ($received->entry as $entry) {
+			foreach ($entry->messaging as $event) {
 				$this->sender_id = $event->sender->id;
 				$this->recipient_id = $event->recipient->id;
 				$this->timestamp = $event->timestamp;
@@ -122,17 +120,14 @@ class MessengerBot
 
 		$node = (array)$node;
 
-		foreach ($node as $response)
-		{
-			if (isset($response['type']) && $response['type'] === 'callback' && is_callable($response['callback']))
-			{
+		foreach ($node as $response) {
+			if (isset($response['type']) && $response['type'] === 'callback' && is_callable($response['callback'])) {
 				@call_user_func_array($response['callback'], array($this));
 
 				continue;
 			}
 
-			if ( ! empty($response['_wait']) && is_string($response['_wait']))
-			{
+			if ( ! empty($response['_wait']) && is_string($response['_wait'])) {
 				$this->storage->set($sender_id, '_wait', $response['_wait']);
 
 				continue;
@@ -194,8 +189,7 @@ class MessengerBot
 
 		$marked = false;
 
-		foreach ($data_set as $node_name => $node_content)
-		{
+		foreach ($data_set as $node_name => $node_content) {
 			if ( ! giga_match($node_name, $ask))
 				continue;
 
@@ -219,9 +213,9 @@ class MessengerBot
 	{
 		$waiting = $this->storage->get($this->sender_id, '_wait');
 
-		if ( ! empty($waiting) && is_string($waiting))
-		{
-            $this->storage->set($this->sender_id, '_wait', false);
+		if ( ! empty($waiting) && is_string($waiting)) {
+
+			$this->storage->set($this->sender_id, '_wait', false);
 
 			$this->response($this->getAnswers($message_type, '@' . $waiting));
 
@@ -250,8 +244,7 @@ class MessengerBot
 	 */
 	public function verifyAutoStop($event)
 	{
-		if (isset($event->message) && isset($event->message->is_echo) && ! isset($event->message->app_id))
-		{
+		if (isset($event->message) && isset($event->message->is_echo) && ! isset($event->message->app_id)) {
 			$auto_stop = $event->message->text != '';
 
 			$this->storage->set($event->recipient->id, 'auto_stop', $auto_stop);
