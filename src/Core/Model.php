@@ -32,10 +32,7 @@ class Model
 			if (is_callable($answers))
 			{
 				$this->addAnswer(
-					array(
-						'type' => 'callback',
-						'callback' => $answers
-					),
+					array('type' => 'callback', 'callback' => $answers),
 					$node_type,
 					$asks
 				);
@@ -69,16 +66,29 @@ class Model
 			}
 		}
 
-		// Todo: Support code from WordPress
 		// Recursive if we set multiple asks, responses
 		if (is_array($asks) && is_null($answers))
 		{
-			foreach ($asks as $ask => $answers)
+			if (array_key_exists('text', $asks) && array_key_exists('payload', $asks))
 			{
-				$this->answers($ask, $answers);
+				foreach ($asks as $event => $nodes)
+				{
+					$prepend = $event === 'text' ? '' : $event . ':';
+					if ($event === 'default')
+						$nodes = array($nodes);
+					foreach ($nodes as $ask => $responses)
+					{
+						$this->parseAnswers($prepend . $ask, $responses);
+					}
+				}
+			}
+			else {
+				foreach ($asks as $ask => $answers)
+				{
+					$this->parseAnswers($ask, $answers);
+				}
 			}
 		}
-
 		return $this;
 	}
 

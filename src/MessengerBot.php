@@ -153,9 +153,7 @@ class MessengerBot
 	 */
 	public function say($messages)
 	{
-		$this->says($messages);
-
-		return $this;
+		return $this->says($messages);
 	}
 
 	/**
