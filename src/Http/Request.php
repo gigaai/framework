@@ -17,7 +17,7 @@ class Request
     {
         $this->received = (!empty ($_REQUEST)) ? $_REQUEST : json_decode(file_get_contents('php://input'));
 
-        if ( is_array($this->received) && ! empty($this->received['giga_action']) &&
+        if (is_array($this->received) && ! empty($this->received['giga_action']) &&
             in_array(trim($this->received['giga_action']), array(
                 'updateGetStartedButton',
                 'updateGreetingText',
@@ -28,6 +28,10 @@ class Request
 
             @call_user_func(array($this, $action));
         }
+
+        $this->verifyTokenFromFacebook();
+
+		$this->subscribeFacebook();
     }
 
     public function getReceivedData()
@@ -35,18 +39,16 @@ class Request
         return $this->received;
     }
 
-    public function send($end_point, $body = array(), $method = 'post')
+    private function send($end_point, $body = array(), $method = 'post')
     {
         return call_user_func_array('giga_remote_' . $method, array($end_point, $body));
     }
 
-    public static function sendSubscribe()
+    private function sendSubscribe()
     {
         $end_point = "https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=" . Config::get('page_access_token');
 
-        $request = new self;
-
-        return $request->send($end_point);
+        return $this->send($end_point);
     }
 
     public function getUserProfile($user_id)
@@ -75,6 +77,16 @@ class Request
             exit;
         }
     }
+
+    private function subscribeFacebook()
+	{
+		if (is_array($this->received) && array_key_exists('subscribe', $this->received)) {
+
+			$post = $this->sendSubscribe();
+
+			dd($post);
+		}
+	}
 
     public function updateGetStartedButton()
     {
@@ -145,4 +157,30 @@ class Request
 
         dd($data);
     }
+
+	/**
+	 * Magic method to load request
+	 *
+	 * @param $name
+	 * @param array $args
+	 * @return $this
+	 */
+	public function __call($name, $args = array())
+	{
+		return call_user_func_array(array($this, $name), $args);
+	}
+
+	/**
+	 * Magic method to load storage driver methods
+	 *
+	 * @param $name
+	 * @param array $args
+	 * @return $this
+	 */
+	public static function __callStatic($name, $args = array())
+	{
+		$storage = new self;
+
+		return $storage->__call($name, $args);
+	}
 }

@@ -37,8 +37,6 @@ class MessengerBot
 
 		$this->model = new Model;
 
-		// Get verify token and print verify message
-		$this->request->verifyTokenFromFacebook();
 	}
 
 	public function answer($ask, $response = null)

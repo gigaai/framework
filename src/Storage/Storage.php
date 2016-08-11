@@ -93,7 +93,7 @@ class Storage
      */
     public static function __callStatic($name, $args = array())
     {
-        $storage = new Storage;
+        $storage = new self;
 
         return $storage->__call($name, $args);
     }
