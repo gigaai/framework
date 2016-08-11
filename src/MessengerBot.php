@@ -221,9 +221,9 @@ class MessengerBot
 
 		if ( ! empty($waiting) && is_string($waiting))
 		{
-			$this->response($this->getAnswers($message_type, '@' . $waiting));
+            $this->storage->set($this->sender_id, '_wait', false);
 
-			$this->storage->set($this->sender_id, '_wait', false);
+			$this->response($this->getAnswers($message_type, '@' . $waiting));
 
 			return true;
 		}
