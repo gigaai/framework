@@ -91,10 +91,6 @@ class MessengerBot
 		if ( ! isset($event->message) && ! isset($event->postback))
 			return;
 
-		// If human reply with Text. Stop the bot, with empty text. Re-enable the bot.
-		if ($this->verifyAutoStop($event))
-			return;
-
 		// Save user data if not exists.
 		$this->storage->pull($event);
 
@@ -247,6 +243,8 @@ class MessengerBot
 	 */
 	public function verifyAutoStop($event)
 	{
+		if ( ! $this->config->get('auto_stop'))
+			return false;
 
 		if (isset($event->message) && isset($event->message->is_echo) && ! isset($event->message->app_id)) {
 			$auto_stop = $event->message->text != '';
