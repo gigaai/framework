@@ -9,7 +9,7 @@ CREATE TABLE `bot_answers` (
   `type` varchar(50),
   `status` VARCHAR(20),
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -33,8 +33,8 @@ CREATE TABLE `bot_leads` (
   `subscribe` TINYINT,
   `auto_stop` VARCHAR(10),
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp,
-  `deleted_at` timestamp,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -46,4 +46,3 @@ CREATE TABLE `bot_leads_meta` (
   `meta_value` LONGTEXT,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
