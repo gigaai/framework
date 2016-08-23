@@ -175,9 +175,9 @@ class Model
 		// Short hand method of attachments
 		if (isset($answers['buttons']) || isset($answers['elements'])
 			|| isset($answers['title']) || isset($answers['text']) || is_string($answers)
+		    || array_key_exists('quick_replies', $answers)
 		)
 			return array(Parser::parseAnswer($answers));
-
 
 		$output = array();
 

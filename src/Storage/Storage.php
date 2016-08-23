@@ -41,6 +41,8 @@ class Storage
 
         if (class_exists($class) && in_array('GigaAI\Storage\StorageInterface', class_implements($class)))
             $this->driver = new $class;
+	    else
+	    	dd('Driver not found');
     }
 
     private function pull($event)
