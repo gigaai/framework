@@ -24,6 +24,10 @@ class MessengerBot
 
 	public $config;
 
+	private $message;
+
+    private $event;
+
 	public function __construct(array $config = array())
 	{
 		$this->config = Config::getInstance();
@@ -78,6 +82,7 @@ class MessengerBot
 				$this->sender_id = $event->sender->id;
 				$this->recipient_id = $event->recipient->id;
 				$this->timestamp = $event->timestamp;
+
 				$this->received_text = isset($event->message->text) ? $event->message->text : null;
 
 				$this->responseEvent($event);
@@ -91,12 +96,28 @@ class MessengerBot
 		if ( ! isset($event->message) && ! isset($event->postback))
 			return;
 
+        if (isset($event->message))
+            $this->message = $event->message;
+
 		// Save user data if not exists.
 		$this->storage->pull($event);
 
-		$message_type = $event->message ? 'text' : 'payload';
+        $message_type = 'text';
+        $ask = '';
 
-		$ask = $event->message ? $event->message->text : $event->postback->payload;
+        if (isset($event->message->text))
+            $ask = $event->message->text;
+
+        if (isset($event->message) && isset($event->message->attachments) &&
+            isset($event->message->attachments[0]->type) &&
+            $event->message->attachments[0]->type === 'location'
+        )
+            $message_type = 'location';
+
+        if (isset($event->postback->payload)) {
+            $message_type = 'payload';
+            $ask = $event->postback->payload;
+        }
 
 		$this->findAndResponse($message_type, $ask);
 	}
@@ -116,7 +137,8 @@ class MessengerBot
 
 		foreach ($node as $response) {
 			if (isset($response['type']) && $response['type'] === 'callback' && is_callable($response['callback'])) {
-				@call_user_func_array($response['callback'], array($this));
+
+				@call_user_func_array($response['callback'], array($this, $this->getReceivedText()));
 
 				continue;
 			}
@@ -181,6 +203,13 @@ class MessengerBot
 		if ($this->responseIntendedAction($message_type))
 			return;
 
+        if ('location' === $message_type)
+        {
+            $this->response($this->getAnswers('location'));
+
+            return;
+        }
+
 		$data_set = $this->getAnswers($message_type);
 
 		$marked = false;
@@ -235,6 +264,31 @@ class MessengerBot
 			$this->model->addIntendedAction($action, $message_type);
 	}
 
+	public function getLocation($output = '')
+	{
+	    if ($this->isUserMessage() && isset($this->message->attachments) &&
+            $this->message->attachments[0]->type === 'location'
+        )
+            $location = $this->message->attachments[0]->payload->coordinates;
+
+        if (!empty($output))
+            return $location->$output;
+
+        return $location;
+	}
+
+	public function getReceivedText()
+    {
+        if ($this->isUserMessage())
+            return isset($this->message->text) ? $this->message->text : '';
+
+        return '';
+    }
+
+    private function isUserMessage()
+    {
+        return $this->message->metadata != 'SENT_BY_GIGA_AI';
+    }
 	/**
 	 * Save the auto stop state
 	 *
@@ -243,19 +297,6 @@ class MessengerBot
 	 */
 	public function verifyAutoStop($event)
 	{
-		if ( ! $this->config->get('auto_stop'))
-			return false;
-
-		if (isset($event->message) && isset($event->message->is_echo) && ! isset($event->message->app_id)) {
-			$auto_stop = $event->message->text != '';
-
-			$this->storage->set($event->recipient->id, 'auto_stop', $auto_stop);
-
-			return true;
-		}
-
-		$auto_stop = $this->storage->get($event->sender->id, 'auto_stop', 0);
-
-		return $auto_stop;
+		return false;
 	}
 }
