@@ -107,14 +107,27 @@ class Model
 		if ($this->isParsable($answer))
 			$answer = Parser::parseAnswer($answer);
 
-		if ( ! isset($this->answers[$node_type][$asks]) && in_array($node_type, array('text', 'payload')))
-			$this->answers[$node_type][$asks] = array();
+		$storage_driver = Config::get('storage_driver', 'file');
 
-		if (in_array($node_type, array('text', 'payload')))
-			$this->answers[$node_type][$asks][] = $answer;
+		if ($storage_driver === 'file' || $answer['type'] === 'callback') {
+			if ( ! isset( $this->answers[ $node_type ][ $asks ] ) &&
+			     in_array( $node_type, array( 'text', 'payload' ) )
+			) {
+				$this->answers[ $node_type ][ $asks ] = array();
+			}
 
-		if ($node_type === 'default')
-			$this->answers['default'][] = $answer;
+			if ( in_array( $node_type, array( 'text', 'payload' ) ) ) {
+				$this->answers[ $node_type ][ $asks ][] = $answer;
+			}
+
+			if ( $node_type === 'default' ) {
+				$this->answers['default'][] = $answer;
+			}
+		}
+		else
+		{
+			\GigaAI\Storage\Storage::addAnswer($answer, $node_type, $asks);
+		}
 	}
 
 	private function isParsable($answer)
@@ -134,17 +147,27 @@ class Model
 		return true;
 	}
 
-	public function getAnswers($node_type = null, $ask = '')
+	public function getAnswers($node_type = '', $ask = '')
 	{
-		if (empty($node_type) || ! isset($this->answers[$node_type]))
-			return $this->answers;
+		// Check in storage driver
+		$search_in_storage = array();
 
-		$answers = $this->answers[$node_type];
+		$storage_driver = Config::get('storage_driver', 'file');
 
-		if (empty($ask))
-			return $answers;
+		if ($storage_driver != 'file')
+		{
+			$search_in_storage = \GigaAI\Storage\Storage::getAnswers($node_type, $ask);
+		}
 
-		return $answers[$ask];
+		$answers = array_merge_recursive($search_in_storage, $this->answers);
+
+		if ( ! empty($node_type) && ! empty($answers[$node_type]))
+			$answers = $answers[$node_type];
+
+		if ( ! empty($node_type) && ! empty($ask) && ! empty($answers[$node_type][$ask]))
+			$answers = $answers[$node_type][$ask];
+
+		return $answers;
 	}
 
 	public function addReply($answers)

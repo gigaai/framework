@@ -18,6 +18,10 @@ class WordPressStorageDriver implements StorageInterface
 {
 	private $db;
 
+	private $fillable = array('user_id', 'first_name', 'last_name', 'profile_pic',
+		'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', 'wait',
+		'linked_account', 'subscribe', 'auto_stop');
+
 	public function __construct()
 	{
 		global $wpdb;
@@ -43,10 +47,7 @@ class WordPressStorageDriver implements StorageInterface
 
 	public function getColumn($column)
 	{
-		return $this->db->get_col(
-			$this->db->prepare("SELECT %s FROM {$this->db}giga_users WHERE 1=1", $column),
-			ARRAY_N
-		);
+		return $this->db->get_col("SELECT {$column} FROM bot_leads");
 	}
 
 	public function allUserId()
@@ -56,10 +57,12 @@ class WordPressStorageDriver implements StorageInterface
 
 	public function getUser($id)
 	{
-		return $this->db->get_row(
-			$this->db->prepare("SELECT * FROM {$this->db}giga_users WHERE user_id = %s", $id),
-			ARRAY_N
+		$user = $this->db->get_row(
+			$this->db->prepare("SELECT * FROM bot_leads WHERE source = 'facebook' AND user_id = %s", $id),
+			ARRAY_A
 		);
+
+		return $user;
 	}
 
 	public function set($user, $key = '', $value = '')
@@ -71,21 +74,48 @@ class WordPressStorageDriver implements StorageInterface
 
 				return $this->set($key);
 			}
-			else {
-				return $this->db->update('giga_users', array($key => $value), array(
-					'user_id' => $user
-				));
-			}
+
+			$user = array(
+				'user_id' => $user,
+				$key => $value
+			);
 		}
 
 		if (is_array($user) && isset($user['user_id']))
-		{
-			$id = $user['user_id'];
-			unset($user['user_id']);
+			return $this->insertOrUpdateUser($user);
+	}
 
-			return $this->db->update('giga_users', $user, array(
-				'user_id' => $id
+	private function insertOrUpdateUser($user)
+	{
+		$meta = array();
+
+		foreach ($user as $key => $value)
+		{
+			if ( ! in_array($key, $this->fillable)) {
+				$meta[$key] = $value;
+
+				unset($user[$key]);
+			}
+		}
+
+		if ( ! $this->has($user))
+			$this->db->insert('bot_leads', $user);
+		else
+			$this->db->update('bot_leads', $user, array(
+				'user_id' => $user['user_id']
 			));
+
+		if ( ! empty( $meta ))
+		{
+			foreach ($meta as $key => $value)
+			{
+
+				$this->db->replace('bot_leads_meta', array(
+					'lead_id'       => $user['user_id'],
+					'meta_key'      => $key,
+					'meta_value'    => $value
+				) );
+			}
 		}
 	}
 
@@ -93,7 +123,7 @@ class WordPressStorageDriver implements StorageInterface
 	{
 		$user = $this->getUser($user_id);
 
-		return ! $user || empty($user[$key]);
+		return $user || ! empty($user[$key]);
 	}
 
 	public function search($terms, $relation = 'and')
@@ -105,6 +135,68 @@ class WordPressStorageDriver implements StorageInterface
 			$where .= "{$relation} {$field}='{$value}'";
 		}
 
-		return $this->db->get_results("SELECT * FROM {$this->db}giga_users WHERE 1=1 $where");
+		return $this->db->get_results("SELECT * FROM bot_leads WHERE 1=1 $where");
+	}
+
+	/**
+	 * Add Answer to the database
+	 *
+	 * @param $answer
+	 * @param $node_type
+	 * @param string $ask
+	 */
+	public function addAnswer( $answer, $node_type, $ask = '' )
+	{
+		$answers = $this->db->get_var("SELECT answer FROM bot_answers WHERE type = '$node_type' AND pattern = '$ask'");
+
+		if ( empty($answers)) {
+			$this->db->insert( 'bot_answers', array(
+				'pattern' => $ask,
+				'type'    => $node_type,
+				'answer'  => json_encode(array($answer))
+			) );
+		} else {
+			$answers = json_decode($answers, true);
+
+			if (! in_array($answer, $answers))
+				$answers[] = $answer;
+
+			$answers = json_encode($answers);
+
+			$this->db->update('bot_answers', array(
+				'answer' => $answers
+			), array(
+				'pattern' => $ask,
+				'type'    => $node_type,
+			));
+		}
+	}
+
+	public function getAnswers( $node_type, $ask = '' ) {
+
+		$where = '1 = 1';
+
+		if ( ! empty($node_type))
+			$where .= " AND type = '$node_type'";
+
+		if ( ! empty( $ask ) )
+			$where .= " AND pattern = '$ask'";
+
+		$answers = $this->db->get_results("SELECT `type`, `pattern`, `answer` FROM bot_answers WHERE $where", ARRAY_A);
+
+		$output = array();
+
+		foreach ($answers as $answer)
+		{
+			if ( ! isset($output[$answer['type']]))
+				$output[$answer['type']] = array();
+
+			if ( ! isset( $output[$answer['type']][$answer['pattern']]))
+				$output[$answer['type']][$answer['pattern']] = array();
+
+			$output[$answer['type']][$answer['pattern']] = json_decode($answer['answer'], true);
+		}
+
+		return $output;
 	}
 }
