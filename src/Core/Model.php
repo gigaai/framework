@@ -103,7 +103,7 @@ class Model
 
         $storage_driver = Config::get('storage_driver', 'file');
 
-        if ($storage_driver === 'file' || $answer['type'] === 'callback') {
+        if ($storage_driver === 'file' || (isset($answer['type']) && $answer['type'] === 'callback')) {
             if (!isset($this->answers[$node_type][$asks]) &&
                 in_array($node_type, array('text', 'payload'))
             )

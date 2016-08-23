@@ -32,7 +32,7 @@ class WordPressStorageDriver implements StorageInterface
 		$this->db = $wpdb;
 	}
 
-	public function get($user_id = '', $key = '', $default = '')
+	public function get($user_id, $key = '', $default = '')
 	{
 		$user = $this->getUser($user_id);
 
