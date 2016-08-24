@@ -150,6 +150,7 @@ class MessengerBot
 			}
 
 			$response = Parser::parseShortcodes($response, $this->storage->get($sender_id));
+
 			$response['metadata'] = 'SENT_BY_GIGA_AI';
 
 			$body = array(

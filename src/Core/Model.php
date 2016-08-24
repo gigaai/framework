@@ -42,9 +42,8 @@ class Model
             $answers = (array)$answers;
 
             // We will keep _wait format.
-            if (!empty($answers['_wait'])) {
+            if ( ! empty($answers['_wait']))
                 return $this;
-            }
 
             // Short hand method of attachments
             if (array_key_exists('buttons', $answers) ||
@@ -76,7 +75,7 @@ class Model
 
         // Recursive if we set multiple asks, responses
         if (is_array($asks) && is_null($answers)) {
-            if (array_key_exists('text', $asks) || array_key_exists('payload', $asks) || array_key_exists('location')) {
+            if (array_key_exists('text', $asks) || array_key_exists('payload', $asks) || array_key_exists('location', $asks)) {
                 foreach ($asks as $event => $nodes) {
                     $prepend = $event === 'text' ? '' : $event . ':';
                     if ($event === 'default') {
@@ -110,6 +109,12 @@ class Model
         $storage_driver = Config::get('storage_driver', 'file');
 
         if ($storage_driver === 'file' || (isset($answer['type']) && $answer['type'] === 'callback')) {
+
+            if (isset($answer['type']) && $answer['type'] === 'callback') {
+                Storage::removeAnswers($node_type, $asks);
+                $answer = array($answer);
+            }
+
             if (!isset($this->answers[$node_type][$asks]) &&
                 in_array($node_type, array('text', 'payload'))
             )
@@ -123,6 +128,7 @@ class Model
 
             if ($node_type === 'default')
                 $this->answers[$node_type] = $answer;
+
         } else {
             Storage::addAnswer($answer, $node_type, $asks);
         }
@@ -158,11 +164,11 @@ class Model
 
         $answers = array_merge_recursive($search_in_storage, $this->answers);
 
-        if (!empty($node_type) && !empty($answers[$node_type]))
+        if ( ! empty($node_type) && ! empty($answers[$node_type]))
             $answers = $answers[$node_type];
 
-        if (!empty($node_type) && !empty($ask) && !empty($answers[$node_type][$ask]))
-            $answers = $answers[$node_type][$ask];
+        if ( ! empty($node_type) && ! empty($ask) && ! empty($answers[$ask]))
+            $answers = $answers[$ask];
 
         return $answers;
     }
@@ -190,8 +196,11 @@ class Model
         if (empty($this->current_node['node_type']) || $this->current_node['node_type'] == 'welcome')
             return;
 
+        $answers = $this->getAnswers($this->current_node['node_type'], $this->current_node['asks']);
+        $answers[] = array('_wait' => $action);
+
         $this->addAnswer(
-            array('_wait' => $action),
+            $answers,
             $this->current_node['node_type'],
             $this->current_node['asks']
         );

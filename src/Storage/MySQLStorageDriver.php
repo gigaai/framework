@@ -230,4 +230,12 @@ class MySQLStorageDriver implements StorageInterface
 
         return $output;
     }
+
+    public function removeAnswers($node_type, $ask)
+    {
+        Answer::where([
+            'type'      => $node_type,
+            'pattern'   => $ask
+        ])->delete();
+    }
 }
