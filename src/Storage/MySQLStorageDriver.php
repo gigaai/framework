@@ -100,9 +100,15 @@ class MySQLStorageDriver implements StorageInterface
 
     public function getUser($user_id)
     {
-        return Lead::where('source', 'facebook')
-            ->where('user_id', $user_id)
-            ->first();
+        $user = Lead::where([
+            'source' => 'facebook',
+            'user_id' => $user_id
+        ])->first();
+
+        if ( ! is_null($user))
+            return $user->toArray();
+
+        return null;
     }
 
     /**
@@ -118,9 +124,12 @@ class MySQLStorageDriver implements StorageInterface
     {
         $user = $this->getUser($user_id);
 
+        if (is_null($user))
+            return null;
+
         if (!empty($key)) {
-            if (isset($user->$key))
-                return $user->$key;
+            if (isset($user[$key]))
+                return $user[$key];
 
             return $default;
         }

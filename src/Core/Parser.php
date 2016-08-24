@@ -113,7 +113,7 @@ class Parser
 
 	public static function parseShortcodes($response, $dictionary = array())
 	{
-		if (empty($dictionary))
+		if (empty($dictionary) || ! is_array($dictionary))
 			return $response;
 		
 		foreach ($dictionary as $shortcode => $value)

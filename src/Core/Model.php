@@ -57,7 +57,7 @@ class Model
                 if ($this->isParsable($answers))
                     $answers = Parser::parseAnswer($answers);
 
-                $this->addAnswer([$answers], $node_type, $asks);
+                $this->addAnswer(array($answers), $node_type, $asks);
 
                 return $this;
             }
@@ -67,6 +67,8 @@ class Model
             foreach ($answers as $answer) {
                 if ($this->isParsable($answer))
                     $parsed[] = Parser::parseAnswer($answer);
+                else
+                    $parsed[] = $answer;
             }
 
             $this->addAnswer($parsed, $node_type, $asks);
@@ -148,9 +150,8 @@ class Model
 
         $storage_driver = Config::get('storage_driver', 'file');
 
-        if ($storage_driver != 'file') {
+        if ($storage_driver != 'file')
             $search_in_storage = Storage::getAnswers($node_type, $ask);
-        }
 
         $answers = array_merge_recursive($search_in_storage, $this->answers);
 
