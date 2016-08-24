@@ -172,7 +172,7 @@ class WordPressStorageDriver implements StorageInterface
 		}
 	}
 
-	public function getAnswers( $node_type, $ask = '' ) {
+	public function getAnswers( $node_type = '', $ask = '' ) {
 
 		$where = '1 = 1';
 

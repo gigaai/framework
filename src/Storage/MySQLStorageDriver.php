@@ -201,20 +201,25 @@ class MySQLStorageDriver implements StorageInterface
         }
     }
 
-    public function getAnswers($node_type, $ask = '')
+    public function getAnswers($node_type = '', $ask = '')
     {
-        $where = [];
+        $where = '1 = 1';
+        $placeholder = [];
 
-        if (!empty($node_type))
-            $where['type'] = $node_type;
+        if ( ! empty($node_type)) {
+            $where .= ' AND type = :type';
+            $placeholder[':type'] = $node_type;
+        }
+        if ( ! empty($ask)) {
+            $where .= " AND (:ask RLIKE pattern OR :ask2 LIKE pattern)";
+            $placeholder[':ask'] = $ask;
+            $placeholder[':ask2'] = $ask;
+        }
 
-        if (!empty($ask))
-            $where['pattern'] = $ask;
 
-        // Todo: where rlike
-        $answers = Answer::where($where)->get(['type', 'pattern', 'answers'])->toArray();
-
-        $output = array();
+        $answers = Answer::whereRaw($where, $placeholder)
+                        ->get(['type', 'pattern', 'answers'])
+                        ->toArray();
 
         foreach ($answers as $answer) {
             if (!isset($output[$answer['type']]))

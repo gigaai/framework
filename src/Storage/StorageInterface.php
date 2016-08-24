@@ -47,5 +47,5 @@ interface StorageInterface
 
 	public function addAnswer($answer, $node_type, $ask = '');
 
-	public function getAnswers($node_type, $ask = '');
+	public function getAnswers($node_type = '', $ask = '');
 }
