@@ -11,10 +11,6 @@ class MySQLStorageDriver implements StorageInterface
 {
     private $db;
 
-    protected $fillable = ['source', 'user_id', 'first_name', 'last_name', 'profile_pic',
-        'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', '_wait',
-        'linked_account', 'subscribe', 'auto_stop'];
-
     public function __construct()
     {
         $this->db = new Capsule;
@@ -22,14 +18,14 @@ class MySQLStorageDriver implements StorageInterface
         $config = Config::get('mysql');
 
         $this->db->addConnection([
-            'driver' => 'mysql',
-            'host' => $config['host'],
-            'database' => $config['database'],
-            'username' => $config['username'],
-            'password' => $config['password'],
-            'charset' => $config['charset'],
+            'driver'    => 'mysql',
+            'host'      => $config['host'],
+            'database'  => $config['database'],
+            'username'  => $config['username'],
+            'password'  => $config['password'],
+            'charset'   => $config['charset'],
             'collation' => $config['collation'],
-            'prefix' => $config['prefix'],
+            'prefix'    => $config['prefix'],
         ]);
 
 
@@ -63,7 +59,7 @@ class MySQLStorageDriver implements StorageInterface
         $meta = array();
 
         foreach ($user as $key => $value) {
-            if (!in_array($key, $this->fillable)) {
+            if (!in_array($key, (new Lead)->getFillable())) {
                 $meta[$key] = $value;
 
                 unset($user[$key]);
@@ -105,7 +101,7 @@ class MySQLStorageDriver implements StorageInterface
             'user_id' => $user_id
         ])->first();
 
-        if ( ! is_null($user))
+        if (!is_null($user))
             return $user->toArray();
 
         return null;
@@ -131,7 +127,7 @@ class MySQLStorageDriver implements StorageInterface
             if (isset($user[$key]))
                 return $user[$key];
 
-            if ( ! in_array($key, $this->fillable))
+            if (!in_array($key, (new Lead)->getFillable()))
                 return $this->getUserMeta($user_id, $key, $default);
 
             return $default;
@@ -143,11 +139,11 @@ class MySQLStorageDriver implements StorageInterface
     public function getUserMeta($user_id, $key = '', $default = '')
     {
         $meta = $this->db->table('bot_leads_meta')->where([
-            'user_id'   => $user_id,
-            'meta_key'  => $key
+            'user_id' => $user_id,
+            'meta_key' => $key
         ])->first();
 
-        if ( ! is_null($meta))
+        if (!is_null($meta))
             return $meta->meta_value;
 
         return $default;
@@ -190,9 +186,9 @@ class MySQLStorageDriver implements StorageInterface
 
         if (is_null($row)) {
             Answer::create([
-                'pattern'   => $ask,
-                'type'      => $node_type,
-                'answers'    => $answers
+                'pattern' => $ask,
+                'type' => $node_type,
+                'answers' => $answers
             ]);
         } else {
             $row->answers = $answers;
@@ -206,27 +202,28 @@ class MySQLStorageDriver implements StorageInterface
         $where = '1 = 1';
         $placeholder = [];
 
-        if ( ! empty($node_type)) {
+        if (!empty($node_type)) {
             $where .= ' AND type = :type';
             $placeholder[':type'] = $node_type;
         }
-        if ( ! empty($ask)) {
+        if (!empty($ask)) {
             $where .= " AND (:ask RLIKE pattern OR :ask2 LIKE pattern)";
             $placeholder[':ask'] = $ask;
             $placeholder[':ask2'] = $ask;
         }
 
-
         $answers = Answer::whereRaw($where, $placeholder)
-                        ->get(['type', 'pattern', 'answers'])
-                        ->toArray();
+            ->get(['type', 'pattern', 'answers'])
+            ->toArray();
+
+        $output = [];
 
         foreach ($answers as $answer) {
             if (!isset($output[$answer['type']]))
-                $output[$answer['type']] = array();
+                $output[$answer['type']] = [];
 
             if (!isset($output[$answer['type']][$answer['pattern']]))
-                $output[$answer['type']][$answer['pattern']] = array();
+                $output[$answer['type']][$answer['pattern']] = [];
 
             $output[$answer['type']][$answer['pattern']] = $answer['answers'];
         }
