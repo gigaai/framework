@@ -132,4 +132,14 @@ class FileStorageDriver implements StorageInterface
 
 		return $users;
 	}
+
+    public function addAnswer($answer, $node_type, $ask = '')
+    {
+        // We don't need this method
+    }
+
+    public function getAnswers($node_type = '', $ask = '')
+    {
+        // We don't need this method
+    }
 }

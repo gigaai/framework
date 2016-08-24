@@ -150,7 +150,6 @@ class MessengerBot
 			}
 
 			$response = Parser::parseShortcodes($response, $this->storage->get($sender_id));
-
 			$response['metadata'] = 'SENT_BY_GIGA_AI';
 
 			$body = array(
@@ -159,6 +158,7 @@ class MessengerBot
 				),
 				'message' => $response
 			);
+
 
 			$this->request->send("https://graph.facebook.com/v2.6/me/messages?access_token=" . $this->config->get('page_access_token'), $body);
 		}
@@ -271,7 +271,7 @@ class MessengerBot
         )
             $location = $this->message->attachments[0]->payload->coordinates;
 
-        if (!empty($output))
+        if ( ! empty($output))
             return $location->$output;
 
         return $location;

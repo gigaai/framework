@@ -116,10 +116,13 @@ class Model
                 $this->answers[$node_type][$asks] = array();
 
             if (in_array($node_type, array('text', 'payload')))
-                $this->answers[$node_type][$asks][] = $answer;
+                $this->answers[$node_type][$asks] = $answer;
 
-            if (in_array($node_type, array('default', 'location')))
+            if ($node_type === 'location')
                 $this->answers[$node_type][] = $answer;
+
+            if ($node_type === 'default')
+                $this->answers[$node_type] = $answer;
         } else {
             Storage::addAnswer($answer, $node_type, $asks);
         }
