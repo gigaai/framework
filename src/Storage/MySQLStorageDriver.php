@@ -82,7 +82,7 @@ class MySQLStorageDriver implements StorageInterface
         if (!empty($meta)) {
             foreach ($meta as $key => $value) {
                 $this->db->table('bot_leads_meta')->updateOrInsert([
-                    'user_id' => $lead->id,
+                    'user_id' => $lead->user_id,
                     'meta_key' => $key
                 ], [
                     'meta_value' => $value
@@ -131,10 +131,26 @@ class MySQLStorageDriver implements StorageInterface
             if (isset($user[$key]))
                 return $user[$key];
 
+            if ( ! in_array($key, $this->fillable))
+                return $this->getUserMeta($user_id, $key, $default);
+
             return $default;
         }
 
         return $user;
+    }
+
+    public function getUserMeta($user_id, $key = '', $default = '')
+    {
+        $meta = $this->db->table('bot_leads_meta')->where([
+            'user_id'   => $user_id,
+            'meta_key'  => $key
+        ])->first();
+
+        if ( ! is_null($meta))
+            return $meta->meta_value;
+
+        return $default;
     }
 
 
@@ -195,6 +211,7 @@ class MySQLStorageDriver implements StorageInterface
         if (!empty($ask))
             $where['pattern'] = $ask;
 
+        // Todo: where rlike
         $answers = Answer::where($where)->get(['type', 'pattern', 'answers'])->toArray();
 
         $output = array();

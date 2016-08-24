@@ -289,6 +289,12 @@ class MessengerBot
     {
         return $this->message->metadata != 'SENT_BY_GIGA_AI';
     }
+
+    public function getUserId()
+    {
+        if ($this->isUserMessage())
+            return $this->sender_id;
+    }
 	/**
 	 * Save the auto stop state
 	 *
