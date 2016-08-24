@@ -5,14 +5,14 @@ namespace GigaAI\Storage;
 use GigaAI\Core\Config;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use GigaAI\Storage\Eloquent\Lead;
-use GigaAI\Storage\Eloquent\LeadMeta;
+use GigaAI\Storage\Eloquent\Answer;
 
 class MySQLStorageDriver implements StorageInterface
 {
     private $db;
 
     protected $fillable = ['source', 'user_id', 'first_name', 'last_name', 'profile_pic',
-        'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', 'wait',
+        'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', '_wait',
         'linked_account', 'subscribe', 'auto_stop'];
 
     public function __construct()
@@ -22,14 +22,14 @@ class MySQLStorageDriver implements StorageInterface
         $config = Config::get('mysql');
 
         $this->db->addConnection([
-            'driver'    => 'mysql',
-            'host'      => $config['host'],
-            'database'  => $config['database'],
-            'username'  => $config['username'],
-            'password'  => $config['password'],
-            'charset'   => $config['charset'],
+            'driver' => 'mysql',
+            'host' => $config['host'],
+            'database' => $config['database'],
+            'username' => $config['username'],
+            'password' => $config['password'],
+            'charset' => $config['charset'],
             'collation' => $config['collation'],
-            'prefix'    => $config['prefix'],
+            'prefix' => $config['prefix'],
         ]);
 
 
@@ -41,8 +41,7 @@ class MySQLStorageDriver implements StorageInterface
 
     public function set($user, $key = '', $value = '')
     {
-        if (is_string($user))
-        {
+        if (is_string($user)) {
             if (is_array($key)) {
                 $key['user_id'] = $user;
 
@@ -63,30 +62,29 @@ class MySQLStorageDriver implements StorageInterface
     {
         $meta = array();
 
-        foreach ($user as $key => $value)
-        {
-            if ( ! in_array($key, $this->fillable)) {
+        foreach ($user as $key => $value) {
+            if (!in_array($key, $this->fillable)) {
                 $meta[$key] = $value;
 
                 unset($user[$key]);
             }
         }
+        try {
 
-        $lead = $this->getUser($user['user_id']);
-
-        if ( ! $lead)
-            $lead = Lead::insert($user);
-        else
-            Lead::find($lead->id)->update($user);
-
-        if ( ! empty( $meta ))
-        {
-            foreach ($meta as $key => $value)
-            {
+            $lead = Lead::updateOrCreate([
+                'source' => 'facebook',
+                'user_id' => $user['user_id']
+            ], $user);
+        } catch (\PDOException $pe) {
+            echo '<pre>';
+            dd($pe);
+        }
+        if (!empty($meta)) {
+            foreach ($meta as $key => $value) {
                 $this->db->table('bot_leads_meta')->updateOrInsert([
-                    'lead_id' => $lead->id,
+                    'user_id' => $lead->id,
                     'meta_key' => $key
-                ],[
+                ], [
                     'meta_value' => $value
                 ]);
             }
@@ -97,15 +95,16 @@ class MySQLStorageDriver implements StorageInterface
     {
         $user = $this->getUser($user_id);
 
-        return $user || ! empty($user[$key]);
+        return $user || !empty($user[$key]);
     }
 
     public function getUser($user_id)
     {
         return Lead::where('source', 'facebook')
-                    ->where('user_id', $user_id)
-                    ->first();
+            ->where('user_id', $user_id)
+            ->first();
     }
+
     /**
      * Get User Info. If provided user
      *
@@ -117,9 +116,17 @@ class MySQLStorageDriver implements StorageInterface
      */
     public function get($user_id = '', $key = '', $default = '')
     {
+        $user = $this->getUser($user_id);
 
+        if (!empty($key)) {
+            if (isset($user->$key))
+                return $user->$key;
+
+            return $default;
+        }
+
+        return $user;
     }
-
 
 
     /**
@@ -131,16 +138,68 @@ class MySQLStorageDriver implements StorageInterface
      */
     public function search($terms, $relation = 'and')
     {
-
+        return Lead::where($terms)->get();
     }
 
-    public function addAnswer($answer, $node_type, $ask = '')
+    private function searchInCache($node_type, $ask = '')
     {
+        $cache_file = Config::get('cache_path') . 'answers.json';
 
+        $answers = json_decode(file_get_contents($cache_file));
+
+        return array_filter($answers, function ($record) use ($node_type, $ask) {
+            return $record->type === $node_type && $record->ask === $ask;
+        });
+    }
+
+    /**
+     * Add Answer to the database
+     *
+     * @param $answer
+     * @param $node_type
+     * @param string $ask
+     */
+    public function addAnswer($answers, $node_type, $ask = '')
+    {
+        $row = Answer::where(['type' => $node_type, 'pattern' => $ask])->first();
+
+        if (is_null($row)) {
+            Answer::create([
+                'pattern'   => $ask,
+                'type'      => $node_type,
+                'answers'    => $answers
+            ]);
+        } else {
+            $row->answers = $answers;
+
+            $row->save();
+        }
     }
 
     public function getAnswers($node_type, $ask = '')
     {
+        $where = [];
 
+        if (!empty($node_type))
+            $where['type'] = $node_type;
+
+        if (!empty($ask))
+            $where['pattern'] = $ask;
+
+        $answers = Answer::where($where)->get(['type', 'pattern', 'answers'])->toArray();
+
+        $output = array();
+
+        foreach ($answers as $answer) {
+            if (!isset($output[$answer['type']]))
+                $output[$answer['type']] = array();
+
+            if (!isset($output[$answer['type']][$answer['pattern']]))
+                $output[$answer['type']][$answer['pattern']] = array();
+
+            $output[$answer['type']][$answer['pattern']] = $answer['answers'];
+        }
+
+        return $output;
     }
 }

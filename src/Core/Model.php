@@ -54,14 +54,22 @@ class Model
                 array_key_exists('type', $answers) ||
                 array_key_exists('quick_replies', $answers)
             ) {
-                $this->addAnswer($answers, $node_type, $asks);
+                if ($this->isParsable($answers))
+                    $answers = Parser::parseAnswer($answers);
+
+                $this->addAnswer([$answers], $node_type, $asks);
 
                 return $this;
             }
 
+            $parsed = array();
+
             foreach ($answers as $answer) {
-                $this->addAnswer($answer, $node_type, $asks);
+                if ($this->isParsable($answer))
+                    $parsed[] = Parser::parseAnswer($answer);
             }
+
+            $this->addAnswer($parsed, $node_type, $asks);
         }
 
         // Recursive if we set multiple asks, responses
@@ -96,10 +104,6 @@ class Model
     public function addAnswer($answer, $node_type, $asks = null)
     {
         $this->current_node = compact('node_type', 'asks');
-
-        // We won't parse callback and parsed content. Note that PHP < 5.4 will treat string as array.
-        if ($this->isParsable($answer))
-            $answer = Parser::parseAnswer($answer);
 
         $storage_driver = Config::get('storage_driver', 'file');
 

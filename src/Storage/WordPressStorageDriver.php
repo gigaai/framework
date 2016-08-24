@@ -19,7 +19,7 @@ class WordPressStorageDriver implements StorageInterface
 	private $db;
 
 	private $fillable = array('user_id', 'first_name', 'last_name', 'profile_pic',
-		'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', 'wait',
+		'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', '_wait',
 		'linked_account', 'subscribe', 'auto_stop');
 
 	public function __construct()
@@ -32,7 +32,7 @@ class WordPressStorageDriver implements StorageInterface
 		$this->db = $wpdb;
 	}
 
-	public function get($user_id, $key = '', $default = '')
+	public function get($user_id = '', $key = '', $default = '')
 	{
 		$user = $this->getUser($user_id);
 
@@ -111,7 +111,7 @@ class WordPressStorageDriver implements StorageInterface
 			{
 
 				$this->db->replace('bot_leads_meta', array(
-					'lead_id'       => $user['user_id'],
+					'user_id'       => $user['user_id'],
 					'meta_key'      => $key,
 					'meta_value'    => $value
 				) );
@@ -153,7 +153,7 @@ class WordPressStorageDriver implements StorageInterface
 			$this->db->insert( 'bot_answers', array(
 				'pattern' => $ask,
 				'type'    => $node_type,
-				'answer'  => json_encode(array($answer))
+				'answers'  => json_encode(array($answer))
 			) );
 		} else {
 			$answers = json_decode($answers, true);
@@ -182,7 +182,7 @@ class WordPressStorageDriver implements StorageInterface
 		if ( ! empty( $ask ) )
 			$where .= " AND pattern = '$ask'";
 
-		$answers = $this->db->get_results("SELECT `type`, `pattern`, `answer` FROM bot_answers WHERE $where", ARRAY_A);
+		$answers = $this->db->get_results("SELECT `type`, `pattern`, `answers` FROM bot_answers WHERE $where", ARRAY_A);
 
 		$output = array();
 
