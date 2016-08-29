@@ -78,14 +78,15 @@ class Model
             if (array_key_exists('text', $asks) || array_key_exists('payload', $asks) || array_key_exists('attachment', $asks)) {
                 foreach ($asks as $event => $nodes) {
                     $prepend = $event === 'text' ? '' : $event . ':';
-                    if ($event === 'default') {
+                    if ($event === 'default')
                         $nodes = array($nodes);
-                    }
+
                     foreach ($nodes as $ask => $responses) {
                         $this->parseAnswers($prepend . $ask, $responses);
                     }
                 }
-            } else {
+            }
+            else {
                 foreach ($asks as $ask => $answers) {
                     $this->parseAnswers($ask, $answers);
                 }
@@ -157,7 +158,7 @@ class Model
 
         if ($storage_driver != 'file')
             $search_in_storage = Storage::getAnswers($node_type, $ask);
-        
+
         $answers = array_merge_recursive($search_in_storage, $this->answers);
 
         if ( ! empty($node_type) && ! empty($answers[$node_type]))

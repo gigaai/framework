@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * MySQL Storage Driver
+ *
+ * This driver requires you install `illuminate/database` package and PHP 5.4+
+ *
+ * @author Gary <gary@binaty.org>
+ */
 namespace GigaAI\Storage;
 
 use GigaAI\Core\Config;
@@ -11,6 +17,11 @@ class MySQLStorageDriver implements StorageInterface
 {
     private $db;
 
+    /**
+     * MySQLStorageDriver constructor.
+     *
+     * Setup the connection
+     */
     public function __construct()
     {
         $this->db = new Capsule;
@@ -44,10 +55,10 @@ class MySQLStorageDriver implements StorageInterface
                 return $this->set($key);
             }
 
-            $user = array(
+            $user = [
                 'user_id' => $user,
-                $key => $value
-            );
+                $key      => $value
+            ];
         }
 
         if (is_array($user) && isset($user['user_id']))
@@ -101,7 +112,7 @@ class MySQLStorageDriver implements StorageInterface
             'user_id' => $user_id
         ])->first();
 
-        if (!is_null($user))
+        if ( ! is_null($user))
             return $user->toArray();
 
         return null;
@@ -123,11 +134,11 @@ class MySQLStorageDriver implements StorageInterface
         if (is_null($user))
             return null;
 
-        if (!empty($key)) {
+        if ( ! empty($key)) {
             if (isset($user[$key]))
                 return $user[$key];
 
-            if (!in_array($key, (new Lead)->getFillable()))
+            if ( ! in_array($key, (new Lead)->getFillable()))
                 return $this->getUserMeta($user_id, $key, $default);
 
             return $default;
@@ -202,14 +213,14 @@ class MySQLStorageDriver implements StorageInterface
         $where = '1 = 1';
         $placeholder = [];
 
-        if (!empty($node_type)) {
+        if ( ! empty($node_type)) {
             $where .= ' AND type = :type';
             $placeholder[':type'] = $node_type;
         }
-        if (!empty($ask)) {
+        if ( ! empty($ask)) {
             $where .= " AND (:ask RLIKE pattern OR :ask2 LIKE pattern)";
-            $placeholder[':ask'] = $ask;
-            $placeholder[':ask2'] = $ask;
+            $placeholder[':ask']    = $ask;
+            $placeholder[':ask2']   = $ask;
         }
 
         $answers = Answer::whereRaw($where, $placeholder)

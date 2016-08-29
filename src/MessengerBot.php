@@ -139,7 +139,7 @@ class MessengerBot
 		foreach ($node as $response) {
 			if (isset($response['type']) && $response['type'] === 'callback' && is_callable($response['callback'])) {
 
-				@call_user_func_array($response['callback'], array($this, $this->getReceivedText()));
+				@call_user_func_array($response['callback'], array($this, $this->getUserId(), $this->getReceivedText()));
 
 				continue;
 			}
