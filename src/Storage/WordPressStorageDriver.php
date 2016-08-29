@@ -199,4 +199,9 @@ class WordPressStorageDriver implements StorageInterface
 
 		return $output;
 	}
+
+    public function removeAnswers($node_type, $ask)
+    {
+
+    }
 }

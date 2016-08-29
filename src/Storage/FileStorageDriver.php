@@ -7,7 +7,8 @@
  * For WordPress, use WordPressStorageDriver
  *
  * Class FileStorageDriver
- * @package FMB
+ *
+ * @package GigaAI\Storage
  */
 
 namespace GigaAI\Storage;
@@ -76,10 +77,9 @@ class FileStorageDriver implements StorageInterface
 				$key['user_id'] = $user;
 
 				return $this->set($key);
-			} else
-			{
-				$users[$user][$key] = $value;
 			}
+
+			$users[$user][$key] = $value;
 		}
 
 		if (is_array($user) && isset($user['user_id']))
@@ -139,6 +139,11 @@ class FileStorageDriver implements StorageInterface
     }
 
     public function getAnswers($node_type = '', $ask = '')
+    {
+        // We don't need this method
+    }
+
+    public function removeAnswers($node_type, $ask)
     {
         // We don't need this method
     }
