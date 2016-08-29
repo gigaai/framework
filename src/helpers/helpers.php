@@ -40,12 +40,12 @@ function giga_match($pattern, $string)
 		'.' => '\.'
 	));
 
-	return preg_match("/$pattern$/i", $string);
+	return preg_match("/^$pattern$/i", $string);
 }
 
-if ( ! function_exists( 'dd' ) )
+if ( ! function_exists( 'sd' ) )
 {
-	function dd($object)
+	function sd($object)
 	{
 		echo '<pre>';
 		print_r($object);

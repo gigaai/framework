@@ -1,13 +1,18 @@
+--
+-- Table structure for table `bot_answers`
+--
+
 CREATE TABLE `bot_answers` (
   `id` int(10) UNSIGNED NOT NULL,
   `pattern` text COLLATE utf8_unicode_ci,
-  `answer` text COLLATE utf8_unicode_ci NOT NULL,
+  `answers` text COLLATE utf8_unicode_ci NOT NULL,
   `sources` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `type` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `status` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -28,13 +33,14 @@ CREATE TABLE `bot_leads` (
   `phone` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `country` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `location` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `wait` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `_wait` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `_quick_save` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `linked_account` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `subscribe` tinyint(4) DEFAULT NULL,
+  `subscribe` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `auto_stop` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -45,11 +51,10 @@ CREATE TABLE `bot_leads` (
 
 CREATE TABLE `bot_leads_meta` (
   `id` int(10) UNSIGNED NOT NULL,
-  `lead_id` varchar(30) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `user_id` varchar(30) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `meta_key` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `meta_value` longtext COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
 
 --
 -- Indexes for dumped tables
@@ -66,15 +71,14 @@ ALTER TABLE `bot_answers`
 --
 ALTER TABLE `bot_leads`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `source__user_id` (`source`,`user_id`);
+  ADD UNIQUE KEY `source` (`source`,`user_id`);
 
 --
 -- Indexes for table `bot_leads_meta`
 --
 ALTER TABLE `bot_leads_meta`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `lead_id__meta_key` (`lead_id`,`meta_key`);
-
+  ADD UNIQUE KEY `lead_id` (`user_id`,`meta_key`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -95,4 +99,3 @@ ALTER TABLE `bot_leads`
 --
 ALTER TABLE `bot_leads_meta`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
