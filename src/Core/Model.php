@@ -10,7 +10,7 @@ class Model
         'text' => array(),
         'payload' => array(),
         'default' => array(),
-        'location' => array()
+        'attachment' => array()
     );
 
     public $current_node = array();
@@ -21,7 +21,7 @@ class Model
             $node_type = 'text';
 
             // If user set payload, default, welcome message.
-            foreach (array('payload', 'default', 'location') as $type) {
+            foreach (array('payload', 'default', 'attachment') as $type) {
                 if (strpos($asks, $type . ':') !== false) {
                     $node_type = $type;
 
@@ -75,7 +75,7 @@ class Model
 
         // Recursive if we set multiple asks, responses
         if (is_array($asks) && is_null($answers)) {
-            if (array_key_exists('text', $asks) || array_key_exists('payload', $asks) || array_key_exists('location', $asks)) {
+            if (array_key_exists('text', $asks) || array_key_exists('payload', $asks) || array_key_exists('attachment', $asks)) {
                 foreach ($asks as $event => $nodes) {
                     $prepend = $event === 'text' ? '' : $event . ':';
                     if ($event === 'default') {
@@ -115,15 +115,15 @@ class Model
                 $answer = array($answer);
             }
 
-            if (!isset($this->answers[$node_type][$asks]) &&
-                in_array($node_type, array('text', 'payload'))
-            )
-                $this->answers[$node_type][$asks] = array();
+            if (in_array($node_type, array('text', 'payload', 'attachment'))) {
 
-            if (in_array($node_type, array('text', 'payload')))
+                if ( ! isset($this->answers[$node_type][$asks]))
+                    $this->answers[$node_type][$asks] = array();
+
                 $this->answers[$node_type][$asks] = $answer;
+            }
 
-            if ($node_type === 'location' || $node_type === 'default')
+            if ($node_type === 'default')
                 $this->answers[$node_type] = $answer;
         } else {
             Storage::addAnswer($answer, $node_type, $asks);
@@ -157,7 +157,7 @@ class Model
 
         if ($storage_driver != 'file')
             $search_in_storage = Storage::getAnswers($node_type, $ask);
-
+        
         $answers = array_merge_recursive($search_in_storage, $this->answers);
 
         if ( ! empty($node_type) && ! empty($answers[$node_type]))

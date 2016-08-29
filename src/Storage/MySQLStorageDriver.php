@@ -186,9 +186,9 @@ class MySQLStorageDriver implements StorageInterface
 
         if (is_null($row)) {
             Answer::create([
-                'pattern' => $ask,
-                'type' => $node_type,
-                'answers' => $answers
+                'type'      => $node_type,
+                'pattern'   => $ask,
+                'answers'   => $answers
             ]);
         } else {
             $row->answers = $answers;
@@ -219,10 +219,15 @@ class MySQLStorageDriver implements StorageInterface
         $output = [];
 
         foreach ($answers as $answer) {
-            if (!isset($output[$answer['type']]))
+
+            // If default, then return only first row fetched!
+            if ($node_type === 'default' && $answer['type'] === 'default')
+                return ['default' => $answer['answers']];
+
+            if ( ! isset($output[$answer['type']]))
                 $output[$answer['type']] = [];
 
-            if (!isset($output[$answer['type']][$answer['pattern']]))
+            if ( ! isset($output[$answer['type']][$answer['pattern']]))
                 $output[$answer['type']][$answer['pattern']] = [];
 
             $output[$answer['type']][$answer['pattern']] = $answer['answers'];

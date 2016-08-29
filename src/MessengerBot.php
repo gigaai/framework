@@ -105,14 +105,15 @@ class MessengerBot
         $message_type = 'text';
         $ask = '';
 
-        if (isset($event->message->text))
+        if (isset($event->message) && isset($event->message->text))
             $ask = $event->message->text;
 
-        if (isset($event->message) && isset($event->message->attachments) &&
-            isset($event->message->attachments[0]->type) &&
-            $event->message->attachments[0]->type === 'location'
-        )
-            $message_type = 'location';
+        if (isset($event->message) && isset($event->message->attachments)) {
+            $message_type = 'attachment';
+
+            if (isset($event->message->attachments[0]->type))
+                $ask = $event->message->attachments[0]->type;
+        }
 
         if (isset($event->postback->payload)) {
             $message_type = 'payload';
@@ -204,13 +205,6 @@ class MessengerBot
 		if ($this->responseIntendedAction($message_type))
 			return;
 
-        if ('location' === $message_type)
-        {
-            $this->response($this->getAnswers('location'));
-
-            return;
-        }
-
 		$data_set = $this->getAnswers($message_type);
 
 		$marked = false;
@@ -265,18 +259,37 @@ class MessengerBot
 			$this->model->addIntendedAction($action, $message_type);
 	}
 
+    /**
+     * Get user sent location
+     *
+     * @param string $output If provided, returns either `lat` or `long` of current location
+     *
+     * @return mixed
+     */
 	public function getLocation($output = '')
 	{
-	    if ($this->isUserMessage() && isset($this->message->attachments) &&
-            $this->message->attachments[0]->type === 'location'
-        )
-            $location = $this->message->attachments[0]->payload->coordinates;
+	    $attachments = $this->getAttachments();
+
+        if ( ! empty($attachments) && isset($attachments[0]->type) && $attachments[0]->type === 'location')
+            $location = $attachments[0]->payload->coordinates;
 
         if ( ! empty($output))
             return $location->$output;
 
         return $location;
 	}
+
+    /**
+     * Get user attachments
+     *
+     * @return mixed
+     */
+	public function getAttachments()
+    {
+        if ($this->isUserMessage() && isset($this->message->attachments))
+            return $this->message->attachments;
+    }
+
 
 	public function getReceivedText()
     {
