@@ -30,6 +30,9 @@ class MessengerBot
 
 	public function __construct(array $config = array())
 	{
+	    if ( ! defined('GIGAAI_VERSION'))
+	        define('GIGAAI_VERSION', '1.1');
+
 		$this->config = Config::getInstance();
 
 		if ( ! empty($config))
