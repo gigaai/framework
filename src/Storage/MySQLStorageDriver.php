@@ -154,7 +154,7 @@ class MySQLStorageDriver implements StorageInterface
             'meta_key' => $key
         ])->first();
 
-        if (!is_null($meta))
+        if ( ! is_null($meta))
             return $meta->meta_value;
 
         return $default;

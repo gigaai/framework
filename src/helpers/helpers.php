@@ -43,9 +43,9 @@ function giga_match($pattern, $string)
 	return preg_match("/^$pattern$/i", $string);
 }
 
-if ( ! function_exists( 'sd' ) )
+if ( ! function_exists( 'dd' ) )
 {
-	function sd($object)
+	function dd($object)
 	{
 		echo '<pre>';
 		print_r($object);
