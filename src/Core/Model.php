@@ -46,13 +46,7 @@ class Model
                 return $this;
 
             // Short hand method of attachments
-            if (array_key_exists('buttons', $answers) ||
-                array_key_exists('elements', $answers) || // For Generic or Receipt
-                (is_array($answers[0]) && array_key_exists('title', $answers[0])) || // For Generic
-                array_key_exists('text', $answers) || // For Button
-                array_key_exists('type', $answers) ||
-                array_key_exists('quick_replies', $answers)
-            ) {
+            if ($this->isShorthand($answers)) {
                 if ($this->isParsable($answers))
                     $answers = Parser::parseAnswer($answers);
 
@@ -173,19 +167,23 @@ class Model
     public function addReply($answers)
     {
         // Short hand method of attachments
-        if (isset($answers['buttons']) || isset($answers['elements'])
-            || isset($answers['title']) || isset($answers['text']) || is_string($answers)
-            || array_key_exists('quick_replies', $answers)
-        )
+        if ($this->isShorthand($answers))
             return array(Parser::parseAnswer($answers));
 
-        $output = array();
+        return array_map(array('\GigaAI\Core\Parser', 'parseAnswer'), $answers);
+    }
 
-        foreach ($answers as $answer) {
-            $output[] = Parser::parseAnswer($answer);
-        }
-
-        return $output;
+    private function isShorthand($answers)
+    {
+        return (
+            array_key_exists('buttons', $answers) ||
+            array_key_exists('elements', $answers) || // For Generic or Receipt
+            (is_array($answers[0]) && array_key_exists('title', $answers[0])) || // For Generic
+            array_key_exists('text', $answers) || // For Button
+            array_key_exists('type', $answers) ||
+            array_key_exists('quick_replies', $answers) ||
+            is_string($answers)
+        );
     }
 
     public function addIntendedAction($action, $message_type = '')
