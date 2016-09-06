@@ -172,33 +172,43 @@ class WordPressStorageDriver implements StorageInterface
 		}
 	}
 
-	public function getAnswers( $node_type = '', $ask = '' ) {
+    public function getAnswers( $node_type = '', $ask = '' ) {
 
-		$where = '1 = 1';
+        $where = '1 = 1';
 
-		if ( ! empty($node_type))
-			$where .= " AND type = '$node_type'";
+        if ( ! empty($node_type))
+            $where .= " AND type = '$node_type'";
 
-		if ( ! empty( $ask ) )
-			$where .= " AND pattern = '$ask'";
+        if ( ! empty( $ask ) )
+            $where .= " AND pattern = '$ask'";
 
-		$answers = $this->db->get_results("SELECT `type`, `pattern`, `answers` FROM bot_answers WHERE $where", ARRAY_A);
+        $answers = $this->db->get_results("SELECT `type`, `pattern`, `answers` FROM bot_answers WHERE $where", ARRAY_A);
 
-		$output = array();
+        $output = array();
 
-		foreach ($answers as $answer)
-		{
-			if ( ! isset($output[$answer['type']]))
-				$output[$answer['type']] = array();
+        foreach ($answers as $answer)
+        {
+            // If default, then return only first row fetched!
+            if ($node_type === 'default' && $answer['type'] === 'default')
+                return array('default' => $answer['answers']);
 
-			if ( ! isset( $output[$answer['type']][$answer['pattern']]))
-				$output[$answer['type']][$answer['pattern']] = array();
+            if ($answer['type'] === 'default') {
+                $output['default'] = json_decode($answer['answers'], true);
 
-			$output[$answer['type']][$answer['pattern']] = json_decode($answer['answer'], true);
-		}
+                continue;
+            }
 
-		return $output;
-	}
+            if ( ! isset($output[$answer['type']]))
+                $output[$answer['type']] = array();
+
+            if ( ! isset( $output[$answer['type']][$answer['pattern']]))
+                $output[$answer['type']][$answer['pattern']] = array();
+
+            $output[$answer['type']][$answer['pattern']] = json_decode($answer['answers'], true);
+        }
+
+        return $output;
+    }
 
     public function removeAnswers($node_type, $ask)
     {

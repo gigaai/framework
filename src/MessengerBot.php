@@ -46,7 +46,12 @@ class MessengerBot
 
 	}
 
-	public function answer($ask, $response = null)
+	public function __destruct()
+    {
+        $this->run();
+    }
+
+    public function answer($ask, $response = null)
 	{
 		return $this->answers($ask, $response);
 	}
