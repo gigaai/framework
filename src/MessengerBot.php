@@ -26,29 +26,28 @@ class MessengerBot
 
 	private $message;
 
-    private $event;
-
 	public function __construct(array $config = array())
 	{
-	    if ( ! defined('GIGAAI_VERSION'))
-	        define('GIGAAI_VERSION', '1.1');
+        if ( ! defined('GIGAAI_VERSION'))
+            define('GIGAAI_VERSION', '1.1');
 
-		$this->config = Config::getInstance();
+        $this->config = Config::getInstance();
 
-		if ( ! empty($config))
-			$this->config->set($config);
+        if ( ! empty($config))
+            $this->config->set($config);
 
-		$this->request = new Request;
+        $this->request = new Request;
 
-		$this->storage = new Storage;
+        $this->storage = new Storage;
 
-		$this->model = new Model;
-
+        $this->model = new Model;
 	}
 
 	public function __destruct()
     {
-        $this->run();
+        // Request is null in verify step. Terminate the script.
+        if ( ! is_null($this->request))
+            $this->run();
     }
 
     public function answer($ask, $response = null)
