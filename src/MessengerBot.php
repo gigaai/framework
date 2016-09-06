@@ -209,7 +209,7 @@ class MessengerBot
 	private function findAndResponse($message_type, $ask, $data_set_type = 'text')
 	{
 		// We'll check to response intended action first
-		if ($this->responseIntendedAction($message_type))
+		if ($this->responseIntendedAction())
 			return;
 
 		$data_set = $this->getAnswers($message_type);
@@ -236,7 +236,7 @@ class MessengerBot
 	 * @param $message_type
 	 * @return bool
 	 */
-	private function responseIntendedAction($message_type)
+	private function responseIntendedAction()
 	{
 		$waiting = $this->storage->get($this->sender_id, '_wait');
 
@@ -244,7 +244,7 @@ class MessengerBot
 
 			$this->storage->set($this->sender_id, '_wait', false);
 
-			$this->response($this->getAnswers($message_type, '@' . $waiting));
+			$this->response($this->getAnswers(null, '@' . $waiting));
 
 			return true;
 		}

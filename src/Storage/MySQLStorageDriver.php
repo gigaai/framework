@@ -218,9 +218,16 @@ class MySQLStorageDriver implements StorageInterface
             $placeholder[':type'] = $node_type;
         }
         if ( ! empty($ask)) {
-            $where .= " AND (:ask RLIKE pattern OR :ask2 LIKE pattern)";
-            $placeholder[':ask']    = $ask;
-            $placeholder[':ask2']   = $ask;
+            $placeholder[':ask'] = $ask;
+
+            // Intended Action. We'll get first row.
+            if ($ask[0] === '@') {
+                $where = 'pattern = :ask';
+            }
+            else {
+                $where .= " AND (:ask RLIKE pattern OR :ask2 LIKE pattern)";
+                $placeholder[':ask2'] = $ask;
+            }
         }
 
         $answers = Answer::whereRaw($where, $placeholder)

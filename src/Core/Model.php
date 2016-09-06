@@ -161,6 +161,11 @@ class Model
         if ( ! empty($node_type) && ! empty($ask) && ! empty($answers[$ask]))
             $answers = $answers[$ask];
 
+        // Get intended action in `text` node.
+        // Todo: Arrange to get in all node
+        if (empty($node_type) || is_null($node_type) && ! empty($ask) && $ask[0] === '@')
+            $answers = $answers['text'][$ask];
+
         return $answers;
     }
 
