@@ -260,9 +260,12 @@ class MessengerBot
 	 */
 	public function wait($action, $message_type = '')
 	{
+	    // For chaining after $bot->say() method
 		if (isset($this->sender_id) && ! empty($this->sender_id))
 			$this->storage->set($this->sender_id, '_wait', $action);
-		else
+
+        // For chaining after $bot->answer() method
+        else
 			$this->model->addIntendedAction($action, $message_type);
 	}
 
