@@ -179,8 +179,12 @@ class WordPressStorageDriver implements StorageInterface
         if ( ! empty($node_type))
             $where .= " AND type = '$node_type'";
 
-        if ( ! empty( $ask ) )
-            $where .= " AND pattern = '$ask'";
+        if ( ! empty( $ask ) ) {
+            if ($ask[0] === '@')
+                $where = " AND pattern = '$ask'";
+            else
+                $where .= " AND ($ask RLIKE pattern OR $ask LIKE pattern)";
+        }
 
         $answers = $this->db->get_results("SELECT `type`, `pattern`, `answers` FROM bot_answers WHERE $where", ARRAY_A);
 
