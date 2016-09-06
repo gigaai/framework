@@ -108,7 +108,12 @@ class Storage
      */
     private function getDriverClassName($slug)
     {
-        $driver_name = $slug == 'wordpress' ? 'WordPress' : $slug;
+        $irregular = array(
+            'mysql'     => 'MySQL',
+            'wordpress' => 'WordPress'
+        );
+
+        $driver_name = array_key_exists($slug, $irregular) ? $irregular[$slug] : $slug;
 
         return ucfirst($driver_name) . 'StorageDriver';
     }
