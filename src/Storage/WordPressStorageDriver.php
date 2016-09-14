@@ -19,7 +19,7 @@ class WordPressStorageDriver implements StorageInterface
 	private $db;
 
 	private $fillable = array('user_id', 'first_name', 'last_name', 'profile_pic',
-		'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', '_wait',
+		'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', '_wait', '_quick_save',
 		'linked_account', 'subscribe', 'auto_stop');
 
 	public function __construct()
@@ -138,39 +138,32 @@ class WordPressStorageDriver implements StorageInterface
 		return $this->db->get_results("SELECT * FROM bot_leads WHERE 1=1 $where");
 	}
 
-	/**
-	 * Add Answer to the database
-	 *
-	 * @param $answer
-	 * @param $node_type
-	 * @param string $ask
-	 */
-	public function addAnswer( $answer, $node_type, $ask = '' )
-	{
-		$answers = $this->db->get_var("SELECT answer FROM bot_answers WHERE type = '$node_type' AND pattern = '$ask'");
+    /**
+     * Add Answer to the database
+     *
+     * @param $answer
+     * @param $node_type
+     * @param string $ask
+     */
+    public function addAnswer($answers, $node_type, $ask = '' )
+    {
+        $row = $this->db->get_var("SELECT id FROM bot_answers WHERE type = '$node_type' AND pattern = '$ask' LIMIT 1");
 
-		if ( empty($answers)) {
-			$this->db->insert( 'bot_answers', array(
-				'pattern' => $ask,
-				'type'    => $node_type,
-				'answers'  => json_encode(array($answer))
-			) );
-		} else {
-			$answers = json_decode($answers, true);
-
-			if (! in_array($answer, $answers))
-				$answers[] = $answer;
-
-			$answers = json_encode($answers);
-
-			$this->db->update('bot_answers', array(
-				'answer' => $answers
-			), array(
-				'pattern' => $ask,
-				'type'    => $node_type,
-			));
-		}
-	}
+        if ($row > 0) {
+            $this->db->insert( 'bot_answers', array(
+                'pattern' => $ask,
+                'type'    => $node_type,
+                'answers'  => json_encode($answers)
+            ) );
+        } else {
+            $this->db->update('bot_answers', array(
+                'answers' => json_encode($answers)
+            ), array(
+                'pattern' => $ask,
+                'type'    => $node_type,
+            ));
+        }
+    }
 
     public function getAnswers( $node_type = '', $ask = '' ) {
 

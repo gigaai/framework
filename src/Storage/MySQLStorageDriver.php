@@ -261,4 +261,9 @@ class MySQLStorageDriver implements StorageInterface
             'pattern'   => $ask
         ])->delete();
     }
+
+    public function db()
+    {
+        return $this->db;
+    }
 }
