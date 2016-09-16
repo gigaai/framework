@@ -19,7 +19,7 @@ class WordPressStorageDriver implements StorageInterface
 	private $db;
 
 	private $fillable = array('user_id', 'first_name', 'last_name', 'profile_pic',
-		'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', '_wait', '_quick_save',
+		'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', '_wait',
 		'linked_account', 'subscribe', 'auto_stop');
 
 	public function __construct()
@@ -138,34 +138,35 @@ class WordPressStorageDriver implements StorageInterface
 		return $this->db->get_results("SELECT * FROM bot_leads WHERE 1=1 $where");
 	}
 
-    /**
-     * Add Answer to the database
-     *
-     * @param $answer
-     * @param $node_type
-     * @param string $ask
-     */
-    public function addAnswer($answers, $node_type, $ask = '' )
+	/**
+	 * Add Answer to the database
+	 *
+	 * @param $answer
+	 * @param $node_type
+	 * @param string $ask
+	 */
+	public function addAnswer($answers, $node_type, $ask = '' )
+	{
+		$row = $this->db->get_var("SELECT id FROM bot_answers WHERE type = '$node_type' AND pattern = '$ask' LIMIT 1");
+
+		if ($row <= 0) {
+			return $this->db->insert( 'bot_answers', array(
+				'pattern' => $ask,
+				'type'    => $node_type,
+				'answers'  => json_encode($answers)
+			) );
+		} else {
+			return $this->db->update('bot_answers', array(
+				'answers' => json_encode($answers)
+			), array(
+				'pattern' => $ask,
+				'type'    => $node_type,
+			));
+		}
+	}
+
+    public function getAnswers( $node_type = '', $ask = '' )
     {
-        $row = $this->db->get_var("SELECT id FROM bot_answers WHERE type = '$node_type' AND pattern = '$ask' LIMIT 1");
-
-        if ($row > 0) {
-            $this->db->insert( 'bot_answers', array(
-                'pattern' => $ask,
-                'type'    => $node_type,
-                'answers'  => json_encode($answers)
-            ) );
-        } else {
-            $this->db->update('bot_answers', array(
-                'answers' => json_encode($answers)
-            ), array(
-                'pattern' => $ask,
-                'type'    => $node_type,
-            ));
-        }
-    }
-
-    public function getAnswers( $node_type = '', $ask = '' ) {
 
         $where = '1 = 1';
 
@@ -179,29 +180,48 @@ class WordPressStorageDriver implements StorageInterface
                 $where .= " AND ($ask RLIKE pattern OR $ask LIKE pattern)";
         }
 
-        $answers = $this->db->get_results("SELECT `type`, `pattern`, `answers` FROM bot_answers WHERE $where", ARRAY_A);
+        $nodes = $this->db->get_results("SELECT `type`, `pattern`, `answers` FROM bot_answers WHERE $where", ARRAY_A);
 
         $output = array();
 
-        foreach ($answers as $answer)
+        foreach ($nodes as $node)
         {
-            // If default, then return only first row fetched!
-            if ($node_type === 'default' && $answer['type'] === 'default')
-                return array('default' => $answer['answers']);
+            if ( ! empty($node['answers']))
+            {
+                $answers = json_decode($node['answers'], true);
 
-            if ($answer['type'] === 'default') {
-                $output['default'] = json_decode($answer['answers'], true);
+                $answers = array_map( function ( $answer )
+                {
+                    if ( is_string( $answer ) && strpos( $answer, '[post-generic' ) >= 0 ) {
+
+                        $shortcode = json_decode( do_shortcode( $answer ), true );
+
+                        if ( ! empty( $shortcode ) )
+                            return $shortcode;
+                    }
+
+                    return $answer;
+
+                }, $answers);
+            }
+
+            // If default, then return only first row fetched!
+            if ($node_type === 'default' && $node['type'] === 'default')
+                return array('default' => $answers);
+
+            if ($node['type'] === 'default') {
+                $output['default'] = $answers;
 
                 continue;
             }
 
-            if ( ! isset($output[$answer['type']]))
-                $output[$answer['type']] = array();
+            if ( ! isset($output[$node['type']]))
+                $output[$node['type']] = array();
 
-            if ( ! isset( $output[$answer['type']][$answer['pattern']]))
-                $output[$answer['type']][$answer['pattern']] = array();
+            if ( ! isset( $output[$node['type']][$node['pattern']]))
+                $output[$node['type']][$node['pattern']] = array();
 
-            $output[$answer['type']][$answer['pattern']] = json_decode($answer['answers'], true);
+            $output[$node['type']][$node['pattern']] = $answers;
         }
 
         return $output;
