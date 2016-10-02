@@ -17,7 +17,7 @@ interface MessageResponderInterface
      * @param $recipient
      * @param $input
      *
-     * @return mixed
+     * @return array
      */
     public function response($recipient, $input);
 }

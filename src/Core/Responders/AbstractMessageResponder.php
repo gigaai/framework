@@ -4,7 +4,7 @@
 namespace GigaAI\Core\Responders;
 
 
-use GigaAI\Core\RuleManager;
+use GigaAI\Core\Rule\RuleManager;
 
 
 /**

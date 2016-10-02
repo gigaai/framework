@@ -6,7 +6,8 @@ namespace GigaAI;
 
 use GigaAI\Core\MessageSender;
 use GigaAI\Core\Responders\MessageResponderInterface;
-use GigaAI\Core\RuleManager;
+use GigaAI\Core\Rule\RuleManager;
+use GigaAI\Messages\TextMessage;
 
 /**
  * Class MessengerBot
@@ -56,6 +57,27 @@ class MessengerBot
         return $this->ruleManager->initialized();
     }
 
+    public function answer($request, $response)
+    {
+        $this->ruleManager->addRule($request, $response);
+
+        return $this;
+    }
+
+    public function then(callable $callback)
+    {
+        $this->ruleManager->addThenHandler($callback);
+
+        return $this;
+    }
+
+    public function say($response)
+    {
+        echo $response;
+        // Response to FB a new TextMessage with content $response
+//        $message = new TextMessage()
+    }
+
     /**
      * Catch incoming message fron FB and then send response message to FB
      * Log all message to storage
@@ -69,10 +91,12 @@ class MessengerBot
         }
 
         foreach ($incomingMessages as $incomingMessage) {
-            $outMessage = $this->messageResponder->response($incomingMessage->sender->id, $incomingMessage->message->text);
+            list($outMessages, $isWait) = $this->messageResponder->response($incomingMessage->sender->id, $incomingMessage->message->text);
 
-            $this->messageSender->send($outMessage);
-        }
+            foreach ($outMessages as $outMessage) {
+                $this->messageSender->send($outMessage);
+            }
+       }
     }
 
     /**
