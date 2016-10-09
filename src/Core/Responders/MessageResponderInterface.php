@@ -4,6 +4,9 @@
 namespace GigaAI\Core\Responders;
 
 
+use GigaAI\Core\Rule\Rule;
+
+
 /**
  * Interface MessageResponderInterface
  *
@@ -11,6 +14,16 @@ namespace GigaAI\Core\Responders;
  */
 interface MessageResponderInterface
 {
+
+    /**
+     * Set rules for responder
+     *
+     * @param Rule[] $rules
+     *
+     * @return mixed
+     */
+    public function setRules($rules = []);
+
     /**
      * Make a new Message from $input & list of rules
      *

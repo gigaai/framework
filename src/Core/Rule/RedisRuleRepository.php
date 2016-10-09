@@ -15,7 +15,7 @@ class RedisRuleRepository implements RuleRepositoryInterface
     public function save(Rule $rule)
     {
         if (empty($rule->id)) {
-            $rule->id = time();
+            $rule->id = rand(1, 1000000000);
         }
 
         $key = "rules";
@@ -24,7 +24,20 @@ class RedisRuleRepository implements RuleRepositoryInterface
             $rules = [];
         }
 
-        $rules[] = $rule;
+        $hasExistingRule = false;
+        foreach ($rules as &$existingRule) {
+            if ($existingRule->id === $rule->id) {
+
+                // Update existing rule
+                $existingRule = $rule;
+                break;
+            }
+        }
+
+        if (!$hasExistingRule) {
+            // Add new rule
+            $rules[] = $rule;
+        }
 
         $this->redis->set($key, serialize($rules));
     }

@@ -7,7 +7,6 @@ namespace GigaAI;
 use GigaAI\Core\MessageSender;
 use GigaAI\Core\Responders\MessageResponderInterface;
 use GigaAI\Core\Rule\RuleManager;
-use GigaAI\Messages\TextMessage;
 
 /**
  * Class MessengerBot
@@ -71,19 +70,14 @@ class MessengerBot
         return $this;
     }
 
-    public function say($response)
-    {
-        echo $response;
-        // Response to FB a new TextMessage with content $response
-//        $message = new TextMessage()
-    }
-
     /**
      * Catch incoming message fron FB and then send response message to FB
      * Log all message to storage
      */
     public function run()
     {
+        $this->messageResponder->setRules($this->ruleManager->getAll());
+
         $incomingMessages = $this->getIncomingMessages();
 
         if (empty($incomingMessages)) {
@@ -91,7 +85,10 @@ class MessengerBot
         }
 
         foreach ($incomingMessages as $incomingMessage) {
-            list($outMessages, $isWait) = $this->messageResponder->response($incomingMessage->sender->id, $incomingMessage->message->text);
+            // Incoming message can be a message or a post back
+            $input = isset($incomingMessage->message->text) ? $incomingMessage->message->text : ('payload:' . $incomingMessage->postback->payload);
+
+            $outMessages = $this->messageResponder->response($incomingMessage->sender->id, $input);
 
             foreach ($outMessages as $outMessage) {
                 $this->messageSender->send($outMessage);
@@ -116,8 +113,8 @@ class MessengerBot
 
         foreach ($request->entry as $entry) {
             foreach ($entry->messaging as $incomingMessage) {
-                // Process `message` type only
-                if (!$incomingMessage->message) {
+                // Process `message` && `postback` type only
+                if (!$incomingMessage->message && !$incomingMessage->postback) {
                     continue;
                 }
 
