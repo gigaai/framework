@@ -33,4 +33,13 @@ interface MessageResponderInterface
      * @return array
      */
     public function response($recipient, $input);
+
+    /**
+     * Response a message to user and then continue waiting user's response
+     *
+     * @param $messageRule
+     *
+     * @return array
+     */
+    public function responseFail($messageRule);
 }

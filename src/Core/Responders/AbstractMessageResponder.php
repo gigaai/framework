@@ -15,6 +15,7 @@ use GigaAI\Messages\ImageMessage;
 use GigaAI\Messages\ReceiptMessage;
 use GigaAI\Messages\TextMessage;
 use GigaAI\Messages\VideoAttachmentMessage;
+use GigaAI\MessengerBot;
 
 /**
  * Class AbstractMessageResponder
@@ -38,6 +39,16 @@ abstract class AbstractMessageResponder implements MessageResponderInterface
     protected $rules = [];
 
     /**
+     * Store current recipient so we can continue wait for fail messages
+     */
+    protected $recipient = null;
+
+    /**
+     * @var Rule
+     */
+    protected $waitingRule = null;
+
+    /**
      * Return a matched rule based on user input
      *
      * @param $input
@@ -56,6 +67,12 @@ abstract class AbstractMessageResponder implements MessageResponderInterface
      */
     protected abstract function match($pattern, $string);
 
+    /**
+     * AbstractMessageResponder constructor.
+     *
+     * @param UserRepositoryInterface $userRepository
+     * @param RuleManager $ruleManager
+     */
     public function __construct(
         UserRepositoryInterface $userRepository,
         RuleManager $ruleManager
@@ -80,17 +97,23 @@ abstract class AbstractMessageResponder implements MessageResponderInterface
      * @param $input
      *
      * @return array
+     *
+     * @throws \Exception
      */
     public function response($recipient, $input)
     {
+        $this->recipient = $recipient;
+
         $waitingRuleId = $this->userRepository->getWaitingRuleId($recipient);
+        $this->waitingRule = $this->ruleManager->getById($waitingRuleId);
 
-        $waitingRule = $this->ruleManager->getById($waitingRuleId);
-
-        if ($waitingRule && $waitingRule->thenHandler) {
-            $response = call_user_func($waitingRule->thenHandler, $input);
-            $responseMessages = $this->getResponseMessages($recipient, $response);
+        if ($this->waitingRule && $this->waitingRule->thenHandler) {
             $this->userRepository->unsetWait($recipient);
+
+            $bot = MessengerBot::getInstance();
+            $response = call_user_func($this->waitingRule->thenHandler, $bot, $input);
+            $responseMessages = $this->getResponseMessages($recipient, $response);
+
             return $responseMessages;
         }
 
@@ -108,6 +131,31 @@ abstract class AbstractMessageResponder implements MessageResponderInterface
         if ($isWaitMessage && count($responseMessages)) {
             $this->userRepository->setWait($recipient, $matchedRule->id);
         }
+
+        return $responseMessages;
+    }
+
+    /**
+     * Response a message to user and then continue waiting user's response
+     *
+     * @param $responseRule
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function responseFail($responseRule)
+    {
+        if (empty($this->recipient)) {
+            throw new \Exception('There is no recipient');
+        }
+
+        if (empty($this->waitingRule)) {
+            throw new \Exception('There is no waiting rule to response');
+        }
+
+        $responseMessages = $this->getResponseMessages($this->recipient, $responseRule);
+
+        $this->userRepository->setWait($this->recipient, $this->waitingRule->id);
 
         return $responseMessages;
     }

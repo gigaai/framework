@@ -5,8 +5,13 @@ namespace GigaAI;
 
 
 use GigaAI\Core\MessageSender;
+use GigaAI\Core\Responders\DefaultMessageResponder;
 use GigaAI\Core\Responders\MessageResponderInterface;
+use GigaAI\Core\Rule\RedisRuleRepository;
 use GigaAI\Core\Rule\RuleManager;
+use GigaAI\Core\User\RedisUserRepository;
+use GigaAI\Http\HttpClient;
+use SuperClosure\Serializer;
 
 /**
  * Class MessengerBot
@@ -15,6 +20,8 @@ use GigaAI\Core\Rule\RuleManager;
  */
 class MessengerBot
 {
+    private static $instance = null;
+
     /**
      * @var MessageSender
      */
@@ -47,6 +54,36 @@ class MessengerBot
     }
 
     /**
+     * Return MessengerBot instance
+     *
+     * @return MessengerBot|null
+     */
+    public static function getInstance()
+    {
+        //TODO all of these should be injected through DI & config system
+        if (self::$instance === null) {
+            $accessToken = 'EAAHtmAqiMTsBABq1ORGvF97TEamZC0vljK4QB7dgVS3GDA3O3gFebNt2geurHNnaJoxPCgyLSMDhvQ08pqFatGGwnfdinvNKlwcPvvc2p2wuRQtQfgisEVpVBDZCWGOOKo1T2RKZBZAEXDjhIKyZA9CNucFtkuzy0HmcnX93vCAZDZD';
+            $messageSender = new MessageSender(new HttpClient(), $accessToken);
+
+            $redis = new \Predis\Client([
+                'scheme' => 'tcp',
+                'host'   => '127.0.0.1',
+                'port'   => 6379,
+            ]);
+            $ruleRepository = new RedisRuleRepository($redis);
+            $serializer = new Serializer();
+            $ruleManager = new RuleManager($ruleRepository, $serializer);
+
+            $userRepository = new RedisUserRepository($redis);
+            $messageResponder = new DefaultMessageResponder($userRepository, $ruleManager);
+
+            self::$instance = new MessengerBot($messageSender, $ruleManager, $messageResponder);
+        }
+
+        return self::$instance;
+    }
+
+    /**
      * Check if all answer rules have been initialized or not
      *
      * @return bool
@@ -56,6 +93,14 @@ class MessengerBot
         return $this->ruleManager->initialized();
     }
 
+    /**
+     * Setup answer/response rule
+     *
+     * @param $request
+     * @param $response
+     *
+     * @return $this
+     */
     public function answer($request, $response)
     {
         $this->ruleManager->addRule($request, $response);
@@ -63,6 +108,13 @@ class MessengerBot
         return $this;
     }
 
+    /**
+     * Add thenHandler for current rule
+     *
+     * @param callable $callback
+     *
+     * @return $this
+     */
     public function then(callable $callback)
     {
         $this->ruleManager->addThenHandler($callback);
@@ -90,10 +142,32 @@ class MessengerBot
 
             $outMessages = $this->messageResponder->response($incomingMessage->sender->id, $input);
 
-            foreach ($outMessages as $outMessage) {
-                $this->messageSender->send($outMessage);
-            }
+            $this->send($outMessages);
        }
+    }
+
+    /**
+     * Response a message to user and then continue waiting user's response
+     *
+     * @param $responseRule
+     */
+    public function fail($responseRule)
+    {
+        $failMessages = $this->messageResponder->responseFail($responseRule);
+
+        $this->send($failMessages);
+    }
+
+    /**
+     * Send outgoing messages
+     *
+     * @param $outMessages
+     */
+    private function send($outMessages)
+    {
+        foreach ($outMessages as $outMessage) {
+            $this->messageSender->send($outMessage);
+        }
     }
 
     /**
@@ -114,7 +188,7 @@ class MessengerBot
         foreach ($request->entry as $entry) {
             foreach ($entry->messaging as $incomingMessage) {
                 // Process `message` && `postback` type only
-                if (!$incomingMessage->message && !$incomingMessage->postback) {
+                if (empty($incomingMessage->message) && empty($incomingMessage->postback)) {
                     continue;
                 }
 
