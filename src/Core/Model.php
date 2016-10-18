@@ -3,6 +3,8 @@
 namespace GigaAI\Core;
 
 use GigaAI\Storage\Storage;
+use SuperClosure\Serializer;
+use SuperClosure\Analyzer\TokenAnalyzer;
 
 class Model
 {

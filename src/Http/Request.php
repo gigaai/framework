@@ -13,6 +13,8 @@ class Request
 {
     public $received;
 
+    const PLATFORM_ENDPOINT = 'https://graph.facebook.com/v2.6/';
+
     public function __construct()
     {
         $this->received = (!empty ($_REQUEST)) ? $_REQUEST : json_decode(file_get_contents('php://input'));

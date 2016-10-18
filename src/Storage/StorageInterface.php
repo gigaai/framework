@@ -45,7 +45,7 @@ interface StorageInterface
 	 */
 	public function search($terms, $relation = 'and');
 
-	public function addAnswer($answer, $node_type, $ask = '');
+	public function addNode($answer, $node_type, $ask = '');
 
-	public function getAnswers($node_type = '', $ask = '');
+	public function getNodes($node_type = '', $ask = '');
 }

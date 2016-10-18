@@ -29,7 +29,7 @@ class MessengerBot
 	public function __construct(array $config = array())
 	{
         if ( ! defined('GIGAAI_VERSION'))
-            define('GIGAAI_VERSION', '1.1.1');
+            define('GIGAAI_VERSION', '1.2');
 
         $this->config = Config::getInstance();
 
@@ -42,13 +42,6 @@ class MessengerBot
 
         $this->model = new Model;
 	}
-
-	public function __destruct()
-    {
-        // Request is null in verify step. Terminate the script.
-        if ( ! is_null($this->request))
-            $this->run();
-    }
 
     public function answer($ask, $response = null)
 	{
@@ -319,6 +312,8 @@ class MessengerBot
         if ($this->isUserMessage())
             return $this->sender_id;
     }
+
+
 	/**
 	 * Save the auto stop state
 	 *
@@ -329,4 +324,13 @@ class MessengerBot
 	{
 		return false;
 	}
+
+	public function then(callable $callback)
+    {
+        // Serialize this callback
+
+        // Add this serialized callback to database
+
+        // Set `wait` id for the answers
+    }
 }

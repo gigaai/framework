@@ -9,9 +9,9 @@
 namespace GigaAI\Storage;
 
 use GigaAI\Core\Config;
+use GigaAI\Storage\Eloquent\Node;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use GigaAI\Storage\Eloquent\Lead;
-use GigaAI\Storage\Eloquent\Answer;
 
 class MySQLStorageDriver implements StorageInterface
 {
@@ -173,17 +173,6 @@ class MySQLStorageDriver implements StorageInterface
         return Lead::where($terms)->get();
     }
 
-    private function searchInCache($node_type, $ask = '')
-    {
-        $cache_file = Config::get('cache_path') . 'answers.json';
-
-        $answers = json_decode(file_get_contents($cache_file));
-
-        return array_filter($answers, function ($record) use ($node_type, $ask) {
-            return $record->type === $node_type && $record->ask === $ask;
-        });
-    }
-
     /**
      * Add Answer to the database
      *
@@ -191,12 +180,12 @@ class MySQLStorageDriver implements StorageInterface
      * @param $node_type
      * @param string $ask
      */
-    public function addAnswer($answers, $node_type, $ask = '')
+    public function addNode($answers, $node_type, $ask = '')
     {
-        $row = Answer::where(['type' => $node_type, 'pattern' => $ask])->first();
+        $row = Node::where(['type' => $node_type, 'pattern' => $ask])->first();
 
         if (is_null($row)) {
-            Answer::create([
+            Node::create([
                 'type'      => $node_type,
                 'pattern'   => $ask,
                 'answers'   => $answers
@@ -208,7 +197,7 @@ class MySQLStorageDriver implements StorageInterface
         }
     }
 
-    public function getAnswers($node_type = '', $ask = '')
+    public function getNodes($node_type = '', $ask = '')
     {
         $where = '1 = 1';
         $placeholder = [];
@@ -230,7 +219,7 @@ class MySQLStorageDriver implements StorageInterface
             }
         }
 
-        $answers = Answer::whereRaw($where, $placeholder)
+        $answers = Node::whereRaw($where, $placeholder)
             ->get(['type', 'pattern', 'answers'])
             ->toArray();
 
@@ -254,12 +243,17 @@ class MySQLStorageDriver implements StorageInterface
         return $output;
     }
 
-    public function removeAnswers($node_type, $ask)
+    public function removeNode($node_type, $ask)
     {
-        Answer::where([
+        Node::where([
             'type'      => $node_type,
             'pattern'   => $ask
         ])->delete();
+    }
+
+    public function removeNodeById($id)
+    {
+        Node::destroy($id);
     }
 
     public function db()
