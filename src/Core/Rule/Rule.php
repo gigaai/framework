@@ -3,25 +3,25 @@
 
 namespace GigaAI\Core\Rule;
 
+use Illuminate\Database\Eloquent\Model;
+
 
 /**
  * Class Rule
  *
+ * @property $request
+ * @property $response
+ * @property $thenHandler
+ *
  * @package GigaAI\Core
  */
-class Rule
+class Rule extends Model
 {
-    public $id;
+    public $timestamps = false;
 
-    public $request;
-
-    public $response;
-
-    public $thenHandler;
-
-    public function __construct($request, $response)
-    {
-        $this->request = $request;
-        $this->response = $response;
-    }
+    public $fillable = [
+        'request',
+        'response',
+        'thenHandler'
+    ];
 }

@@ -69,7 +69,6 @@ abstract class AbstractMessageResponder implements MessageResponderInterface
 
     /**
      * AbstractMessageResponder constructor.
-     *
      * @param UserRepositoryInterface $userRepository
      * @param RuleManager $ruleManager
      */
@@ -109,11 +108,9 @@ abstract class AbstractMessageResponder implements MessageResponderInterface
 
         if ($this->waitingRule && $this->waitingRule->thenHandler) {
             $this->userRepository->unsetWait($recipient);
-
             $bot = MessengerBot::getInstance();
             $response = call_user_func($this->waitingRule->thenHandler, $bot, $input);
             $responseMessages = $this->getResponseMessages($recipient, $response);
-
             return $responseMessages;
         }
 
@@ -135,14 +132,6 @@ abstract class AbstractMessageResponder implements MessageResponderInterface
         return $responseMessages;
     }
 
-    /**
-     * Response a message to user and then continue waiting user's response
-     *
-     * @param $responseRule
-     *
-     * @return array
-     * @throws \Exception
-     */
     public function responseFail($responseRule)
     {
         if (empty($this->recipient)) {

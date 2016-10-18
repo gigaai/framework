@@ -2,8 +2,9 @@
 
 
 namespace GigaAI\Core\Rule;
-use SuperClosure\Serializer;
 
+
+use SuperClosure\Serializer;
 
 /**
  * Class RuleManager
@@ -22,10 +23,22 @@ class RuleManager
      */
     private $currentRule;
 
+    /**
+     * @var RuleRepositoryInterface
+     */
     private $ruleRepository;
 
+    /**
+     * @var Serializer
+     */
     private $serializer;
 
+    /**
+     * RuleManager constructor.
+     *
+     * @param RuleRepositoryInterface $ruleRepository
+     * @param Serializer $serializer
+     */
     public function __construct(RuleRepositoryInterface $ruleRepository, Serializer $serializer)
     {
         $this->ruleRepository = $ruleRepository;
@@ -39,7 +52,16 @@ class RuleManager
      */
     public function initialized()
     {
-        $this->rules = $this->ruleRepository->getAll();
+        $rules = $this->ruleRepository->getAll();
+
+        if ($rules) {
+            foreach ($rules as &$rule) {
+                /** @var Rule $rule */
+                $rule->response = json_decode($rule->response, true);
+
+                $this->rules[] = $rule;
+            }
+        }
 
         return !empty($this->rules);
     }
@@ -52,7 +74,11 @@ class RuleManager
      */
     public function addRule($request, $response)
     {
-        $rule = new Rule($request, $response);
+        $rule = new Rule([
+            'request' => $request,
+            'response' => json_encode($response)
+        ]);
+
         $this->currentRule = $rule;
 
         $this->ruleRepository->save($rule);

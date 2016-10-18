@@ -4,14 +4,17 @@
 namespace GigaAI;
 
 
+use GigaAI\Core\Config;
 use GigaAI\Core\MessageSender;
 use GigaAI\Core\Responders\DefaultMessageResponder;
 use GigaAI\Core\Responders\MessageResponderInterface;
-use GigaAI\Core\Rule\RedisRuleRepository;
+use GigaAI\Core\Rule\DbRuleRepository;
+use GigaAI\Core\Rule\Rule;
 use GigaAI\Core\Rule\RuleManager;
 use GigaAI\Core\User\RedisUserRepository;
 use GigaAI\Http\HttpClient;
 use SuperClosure\Serializer;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 /**
  * Class MessengerBot
@@ -51,6 +54,21 @@ class MessengerBot
         $this->messageSender = $messageSender;
         $this->ruleManager = $ruleManager;
         $this->messageResponder = $messageResponder;
+
+        //TODO refactor this
+        $capsule = new Capsule();
+        $capsule->addConnection([
+            'driver'    => 'mysql',
+            'host'      => 'localhost',
+            'database'  => 'gigaai',
+            'username'  => 'root',
+            'password'  => '',
+            'charset'   => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix'    => ''
+        ]);
+
+        $capsule->bootEloquent();
     }
 
     /**
@@ -62,15 +80,11 @@ class MessengerBot
     {
         //TODO all of these should be injected through DI & config system
         if (self::$instance === null) {
-            $accessToken = 'EAAHtmAqiMTsBABq1ORGvF97TEamZC0vljK4QB7dgVS3GDA3O3gFebNt2geurHNnaJoxPCgyLSMDhvQ08pqFatGGwnfdinvNKlwcPvvc2p2wuRQtQfgisEVpVBDZCWGOOKo1T2RKZBZAEXDjhIKyZA9CNucFtkuzy0HmcnX93vCAZDZD';
+            $accessToken = Config::get('page_access_token');
             $messageSender = new MessageSender(new HttpClient(), $accessToken);
 
-            $redis = new \Predis\Client([
-                'scheme' => 'tcp',
-                'host'   => '127.0.0.1',
-                'port'   => 6379,
-            ]);
-            $ruleRepository = new RedisRuleRepository($redis);
+            $redis = new \Predis\Client(Config::get('redis'));
+            $ruleRepository = new DbRuleRepository(new Rule());
             $serializer = new Serializer();
             $ruleManager = new RuleManager($ruleRepository, $serializer);
 
@@ -78,6 +92,8 @@ class MessengerBot
             $messageResponder = new DefaultMessageResponder($userRepository, $ruleManager);
 
             self::$instance = new MessengerBot($messageSender, $ruleManager, $messageResponder);
+
+
         }
 
         return self::$instance;
