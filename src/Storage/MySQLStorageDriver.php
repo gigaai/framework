@@ -185,7 +185,7 @@ class MySQLStorageDriver implements StorageInterface
         $node = Node::where(['type' => $node_type, 'pattern' => $ask])->first();
 
         if (is_null($node)) {
-            Node::create([
+            $node = Node::create([
                 'type'      => $node_type,
                 'pattern'   => $ask,
                 'answers'   => $answers

@@ -13,20 +13,19 @@ class Model
      */
     private $serializer;
 
-    public $answers = array(
-        'text' => array(),
-        'payload' => array(),
-        'default' => array(),
-        'attachment' => array()
-    );
-
+    /**
+     * @var Node
+     */
     public $current_node;
 
+    /**
+     * @var Node[]
+     */
     public $nodes;
 
     public function __construct()
     {
-        $this->serializer = new Serializer(new TokenAnalyzer);
+        $this->serializer = new Serializer;
     }
 
     public function parseAnswers($asks, $answers = null)
@@ -118,6 +117,8 @@ class Model
         }
 
         $this->current_node = Storage::addNode($answer, $node_type, $asks);
+
+        return $this->current_node;
     }
 
 
@@ -207,12 +208,12 @@ class Model
 
         $related = $this->current_node;
 
-        $this->addNode([
+        $then_node = $this->addNode([
             'type'      => 'callback',
             'callback'  => $callback
         ], 'intended', 'IA#' . $related->id);
 
-        $related->wait = $this->current_node->id;
+        $related->wait = $then_node->id;
 
         $related->save();
     }

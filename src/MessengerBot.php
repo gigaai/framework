@@ -328,5 +328,7 @@ class MessengerBot
 	public function then(callable $callback)
     {
         $this->model->addThenAction($callback);
+
+        return $this;
     }
 }
