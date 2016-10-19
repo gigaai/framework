@@ -8,6 +8,11 @@ use SuperClosure\Analyzer\TokenAnalyzer;
 
 class Model
 {
+    /**
+     * @var Serializer
+     */
+    private $serializer;
+
     public $answers = array(
         'text' => array(),
         'payload' => array(),
@@ -15,7 +20,14 @@ class Model
         'attachment' => array()
     );
 
-    public $current_node = array();
+    public $current_node;
+
+    public $nodes;
+
+    public function __construct()
+    {
+        $this->serializer = new Serializer(new TokenAnalyzer);
+    }
 
     public function parseAnswers($asks, $answers = null)
     {
@@ -32,7 +44,7 @@ class Model
             }
 
             if (is_callable($answers)) {
-                $this->addAnswer(
+                $this->addNode(
                     array('type' => 'callback', 'callback' => $answers),
                     $node_type,
                     $asks
@@ -52,7 +64,7 @@ class Model
                 if ($this->isParsable($answers))
                     $answers = Parser::parseAnswer($answers);
 
-                $this->addAnswer(array($answers), $node_type, $asks);
+                $this->addNode(array($answers), $node_type, $asks);
 
                 return $this;
             }
@@ -66,7 +78,7 @@ class Model
                     $parsed[] = $answer;
             }
 
-            $this->addAnswer($parsed, $node_type, $asks);
+            $this->addNode($parsed, $node_type, $asks);
         }
 
         // Recursive if we set multiple asks, responses
@@ -99,32 +111,13 @@ class Model
      * @param String $node_type Node Type
      * @param null $asks Question
      */
-    public function addAnswer($answer, $node_type, $asks = null)
+    public function addNode($answer, $node_type, $asks = null)
     {
-        $this->current_node = compact('node_type', 'asks');
-
-        $storage_driver = Config::get('storage_driver', 'file');
-
-        if ($storage_driver === 'file' || (isset($answer['type']) && $answer['type'] === 'callback')) {
-
-            if (isset($answer['type']) && $answer['type'] === 'callback') {
-                Storage::removeAnswers($node_type, $asks);
-                $answer = array($answer);
-            }
-
-            if (in_array($node_type, array('text', 'payload', 'attachment'))) {
-
-                if ( ! isset($this->answers[$node_type][$asks]))
-                    $this->answers[$node_type][$asks] = array();
-
-                $this->answers[$node_type][$asks] = $answer;
-            }
-
-            if ($node_type === 'default')
-                $this->answers[$node_type] = $answer;
-        } else {
-            Storage::addAnswer($answer, $node_type, $asks);
+        if (isset($answer['type']) && $answer['type'] === 'callback') {
+            $answer['callback'] = $this->serializer->serialize($answer['callback']);
         }
+
+        $this->current_node = Storage::addNode($answer, $node_type, $asks);
     }
 
 
@@ -196,18 +189,31 @@ class Model
         );
     }
 
-    public function addIntendedAction($action, $message_type = '')
+    public function addIntendedAction($action)
     {
-        if (empty($this->current_node['node_type']) || $this->current_node['node_type'] == 'welcome')
+        if (empty($this->current_node->type) || $this->current_node->type == 'welcome')
             return;
 
-        $answers = $this->getAnswers($this->current_node['node_type'], $this->current_node['asks']);
-        $answers[] = array('_wait' => $action);
+        /** @todo  Support old syntax _wait => action */
+        $this->current_node->wait = $action;
 
-        $this->addAnswer(
-            $answers,
-            $this->current_node['node_type'],
-            $this->current_node['asks']
-        );
+        $this->current_node = $this->current_node->save();
+    }
+
+    public function addThenAction(callable $callback)
+    {
+        if ( ! $this->current_node)
+            return;
+
+        $related = $this->current_node;
+
+        $this->addNode([
+            'type'      => 'callback',
+            'callback'  => $callback
+        ], 'intended', 'IA#' . $related->id);
+
+        $related->wait = $this->current_node->id;
+
+        $related->save();
     }
 }

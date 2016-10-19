@@ -251,7 +251,7 @@ class MessengerBot
 	 * @param $action
 	 * @param string $message_type
 	 */
-	public function wait($action, $message_type = '')
+	public function wait($action)
 	{
 	    // For chaining after $bot->say() method
 		if (isset($this->sender_id) && ! empty($this->sender_id))
@@ -259,7 +259,7 @@ class MessengerBot
 
         // For chaining after $bot->answer() method
         else
-			$this->model->addIntendedAction($action, $message_type);
+			$this->model->addIntendedAction($action);
 	}
 
     /**
@@ -327,10 +327,6 @@ class MessengerBot
 
 	public function then(callable $callback)
     {
-        // Serialize this callback
-
-        // Add this serialized callback to database
-
-        // Set `wait` id for the answers
+        $this->model->addThenAction($callback);
     }
 }
