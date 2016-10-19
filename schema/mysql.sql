@@ -102,5 +102,5 @@ ALTER TABLE `bot_leads_meta`
 
 /** Since 1.2 **/
 RENAME TABLE `bot_answers` TO `bot_nodes`;
-ALTER TABLE `bot_nodes` ADD `wait` INT UNSIGNED NULL AFTER `answers`;
+ALTER TABLE `bot_nodes` ADD `wait` VARCHAR(99) NULL AFTER `answers`;
 ALTER TABLE `bot_nodes` ADD `instance_id` INT UNSIGNED NULL AFTER `id`;
