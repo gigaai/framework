@@ -233,7 +233,7 @@ class MessengerBot
 	{
 		$waiting = $this->storage->get($this->sender_id, '_wait');
 
-		if ( ! empty($waiting) && is_string($waiting)) {
+		if ( ! empty($waiting)) {
 
 			$this->storage->set($this->sender_id, '_wait', false);
 

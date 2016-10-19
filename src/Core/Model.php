@@ -141,31 +141,7 @@ class Model
 
     public function getAnswers($node_type = '', $ask = '')
     {
-        // Check in storage driver
-        $search_in_storage = array();
-
-        $storage_driver = Config::get('storage_driver', 'file');
-
-        if ($storage_driver != 'file')
-            $search_in_storage = Storage::getAnswers($node_type, $ask);
-
-        $answers = array_merge_recursive($search_in_storage, $this->answers);
-
-        if ( ! empty($node_type) && ! empty($answers[$node_type]))
-            $answers = $answers[$node_type];
-
-        if ( ! empty($node_type) && ! empty($ask) && ! empty($answers[$ask]))
-            $answers = $answers[$ask];
-
-        // Get intended action in `text` node.
-        // Todo: Arrange to get in all node
-        if ( (empty($node_type) || is_null($node_type)) &&
-            ! empty($ask) && $ask[0] === '@' &&
-            isset($answers['text'][$ask])
-        )
-            $answers = $answers['text'][$ask];
-
-        return $answers;
+        return Storage::getNodes($node_type, $ask);
     }
 
     public function addReply($answers)
