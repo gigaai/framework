@@ -11,4 +11,9 @@ class Node extends \Illuminate\Database\Eloquent\Model
     protected $casts = [
         'answers' => 'array'
     ];
+
+    public function getAnswersFromNodes()
+    {
+
+    }
 }

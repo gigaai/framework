@@ -2,6 +2,7 @@
 
 namespace GigaAI\Core;
 
+use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Storage;
 use SuperClosure\Serializer;
 use SuperClosure\Analyzer\TokenAnalyzer;
@@ -179,7 +180,7 @@ class Model
 
     public function addThenAction(callable $callback)
     {
-        if ( ! $this->current_node)
+        if (empty($this->current_node->type) || $this->current_node->type == 'welcome')
             return;
 
         $related = $this->current_node;
@@ -192,5 +193,17 @@ class Model
         $related->wait = $then_node->id;
 
         $related->save();
+    }
+
+    /**
+     * Todo: This method should returns array of answers
+     * @param $action
+     * @return \Illuminate\Support\Collection|null|static
+     */
+    public function getIntendedAction($action)
+    {
+        if (is_numeric($action)) {
+            return Node::find($action);
+        }
     }
 }

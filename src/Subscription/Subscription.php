@@ -1,0 +1,52 @@
+<?php
+
+namespace GigaAI\Subscription;
+
+class Subscription
+{
+
+    public function __construct()
+    {
+
+    }
+
+    public function addSubscribers($user_ids, $channels = 1)
+    {
+
+    }
+
+    public function getSubscribers($user_ids, $channels)
+    {
+
+    }
+
+    public function messageTo($user_ids, $messages)
+    {
+        return $this;
+    }
+
+    public function messageToChannels($channels, $messages)
+    {
+        return $this;
+    }
+
+    public function at($time)
+    {
+
+    }
+
+    public function routines($routine)
+    {
+        return $this;
+    }
+
+    public function startAt($time)
+    {
+        return $this;
+    }
+
+    public function endAt($time)
+    {
+        return $this;
+    }
+}

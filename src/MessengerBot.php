@@ -63,11 +63,6 @@ class MessengerBot
 		return $this;
 	}
 
-	public function getAnswers($node_type = null, $asks = '')
-	{
-		return $this->model->getAnswers($node_type, $asks);
-	}
-
 	public function run()
 	{
 		$received = $this->request->getReceivedData();
@@ -205,7 +200,7 @@ class MessengerBot
 		if ($this->responseIntendedAction())
 			return;
 
-		$data_set = $this->getAnswers($message_type);
+		$data_set = $this->model->getAnswers($message_type);
 
 		$marked = false;
 
@@ -220,7 +215,7 @@ class MessengerBot
 
 		// If not found any response. Run this method again to send default message.
 		if ( ! $marked)
-			$this->response($this->getAnswers('default'));
+			$this->response($this->model->getAnswers('default'));
 	}
 
 	/**
@@ -237,7 +232,9 @@ class MessengerBot
 
 			$this->storage->set($this->sender_id, '_wait', false);
 
-			$this->response($this->getAnswers(null, '@' . $waiting));
+            $answers = $this->model->getIntendedAction($waiting);
+
+			$this->response($answers);
 
 			return true;
 		}
