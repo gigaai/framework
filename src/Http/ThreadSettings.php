@@ -14,7 +14,7 @@ class ThreadSettings
             'updatePersistentMenu'
         ];
 
-        $action = ! empty(Request::$received['giga_action']) ? trim(Request::$received['giga_action']) : null;
+        $action = Request::getReceivedData('giga_action');
 
         if (in_array($action, $allowed_actions))
         {

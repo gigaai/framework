@@ -58,7 +58,7 @@ class Request
      * @param null $key
      * @return mixed
      */
-    public function getReceivedData($key = null)
+    private function getReceivedData($key = null)
     {
         $received = self::$received;
 
