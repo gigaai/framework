@@ -7,6 +7,9 @@ use GigaAI\Http\Request;
 use GigaAI\Core\Parser;
 use GigaAI\Core\Model;
 use GigaAI\Core\Config;
+use SuperClosure\Serializer;
+use GigaAI\Storage\Eloquent\Node;
+use GigaAI\Storage\Eloquent\Lead;
 
 class MessengerBot
 {
@@ -27,6 +30,8 @@ class MessengerBot
 	private $message;
 
     private $received;
+
+    private $serializer;
 
     /**
      * MessengerBot constructor.
@@ -54,6 +59,8 @@ class MessengerBot
 
         // Load the model
         $this->model    = new Model;
+
+        $this->serializer = new Serializer();
 	}
 
 
@@ -137,43 +144,54 @@ class MessengerBot
 	/**
 	 * Response sender message
 	 *
-	 * @param $node
+	 * @param $nodes
 	 * @param null $sender_id
 	 */
-	public function response($node, $sender_id = null)
+	public function response($nodes, $sender_id = null)
 	{
 		if (is_null($sender_id))
 			$sender_id = $this->sender_id;
 
-		$node = (array)$node;
+		foreach ($nodes as $node) {
 
-		foreach ($node as $response) {
-			if (isset($response['type']) && $response['type'] === 'callback' && is_callable($response['callback'])) {
+		    /** Process callback */
+			if (! empty($node->answers) && isset($node->answers['type']) && $node->answers['type'] === 'callback') {
 
-				@call_user_func_array($response['callback'], array($this, $this->getUserId(), $this->getReceivedText()));
+			    $callback = $this->serializer->unserialize($node->answers['callback']);
 
-				continue;
+                if (is_callable($callback)) {
+                    $return = @call_user_func_array($callback, [$this, $this->getUserId(), $this->getReceivedText()]);
+
+                    // If the callback return, we'll send that message to user.
+                    if ($return != null || ! empty($return))
+                    {
+                        $return = $this->model->addReply($return);
+
+                        foreach ($return as $message) {
+                            $this->request->sendMessage($message, $sender_id);
+                        }
+                    }
+                }
+
+                continue;
 			}
 
-			if ( ! empty($response['_wait']) && is_string($response['_wait'])) {
-				$this->storage->set($sender_id, '_wait', $response['_wait']);
+            /** New wait */
+            if ( ! empty($node->wait)) {
+                $this->storage->set($sender_id, '_wait', $node->wait);
+            }
 
-				continue;
-			}
+			foreach ($node->answers as $response) {
 
-			$response = Parser::parseShortcodes($response, $this->storage->get($sender_id));
+                /** Support old _wait */
+                if (!empty($response['_wait']) && is_string($response['_wait'])) {
+                    $this->storage->set($sender_id, '_wait', $response['_wait']);
 
-			$response['metadata'] = 'SENT_BY_GIGA_AI';
+                    continue;
+                }
 
-			$body = [
-				'recipient' => [
-					'id' => $sender_id
-				],
-				'message' => $response
-			];
-
-
-			$this->request->send("https://graph.facebook.com/v2.6/me/messages?access_token=" . $this->config->get('page_access_token'), $body);
+                $this->request->sendMessage($response, $sender_id);
+            }
 		}
 	}
 
@@ -218,15 +236,13 @@ class MessengerBot
 		if ($this->responseIntendedAction())
 			return;
 
-		$data_set = $this->model->getAnswers($message_type, $ask);
+		$nodes = Node::findByTypeAndPattern($message_type, $ask);
 
-        if ( ! empty($data_set)) {
-            foreach ($data_set as $node_name => $node_content) {
-                $this->response($node_content);
-            }
-        } else {
-            $this->response($this->model->getAnswers('default'));
+        if (empty($nodes)) {
+            $nodes = Node::findByTypeAndPattern('default');
         }
+
+        $this->response($nodes);
 	}
 
 	/**
@@ -242,9 +258,9 @@ class MessengerBot
 
 			$this->storage->set($this->sender_id, '_wait', false);
 
-            $answers = $this->model->getIntendedAction($waiting);
+            $nodes = Node::findByTypeAndPattern('intended', $waiting);
 
-			$this->response($answers);
+			$this->response($nodes);
 
 			return true;
 		}
@@ -308,7 +324,6 @@ class MessengerBot
 
         return null;
     }
-
 
 	/**
 	 * Save the auto stop state

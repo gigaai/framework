@@ -4,7 +4,6 @@ namespace GigaAI\Core;
 
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Storage;
-use SuperClosure\Serializer;
 
 class Model
 {
@@ -25,7 +24,7 @@ class Model
 
     public function __construct()
     {
-        $this->serializer = new Serializer;
+
     }
 
     /**
@@ -148,9 +147,9 @@ class Model
         return true;
     }
 
-    public function getAnswers($type = '', $pattern = '')
+    public function getNodes($type = '', $pattern = '')
     {
-        return Node::getAnswersByTypeAndPatterns($type, $pattern);
+        return Node::findByTypeAndPattern($type, $pattern);
     }
 
     public function addReply($answers)
@@ -165,13 +164,13 @@ class Model
     private function isShorthand($answers)
     {
         return (
+            is_string($answers) ||
             array_key_exists('buttons', $answers) ||
             array_key_exists('elements', $answers) || // For Generic or Receipt
             (is_array($answers[0]) && array_key_exists('title', $answers[0])) || // For Generic
             array_key_exists('text', $answers) || // For Button
             array_key_exists('type', $answers) ||
-            array_key_exists('quick_replies', $answers) ||
-            is_string($answers)
+            array_key_exists('quick_replies', $answers)
         );
     }
 

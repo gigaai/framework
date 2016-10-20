@@ -3,7 +3,8 @@
 namespace GigaAI\Http;
 
 use GigaAI\Core\Config;
-
+use GigaAI\Core\Parser;
+use GigaAI\Storage\Storage;
 /**
  * Class Request
  *
@@ -128,6 +129,22 @@ class Request
 			dd($post);
 		}
 	}
+
+	private function sendMessage($message, $lead_id)
+    {
+        $message = Parser::parseShortcodes($message, Storage::get($lead_id));
+
+        $response['metadata'] = 'SENT_BY_GIGA_AI';
+
+        $body = [
+            'recipient' => [
+                'id' => $lead_id
+            ],
+            'message' => $message
+        ];
+
+        Request::send("https://graph.facebook.com/v2.6/me/messages?access_token=" . self::$token, $body);
+    }
 
     public function __call($name, $args = array())
     {

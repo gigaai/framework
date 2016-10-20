@@ -61,8 +61,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
             }
         }
 
-        return Node::whereRaw($where, $placeholder)
-            ->get(['type', 'pattern', 'answers']);
+        return Node::whereRaw($where, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
     }
 
     public static function getAnswersByTypeAndPatterns($type = '', $pattern = '')
