@@ -49,7 +49,7 @@ class Request
 		$this->subscribeFacebook();
 
         // Run thread settings
-        ThreadSettings::init();
+        // ThreadSettings::init();
     }
 
     /**
@@ -58,18 +58,18 @@ class Request
      * @param null $key
      * @return mixed
      */
-    private function getReceivedData($key = null)
+    public function getReceivedData($key = null)
     {
         $received = self::$received;
 
         if ($key !== null) {
-            if (isset($received[$key]))
+            if (is_array($received) && isset($received[$key]))
                 return $received[$key];
 
             if (isset($received->$key))
                 return $received->$key;
 
-            return '';
+            return null;
         }
 
         return $received;
@@ -111,7 +111,9 @@ class Request
 	{
         $end_point = self::PLATFORM_ENDPOINT . "me/subscribed_apps?access_token=" . self::$token;
 
-		if (is_array($this->getReceivedData()) && array_key_exists('subscribe', $this->getReceivedData())) {
+        $received = $this->getReceivedData('subscribe');
+
+		if ($received != null) {
 
 			$post = $this->send($end_point);
 
@@ -140,8 +142,8 @@ class Request
 	 */
 	public static function __callStatic($name, $args = array())
 	{
-		$storage = new self;
+		$request = new self;
 
-		return $storage->__call($name, $args);
+		return $request->__call($name, $args);
 	}
 }

@@ -26,6 +26,8 @@ class MessengerBot
 
 	private $message;
 
+    private $received;
+
 	public function __construct(array $config = array())
 	{
         if ( ! defined('GIGAAI_VERSION'))
@@ -67,18 +69,22 @@ class MessengerBot
 	{
 		$received = $this->request->getReceivedData();
 
+        sd($received);
 		if ( ! $received || empty($received->object) || $received->object != 'page')
 			return;
 
 		$this->received = $received;
 
-		foreach ($received->entry as $entry) {
-			foreach ($entry->messaging as $event) {
-				$this->sender_id = $event->sender->id;
-				$this->recipient_id = $event->recipient->id;
-				$this->timestamp = $event->timestamp;
 
-				$this->received_text = isset($event->message->text) ? $event->message->text : null;
+		foreach ($received->entry as $entry)
+		{
+			foreach ($entry->messaging as $event)
+			{
+				$this->sender_id        = $event->sender->id;
+				$this->recipient_id     = $event->recipient->id;
+				$this->timestamp        = $event->timestamp;
+
+				$this->received_text    = isset($event->message->text) ? $event->message->text : null;
 
 				$this->responseEvent($event);
 			}
