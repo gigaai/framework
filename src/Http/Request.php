@@ -62,8 +62,15 @@ class Request
     {
         $received = self::$received;
 
-        if ($key !== null && isset($received[$key]))
-            return $received[$key];
+        if ($key !== null) {
+            if (isset($received[$key]))
+                return $received[$key];
+
+            if (isset($received->$key))
+                return $received->$key;
+
+            return '';
+        }
 
         return $received;
     }
@@ -91,9 +98,7 @@ class Request
     {
         $received = $this->getReceivedData();
 
-        if (is_array($received) &&
-            isset($received['hub_verify_token']) &&
-            $received['hub_verify_token'] == 'GigaAI'
+        if (is_array($received) && isset($received['hub_verify_token']) && $received['hub_verify_token'] == 'GigaAI'
         ) {
 
             echo $received['hub_challenge'];
