@@ -48,14 +48,14 @@ class Request
 
     private function sendSubscribe()
     {
-        $end_point = "https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=" . Config::get('page_access_token');
+        $end_point = self::PLATFORM_ENDPOINT . "me/subscribed_apps?access_token=" . Config::get('page_access_token');
 
         return $this->send($end_point);
     }
 
     public function getUserProfile($user_id)
     {
-        $end_point  = "https://graph.facebook.com/v2.6/{$user_id}?access_token=" . Config::get('page_access_token');
+        $end_point  = self::PLATFORM_ENDPOINT . "{$user_id}?access_token=" . Config::get('page_access_token');
 
         $data       = file_get_contents($end_point);
 
@@ -94,7 +94,7 @@ class Request
     {
         $payload = Config::get('get_started_button_payload');
 
-        $end_point = 'https://graph.facebook.com/v2.6/me/thread_settings?access_token=' . Config::get('page_access_token');
+        $end_point = self::PLATFORM_ENDPOINT . 'me/thread_settings?access_token=' . Config::get('page_access_token');
 
         $params = array(
             'setting_type' => 'call_to_actions',
@@ -121,7 +121,7 @@ class Request
     {
         $greeting_text = Config::get('greeting_text');
 
-        $end_point = 'https://graph.facebook.com/v2.6/me/thread_settings?access_token=' . Config::get('page_access_token');
+        $end_point = self::PLATFORM_ENDPOINT . 'me/thread_settings?access_token=' . Config::get('page_access_token');
 
         $params = array(
             'setting_type' => 'greeting',
@@ -139,7 +139,7 @@ class Request
     {
         $menu = Config::get('persistent_menu');
 
-        $end_point = 'https://graph.facebook.com/v2.6/me/thread_settings?access_token=' . Config::get('page_access_token');
+        $end_point = self::PLATFORM_ENDPOINT . 'me/thread_settings?access_token=' . Config::get('page_access_token');
 
         $params = array(
             'setting_type' => 'call_to_actions',
