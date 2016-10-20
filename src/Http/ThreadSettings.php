@@ -14,10 +14,10 @@ class ThreadSettings
             'updatePersistentMenu'
         ];
 
-        $request    = new Request;
+        $request    = Request::getInstance();
         $action     = $request->getReceivedData('giga_action');
 
-        if (in_array($action, $allowed_actions))
+        if ($action != null && in_array($action, $allowed_actions))
         {
             @call_user_func(['ThreadSettings', $action]);
         }

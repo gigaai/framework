@@ -38,7 +38,7 @@ class MessengerBot
         if ( ! empty($config))
             $this->config->set($config);
 
-        $this->request = new Request;
+        $this->request = Request::getInstance();
 
         $this->storage = new Storage;
 
@@ -69,12 +69,10 @@ class MessengerBot
 	{
 		$received = $this->request->getReceivedData();
 
-        sd($received);
 		if ( ! $received || empty($received->object) || $received->object != 'page')
 			return;
 
 		$this->received = $received;
-
 
 		foreach ($received->entry as $entry)
 		{

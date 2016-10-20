@@ -5,7 +5,7 @@ namespace GigaAI\Http;
 use GigaAI\Core\Config;
 
 /**
- * Class WebService
+ * Class Request
  *
  * @package Model
  */
@@ -33,12 +33,20 @@ class Request
     public static $token;
 
     /**
+     * This class is singleton
+     *
+     * @var Request
+     */
+    private static $instance;
+
+    /**
      * Setup data and run command based on received data
      */
-    public function __construct()
+    private function load()
     {
         self::$received = (!empty ($_REQUEST)) ? $_REQUEST : json_decode(file_get_contents('php://input'));
 
+        // Sleep if app don't get any request
         if (empty(self::$received))
             return;
 
@@ -49,7 +57,7 @@ class Request
 		$this->subscribeFacebook();
 
         // Run thread settings
-        // ThreadSettings::init();
+        ThreadSettings::init();
     }
 
     /**
@@ -58,7 +66,7 @@ class Request
      * @param null $key
      * @return mixed
      */
-    public function getReceivedData($key = null)
+    private function getReceivedData($key = null)
     {
         $received = self::$received;
 
@@ -80,7 +88,7 @@ class Request
         return call_user_func_array('giga_remote_' . $method, [$end_point, $body]);
     }
 
-    public function getUserProfile($user_id)
+    private function getUserProfile($user_id)
     {
         $end_point  = self::PLATFORM_ENDPOINT . "{$user_id}?access_token=" . self::$token;
 
@@ -94,7 +102,7 @@ class Request
      *
      * @return void
      */
-    public function verifyTokenFromFacebook()
+    private function verifyTokenFromFacebook()
     {
         $received = $this->getReceivedData();
 
@@ -121,29 +129,27 @@ class Request
 		}
 	}
 
-	/**
-	 * Magic method to load request
-	 *
-	 * @param $name
-	 * @param array $args
-	 * @return $this
-	 */
-	public function __call($name, $args = array())
-	{
-		return call_user_func_array(array($this, $name), $args);
-	}
+    public function __call($name, $args = array())
+    {
+        return call_user_func_array(array($this, $name), $args);
+    }
 
-	/**
-	 * Magic method to load storage driver methods
-	 *
-	 * @param $name
-	 * @param array $args
-	 * @return $this
-	 */
-	public static function __callStatic($name, $args = array())
-	{
-		$request = new self;
+    public static function __callStatic($name, $args = array())
+    {
+        return self::getInstance()->__call($name, $args);
+    }
 
-		return $request->__call($name, $args);
-	}
+    public static function getInstance()
+    {
+        if (null === self::$instance) {
+            self::$instance = new static();
+            self::$instance->load();
+        }
+
+        return self::$instance;
+    }
+
+    private function __construct(){}
+    private function __clone(){}
+    private function __wakeup(){}
 }
