@@ -49,4 +49,19 @@ class Subscription
     {
         return $this;
     }
+
+    public function taggedAs($tag)
+    {
+        return $this;
+    }
+
+    public function many()
+    {
+        return $this;
+    }
+
+    public function once()
+    {
+        return $this;
+    }
 }
