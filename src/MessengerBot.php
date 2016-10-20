@@ -28,22 +28,34 @@ class MessengerBot
 
     private $received;
 
-	public function __construct(array $config = array())
+    /**
+     * MessengerBot constructor.
+     *
+     * Load the required resources
+     *
+     * @param array $config
+     */
+	public function __construct(array $config = [])
 	{
+        // Extension version
         if ( ! defined('GIGAAI_VERSION'))
             define('GIGAAI_VERSION', '1.2');
 
+        // Setup the configuration data
         $this->config = Config::getInstance();
-
         if ( ! empty($config))
             $this->config->set($config);
 
-        $this->request = Request::getInstance();
+        // Make a request instance. Not required but it will help user use $bot->request syntax
+        $this->request  = Request::getInstance();
 
-        $this->storage = new Storage;
+        // Load the storage
+        $this->storage  = new Storage;
 
-        $this->model = new Model;
+        // Load the model
+        $this->model    = new Model;
 	}
+
 
     public function answer($ask, $response = null)
 	{
@@ -153,12 +165,12 @@ class MessengerBot
 
 			$response['metadata'] = 'SENT_BY_GIGA_AI';
 
-			$body = array(
-				'recipient' => array(
+			$body = [
+				'recipient' => [
 					'id' => $sender_id
-				),
+				],
 				'message' => $response
-			);
+			];
 
 
 			$this->request->send("https://graph.facebook.com/v2.6/me/messages?access_token=" . $this->config->get('page_access_token'), $body);
@@ -206,22 +218,15 @@ class MessengerBot
 		if ($this->responseIntendedAction())
 			return;
 
-		$data_set = $this->model->getAnswers($message_type);
+		$data_set = $this->model->getAnswers($message_type, $ask);
 
-		$marked = false;
-
-		foreach ($data_set as $node_name => $node_content) {
-			if ( ! giga_match($node_name, $ask))
-				continue;
-
-			$this->response($node_content);
-
-			$marked = true;
-		}
-
-		// If not found any response. Run this method again to send default message.
-		if ( ! $marked)
-			$this->response($this->model->getAnswers('default'));
+        if ( ! empty($data_set)) {
+            foreach ($data_set as $node_name => $node_content) {
+                $this->response($node_content);
+            }
+        } else {
+            $this->response($this->model->getAnswers('default'));
+        }
 	}
 
 	/**

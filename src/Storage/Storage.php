@@ -39,7 +39,7 @@ class Storage
         
         $class = __NAMESPACE__ . '\\' . $driver_name;
 
-        if (class_exists($class) && in_array('GigaAI\Storage\StorageInterface', class_implements($class)))
+        if (class_exists($class))
             $this->driver = new $class;
 	    else
 	    	dd('Driver not found');
@@ -53,9 +53,7 @@ class Storage
         if ($this->has($user_id))
             return;
 
-        $request = new Request;
-
-        $profile = $request->getUserProfile($user_id);
+        $profile = Request::getUserProfile($user_id);
 
         if (empty($profile['first_name']))
             return;

@@ -13,7 +13,7 @@ use GigaAI\Storage\Eloquent\Node;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use GigaAI\Storage\Eloquent\Lead;
 
-class MySQLStorageDriver implements StorageInterface
+class MySQLStorageDriver
 {
     private $db;
 
@@ -88,7 +88,7 @@ class MySQLStorageDriver implements StorageInterface
         }
         if (!empty($meta)) {
             foreach ($meta as $key => $value) {
-                $this->db->table('bot_leads_meta')->updateOrInsert([
+                $this->db->table('bot_leads_meta')->updateOrCreate([
                     'user_id' => $lead->user_id,
                     'meta_key' => $key
                 ], [
@@ -179,6 +179,8 @@ class MySQLStorageDriver implements StorageInterface
      * @param $answer
      * @param $node_type
      * @param string $ask
+     *
+     * @return Node
      */
     public function addNode($answers, $node_type, $ask = '')
     {
@@ -197,52 +199,6 @@ class MySQLStorageDriver implements StorageInterface
         }
 
         return $node;
-    }
-
-    public function getNodes($node_type = '', $ask = '')
-    {
-        $where = '1 = 1';
-        $placeholder = [];
-
-        if ( ! empty($node_type)) {
-            $where .= ' AND type = :type';
-            $placeholder[':type'] = $node_type;
-        }
-        if ( ! empty($ask)) {
-            $placeholder[':ask'] = $ask;
-
-            // Intended Action. We'll get first row.
-            if ($ask[0] === '@') {
-                $where = 'pattern = :ask';
-            }
-            else {
-                $where .= " AND (:ask RLIKE pattern OR :ask2 LIKE pattern)";
-                $placeholder[':ask2'] = $ask;
-            }
-        }
-
-        $answers = Node::whereRaw($where, $placeholder)
-            ->get(['type', 'pattern', 'answers'])
-            ->toArray();
-
-        $output = [];
-
-        foreach ($answers as $answer) {
-
-            // If default, then return only first row fetched!
-            if ($node_type === 'default' && $answer['type'] === 'default')
-                return ['default' => $answer['answers']];
-
-            if ( ! isset($output[$answer['type']]))
-                $output[$answer['type']] = [];
-
-            if ( ! isset($output[$answer['type']][$answer['pattern']]))
-                $output[$answer['type']][$answer['pattern']] = [];
-
-            $output[$answer['type']][$answer['pattern']] = $answer['answers'];
-        }
-
-        return $output;
     }
 
     public function removeNode($node_type, $ask)

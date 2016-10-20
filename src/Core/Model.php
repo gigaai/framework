@@ -5,7 +5,6 @@ namespace GigaAI\Core;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Storage;
 use SuperClosure\Serializer;
-use SuperClosure\Analyzer\TokenAnalyzer;
 
 class Model
 {
@@ -29,6 +28,13 @@ class Model
         $this->serializer = new Serializer;
     }
 
+    /**
+     * Parse $bot->answer() method to extract the answers
+     *
+     * @param $asks
+     * @param null $answers
+     * @return $this
+     */
     public function parseAnswers($asks, $answers = null)
     {
         if (is_string($asks)) {
@@ -110,6 +116,8 @@ class Model
      * @param Mixed $answer Message
      * @param String $node_type Node Type
      * @param null $asks Question
+     *
+     * @return Node
      */
     public function addNode($answer, $node_type, $asks = null)
     {
@@ -140,9 +148,9 @@ class Model
         return true;
     }
 
-    public function getAnswers($node_type = '', $ask = '')
+    public function getAnswers($type = '', $pattern = '')
     {
-        return Storage::getNodes($node_type, $ask);
+        return Node::getAnswersByTypeAndPatterns($type, $pattern);
     }
 
     public function addReply($answers)
