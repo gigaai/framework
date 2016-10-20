@@ -4,45 +4,46 @@ namespace GigaAI\Storage;
 
 use GigaAI\Core\Config;
 use GigaAI\Http\Request;
+use GigaAI\Storage\Eloquent\Node;
+use Illuminate\Database\Capsule\Manager as Capsule;
+use GigaAI\Storage\Eloquent\Lead;
+use GigaAI\Shared\EasyCall;
 
 /**
  * Storage interacts with your client info and save it to your drivers.
  */
 class Storage
 {
+    use EasyCall;
+
     /**
-     * Driver instance
+     * Builder instance
      *
      * @var $driver
      */
-    protected $driver = null;
+    protected $db = null;
 
     public function __construct()
     {
-        // Create connection between GigaAI and your storage database.
-        $this->createConnection();
-    }
+        $this->db = new Capsule;
 
-    /**
-     * Load driver and then create connection
-     * @param null $name
-     */
-    public function createConnection($name = null)
-    {
-        // Prevent duplicate drivers
-        if (is_object($this->driver))
-            return;
+        $config = Config::get('mysql');
 
-        $name = isset($name) ? $name : Config::get('storage_driver');
+        $this->db->addConnection([
+            'driver'    => 'mysql',
+            'host'      => $config['host'],
+            'database'  => $config['database'],
+            'username'  => $config['username'],
+            'password'  => $config['password'],
+            'charset'   => $config['charset'],
+            'collation' => $config['collation'],
+            'prefix'    => $config['prefix'],
+        ]);
 
-        $driver_name = $this->getDriverClassName($name);
-        
-        $class = __NAMESPACE__ . '\\' . $driver_name;
+        // Make this Capsule instance available globally via static methods... (optional)
+        $this->db->setAsGlobal();
 
-        if (class_exists($class))
-            $this->driver = new $class;
-	    else
-	    	dd('Driver not found');
+        $this->db->bootEloquent();
     }
 
     private function pull($event)
@@ -50,7 +51,7 @@ class Storage
         $user_id = $event->sender->id;
 
         // Todo: Check cache time and fetch new data
-        if ($this->has($user_id))
+        if (self::has($user_id))
             return;
 
         $profile = Request::getUserProfile($user_id);
@@ -63,56 +64,174 @@ class Storage
         $profile['subscribed'] = 1;
 
         // Then call set method
-        $this->set($profile);
+        self::set($profile);
+    }
+
+    private function set($user, $key = '', $value = '')
+    {
+        if (is_string($user)) {
+            if (is_array($key)) {
+                $key['user_id'] = $user;
+
+                return $this->set($key);
+            }
+
+            $user = [
+                'user_id' => $user,
+                $key      => $value
+            ];
+        }
+
+        if (is_array($user) && isset($user['user_id']))
+            return $this->insertOrUpdateUser($user);
+    }
+
+    private function insertOrUpdateUser($user)
+    {
+        $meta = array();
+
+        foreach ($user as $key => $value) {
+            if (!in_array($key, (new Lead)->getFillable())) {
+                $meta[$key] = $value;
+
+                unset($user[$key]);
+            }
+        }
+        try {
+
+            $lead = Lead::updateOrCreate([
+                'source' => 'facebook',
+                'user_id' => $user['user_id']
+            ], $user);
+        } catch (\PDOException $pe) {
+            echo '<pre>';
+            dd($pe);
+        }
+        if (!empty($meta)) {
+            foreach ($meta as $key => $value) {
+                $this->db->table('bot_leads_meta')->updateOrCreate([
+                    'user_id' => $lead->user_id,
+                    'meta_key' => $key
+                ], [
+                    'meta_value' => $value
+                ]);
+            }
+        }
+    }
+
+    private function has($user_id, $key = '')
+    {
+        $user = $this->getUser($user_id);
+
+        return $user || !empty($user[$key]);
+    }
+
+    private function getUser($user_id)
+    {
+        $user = Lead::where([
+            'source' => 'facebook',
+            'user_id' => $user_id
+        ])->first();
+
+        if ( ! is_null($user))
+            return $user->toArray();
+
+        return null;
     }
 
     /**
-     * Magic method to load storage driver methods
+     * Get User Info. If provided user
      *
-     * @param $name
-     * @param array $args
-     * @return $this
+     * @param string $user_id If not provided, load all users. Otherwise, load specified user.
+     * @param string $key If not provided. load all fields. Otherwise, load specified field.
+     * @param mixed $default Default value.
+     *
+     * @return bool|null|string
      */
-    public function __call($name, $args = array())
+    private function get($user_id = '', $key = '', $default = '')
     {
-        if ( $this->driver === null )
-            $this->createConnection();
-        
-        if (method_exists($this, $name))
-            return call_user_func_array(array($this, $name), $args);
+        $user = $this->getUser($user_id);
 
-        return call_user_func_array(array($this->driver, $name), $args);
+        if (is_null($user))
+            return null;
+
+        if ( ! empty($key)) {
+            if (isset($user[$key]))
+                return $user[$key];
+
+            if ( ! in_array($key, (new Lead)->getFillable()))
+                return $this->getUserMeta($user_id, $key, $default);
+
+            return $default;
+        }
+
+        return $user;
+    }
+
+    private function getUserMeta($user_id, $key = '', $default = '')
+    {
+        $meta = $this->db->table('bot_leads_meta')->where([
+            'user_id' => $user_id,
+            'meta_key' => $key
+        ])->first();
+
+        if ( ! is_null($meta))
+            return $meta->meta_value;
+
+        return $default;
+    }
+
+
+    /**
+     * Search in collection
+     *
+     * @param $terms
+     * @param string $relation
+     * @return mixed
+     */
+    private function search($terms, $relation = 'and')
+    {
+        return Lead::where($terms)->get();
     }
 
     /**
-     * Magic method to load storage driver methods
+     * Add Answer to the database
      *
-     * @param $name
-     * @param array $args
-     * @return $this
+     * @param $answer
+     * @param $node_type
+     * @param string $ask
+     *
+     * @return Node
      */
-    public static function __callStatic($name, $args = array())
+    private function addNode($answers, $node_type, $ask = '')
     {
-        $storage = new self;
+        $node = Node::where(['type' => $node_type, 'pattern' => $ask])->first();
 
-        return $storage->__call($name, $args);
+        if (is_null($node)) {
+            $node = Node::create([
+                'type'      => $node_type,
+                'pattern'   => $ask,
+                'answers'   => $answers
+            ]);
+        } else {
+            $node->answers = $answers;
+
+            $node->save();
+        }
+
+        return $node;
     }
 
-    /**
-     * Get driver class name from slug. Returns {Slug}StorageDriver
-     *
-     * @param String $slug Driver name. For example: file
-     * @return string
-     */
-    private function getDriverClassName($slug)
+    private function removeNode($node_type, $ask)
     {
-        $irregular = array(
-            'mysql'     => 'MySQL',
-            'wordpress' => 'WordPress'
-        );
+        Node::where([
+            'type'      => $node_type,
+            'pattern'   => $ask
+        ])->delete();
+    }
 
-        $driver_name = array_key_exists($slug, $irregular) ? $irregular[$slug] : $slug;
-
-        return ucfirst($driver_name) . 'StorageDriver';
+    private function removeNodeById($id)
+    {
+        Node::destroy($id);
     }
 }

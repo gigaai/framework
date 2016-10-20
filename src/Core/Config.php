@@ -8,8 +8,12 @@
 
 namespace GigaAI\Core;
 
+use GigaAI\Shared\EasyCall;
+
 class Config
 {
+    use EasyCall;
+
 	private static $instance;
 
 	public $config = array();
@@ -83,15 +87,5 @@ class Config
 
 		if (is_array($config))
 			$this->config = $config;
-	}
-
-	public function __call($name, $args = array())
-	{
-		return call_user_func_array(array($this, $name), $args);
-	}
-
-	public static function __callStatic($name, $args = array())
-	{
-		return self::getInstance()->__call($name, $args);
 	}
 }

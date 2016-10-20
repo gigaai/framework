@@ -24,7 +24,7 @@ class Model
 
     public function __construct()
     {
-
+        //
     }
 
     /**
@@ -200,17 +200,5 @@ class Model
         $related->wait = $then_node->id;
 
         $related->save();
-    }
-
-    /**
-     * Todo: This method should returns array of answers
-     * @param $action
-     * @return \Illuminate\Support\Collection|null|static
-     */
-    public function getIntendedAction($action)
-    {
-        if (is_numeric($action)) {
-            return Node::find($action);
-        }
     }
 }

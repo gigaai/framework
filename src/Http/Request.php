@@ -5,6 +5,7 @@ namespace GigaAI\Http;
 use GigaAI\Core\Config;
 use GigaAI\Core\Parser;
 use GigaAI\Storage\Storage;
+use GigaAI\Shared\EasyCall;
 /**
  * Class Request
  *
@@ -12,6 +13,8 @@ use GigaAI\Storage\Storage;
  */
 class Request
 {
+    use EasyCall;
+
     /**
      * Received request data
      *
@@ -144,16 +147,6 @@ class Request
         ];
 
         Request::send("https://graph.facebook.com/v2.6/me/messages?access_token=" . self::$token, $body);
-    }
-
-    public function __call($name, $args = array())
-    {
-        return call_user_func_array(array($this, $name), $args);
-    }
-
-    public static function __callStatic($name, $args = array())
-    {
-        return self::getInstance()->__call($name, $args);
     }
 
     public static function getInstance()
