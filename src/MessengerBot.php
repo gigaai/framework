@@ -165,6 +165,7 @@ class MessengerBot
 	 * Alias of says() method
 	 *
 	 * @param $messages
+     * @return $this
 	 */
 	public function say($messages)
 	{
@@ -175,6 +176,7 @@ class MessengerBot
 	 * Send message to user.
 	 *
 	 * @param $messages
+     * @return $this
 	 */
 	public function says($messages)
 	{
@@ -221,7 +223,6 @@ class MessengerBot
 	/**
 	 * Response for intended actions
 	 *
-	 * @param $message_type
 	 * @return bool
 	 */
 	private function responseIntendedAction()
@@ -242,23 +243,6 @@ class MessengerBot
 		return false;
 	}
 
-	/**
-	 * Wait for intended actions
-	 *
-	 * @param $action
-	 * @param string $message_type
-	 */
-	public function wait($action)
-	{
-	    // For chaining after $bot->say() method
-		if (isset($this->sender_id) && ! empty($this->sender_id))
-			$this->storage->set($this->sender_id, '_wait', $action);
-
-        // For chaining after $bot->answer() method
-        else
-			$this->model->addIntendedAction($action);
-	}
-
     /**
      * Get user sent location
      *
@@ -269,6 +253,8 @@ class MessengerBot
 	public function getLocation($output = '')
 	{
 	    $attachments = $this->getAttachments();
+
+        $location = new \stdClass();
 
         if ( ! empty($attachments) && isset($attachments[0]->type) && $attachments[0]->type === 'location')
             $location = $attachments[0]->payload->coordinates;
@@ -288,6 +274,8 @@ class MessengerBot
     {
         if ($this->isUserMessage() && isset($this->message->attachments))
             return $this->message->attachments;
+
+        return null;
     }
 
 
@@ -308,6 +296,8 @@ class MessengerBot
     {
         if ($this->isUserMessage())
             return $this->sender_id;
+
+        return null;
     }
 
 
@@ -322,10 +312,34 @@ class MessengerBot
 		return false;
 	}
 
+    /**
+     * Wait for intended actions
+     *
+     * @param $action
+     * @param string $message_type
+     */
+    public function wait($action)
+    {
+        // For chaining after $bot->say() method
+        if (isset($this->sender_id) && ! empty($this->sender_id))
+            $this->storage->set($this->sender_id, '_wait', $action);
+
+        // For chaining after $bot->answer() method
+        else
+            $this->model->addIntendedAction($action);
+    }
+
 	public function then(callable $callback)
     {
         $this->model->addThenAction($callback);
 
         return $this;
+    }
+
+    public function keep($messages)
+    {
+        $this->says($messages);
+
+        //
     }
 }
