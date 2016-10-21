@@ -27,6 +27,7 @@ class MessengerBot
 
     public $received;
 
+    private $message;
     /**
      * Load the required resources
      *
@@ -112,13 +113,16 @@ class MessengerBot
         if (isset($event->message)) {
             $this->message = $event->message;
 
-            if ($event->message->metadata != 'SENT_BY_GIGA_AI') {
-                $this->session->set('lead_id', $event->sender->id);
+            if ( ! isset($event->message->metadata) || $event->message->metadata != 'SENT_BY_GIGA_AI') {
+
+                if ( ! $this->session->has('lead_id')) {
+                    $this->session->set('lead_id', $event->sender->id);
+
+                    // Save user data if not exists.
+                    $this->storage->pull($event->sender->id);
+                }
             }
         }
-
-		// Save user data if not exists.
-		$this->storage->pull($event);
 
         $message_type = 'text';
         $ask = '';

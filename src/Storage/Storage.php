@@ -46,25 +46,23 @@ class Storage
         $this->db->bootEloquent();
     }
 
-    private function pull($event)
+    private function pull($lead_id)
     {
-        $user_id = $event->sender->id;
-
         // Todo: Check cache time and fetch new data
-        if (self::has($user_id))
+        if (self::has($lead_id))
             return;
 
-        $profile = Request::getUserProfile($user_id);
+        $lead = Request::getUserProfile($lead_id);
 
-        if (empty($profile['first_name']))
+        if (empty($lead['first_name']))
             return;
 
         // Parse event to array
-        $profile['user_id']    = $user_id;
-        $profile['subscribed'] = 1;
+        $lead['user_id']    = $lead_id;
+        $lead['subscribed'] = 1;
 
         // Then call set method
-        self::set($profile);
+        self::set($lead);
     }
 
     private function set($user, $key = '', $value = '')
