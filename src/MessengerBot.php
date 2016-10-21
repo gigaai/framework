@@ -17,21 +17,15 @@ class MessengerBot
 
 	public $storage;
 
-	public $sender_id;
-
-	public $recipient_id;
-
-	public $received_text;
-
 	private $model;
 
 	public $config;
 
-	private $message;
-
-    private $received;
-
     private $serializer;
+
+    public $session;
+
+    public $received;
 
     /**
      * Load the required resources
@@ -49,14 +43,18 @@ class MessengerBot
         if ( ! empty($config))
             $this->config->set($config);
 
-        // Make a request instance. Not required but it will help user use $bot->request syntax
+        // Make a Request instance. Not required but it will help user use $bot->request syntax
         $this->request  = Request::getInstance();
+
+        // Make a Session instance. Not required but it will help user use $bot->session syntax
+        $this->session = Session::getInstance();
 
         // Load the storage
         $this->storage  = new Storage;
 
         // Load the model
         $this->model    = new Model;
+
 
         $this->serializer = new Serializer();
 	}
@@ -94,11 +92,11 @@ class MessengerBot
 		{
 			foreach ($entry->messaging as $event)
 			{
-				$this->sender_id        = $event->sender->id;
-				$this->recipient_id     = $event->recipient->id;
-				$this->timestamp        = $event->timestamp;
-
-				$this->received_text    = isset($event->message->text) ? $event->message->text : null;
+                $this->session->set([
+                    'sender_id'    => $event->sender->id,
+                    'recipient_id' => $event->recipient->id,
+                    'timestamp'    => $event->timestamp
+                ]);
 
 				$this->processEvent($event);
 			}
@@ -111,8 +109,13 @@ class MessengerBot
 		if ( ! isset($event->message) && ! isset($event->postback))
 			return;
 
-        if (isset($event->message))
+        if (isset($event->message)) {
             $this->message = $event->message;
+
+            if ($event->message->metadata != 'SENT_BY_GIGA_AI') {
+                $this->session->set('lead_id', $event->sender->id);
+            }
+        }
 
 		// Save user data if not exists.
 		$this->storage->pull($event);
@@ -142,12 +145,12 @@ class MessengerBot
 	 * Response sender message
 	 *
 	 * @param $nodes
-	 * @param null $sender_id
+	 * @param null $lead_id
 	 */
-	public function response($nodes, $sender_id = null)
+	public function response($nodes, $lead_id = null)
 	{
-		if (is_null($sender_id))
-			$sender_id = $this->sender_id;
+		if (is_null($lead_id))
+			$lead_id = $this->session->get('lead_id');
 
 		foreach ($nodes as $node) {
 
@@ -157,7 +160,7 @@ class MessengerBot
 			    $callback = $this->serializer->unserialize($node->answers['callback']);
 
                 if (is_callable($callback)) {
-                    $return = @call_user_func_array($callback, [$this, $this->getUserId(), $this->getReceivedText()]);
+                    $return = @call_user_func_array($callback, [$this, $this->getLeadId(), $this->getReceivedText()]);
 
                     // If the callback return, we'll send that message to user.
                     if ($return != null || ! empty($return))
@@ -165,7 +168,7 @@ class MessengerBot
                         $return = $this->model->parseWithoutSave($return);
 
                         foreach ($return as $message) {
-                            $this->request->sendMessage($message, $sender_id);
+                            $this->request->sendMessage($message);
                         }
                     }
                 }
@@ -175,19 +178,19 @@ class MessengerBot
 
             /** New wait */
             if ( ! empty($node->wait)) {
-                $this->storage->set($sender_id, '_wait', $node->wait);
+                $this->storage->set($lead_id, '_wait', $node->wait);
             }
 
 			foreach ($node->answers as $response) {
 
                 /** Support old _wait */
                 if (!empty($response['_wait']) && is_string($response['_wait'])) {
-                    $this->storage->set($sender_id, '_wait', $response['_wait']);
+                    $this->storage->set($lead_id, '_wait', $response['_wait']);
 
                     continue;
                 }
 
-                $this->request->sendMessage($response, $sender_id);
+                $this->request->sendMessage($response);
             }
 		}
 	}
@@ -213,7 +216,7 @@ class MessengerBot
 	{
 		$messages = $this->model->parseWithoutSave($messages);
 
-		$this->response($messages);
+		$this->request->sendMessages($messages, $this->getUserId());
 
 		return $this;
 	}
@@ -311,20 +314,13 @@ class MessengerBot
 
     private function isUserMessage()
     {
-        return $this->message->metadata != 'SENT_BY_GIGA_AI';
+        if ( ! empty($this->message))
+            return $this->message->metadata != 'SENT_BY_GIGA_AI';
     }
 
-    public function getUserId()
+    public function getLeadId()
     {
-        if ($this->isUserMessage())
-            return $this->sender_id;
-
-        return null;
-    }
-
-    public static function getLeadId()
-    {
-
+        return $this->session->get('lead_id', null);
     }
 
 	/**

@@ -140,8 +140,10 @@ class Request
      * @param $message
      * @param $lead_id
      */
-	private function sendMessage($message, $lead_id)
+	private function sendMessage($message)
     {
+        $lead_id = Session::get('lead_id');
+
         $message = Parser::parseShortcodes($message, Storage::get($lead_id));
 
         $response['metadata'] = 'SENT_BY_GIGA_AI';
@@ -156,7 +158,7 @@ class Request
         Request::send(self::PLATFORM_ENDPOINT . "me/messages?access_token=" . self::$token, $body);
     }
 
-    private function sendMessages($messages, $lead_id)
+    private function sendMessages($messages)
     {
         array_map(['Request', 'sendMessage'], $messages);
     }
