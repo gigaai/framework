@@ -134,16 +134,11 @@ class Model
 
     function isParsable($answer)
     {
-        if (is_string($answer))
-            return true;
-
-        if (isset($answer['_wait']))
-            return false;
-
-        if (isset($answer['type']) && $answer['type'] === 'callback')
-            return false;
-
-        if (isset($answer['attachment']))
+        if (
+            array_key_exists('_wait', $answer) ||
+            (array_key_exists('type', $answer) && $answer['type'] === 'callback') ||
+            array_key_exists('attachment', $answer)
+        )
             return false;
 
         return true;
