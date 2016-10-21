@@ -160,7 +160,7 @@ class Request
 
     private function sendMessages($messages)
     {
-        array_map(['Request', 'sendMessage'], $messages);
+        array_map(['self', 'sendMessage'], $messages);
     }
 
     /**

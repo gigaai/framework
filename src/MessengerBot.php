@@ -216,7 +216,7 @@ class MessengerBot
 	{
 		$messages = $this->model->parseWithoutSave($messages);
 
-		$this->request->sendMessages($messages, $this->getUserId());
+		$this->request->sendMessages($messages);
 
 		return $this;
 	}
