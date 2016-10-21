@@ -34,8 +34,6 @@ class MessengerBot
     private $serializer;
 
     /**
-     * MessengerBot constructor.
-     *
      * Load the required resources
      *
      * @param array $config
@@ -63,10 +61,9 @@ class MessengerBot
         $this->serializer = new Serializer();
 	}
 
-
-    public function answer($ask, $response = null)
+    public function answer($ask, $answers = null)
 	{
-		return $this->answers($ask, $response);
+		return $this->answers($ask, $answers);
 	}
 
 	/**
@@ -103,12 +100,12 @@ class MessengerBot
 
 				$this->received_text    = isset($event->message->text) ? $event->message->text : null;
 
-				$this->responseEvent($event);
+				$this->processEvent($event);
 			}
 		}
 	}
 
-	public function responseEvent($event)
+	public function processEvent($event)
 	{
 		// Currently, we only handle message and postback
 		if ( ! isset($event->message) && ! isset($event->postback))
@@ -325,6 +322,11 @@ class MessengerBot
         return null;
     }
 
+    public static function getLeadId()
+    {
+
+    }
+
 	/**
 	 * Save the auto stop state
 	 *
@@ -340,7 +342,6 @@ class MessengerBot
      * Wait for intended actions
      *
      * @param $action
-     * @param string $message_type
      */
     public function wait($action)
     {

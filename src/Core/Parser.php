@@ -12,9 +12,9 @@ class Parser
 	 */
 	public static function parseAnswer($answer)
 	{
-		$message = array(
-			'attachment' => array()
-		);
+		$message = [
+			'attachment' => []
+		];
 
 		if (is_array($answer) && ! array_key_exists('quick_replies', $answer))
 		{
@@ -27,7 +27,7 @@ class Parser
 			// If it's generic and super short hand.
 			if ( ! empty($answer[0]) && array_key_exists('title', $answer[0]))
 			{
-				$message['attachment']['payload'] = array();
+				$message['attachment']['payload'] = [];
 				$message['attachment']['payload']['elements'] = $answer;
 			}
 
@@ -48,12 +48,12 @@ class Parser
 
 			$content = self::parseAnswer($answer[0]);
 
-			return $content + array('quick_replies' => $quick_replies);
+			return $content + ['quick_replies' => $quick_replies];
 		}
 
 		if (self::isAttachmentMessage($answer))
 		{
-			$message['attachment'] = array();
+			$message['attachment'] = [];
 
 			$message['attachment']['type']              = $answer['type'];
 			$message['attachment']['payload']['url']    = $answer['url'];
@@ -62,7 +62,7 @@ class Parser
 		if (is_string($answer))
 		{
 			// If it's a text link with prefix `image:` `audio:` `video:` `file:`
-			foreach (array('image', 'audio', 'video', 'file') as $type)
+			foreach (['image', 'audio', 'video', 'file'] as $type)
 			{
 				if (strpos($answer, $type . ':') !== false)
 				{
@@ -75,10 +75,10 @@ class Parser
 			// If it's URL. Detect is audio, video, image...
 			if (filter_var($answer, FILTER_VALIDATE_URL))
 			{
-				return self::parseAnswer(array(
+				return self::parseAnswer([
 					'type'  => self::detectAttachmentType($answer),
 					'url'   => $answer
-				));
+				]);
 			}
 
 			// If it's plain text

@@ -25,6 +25,7 @@ class Model
 
     public function __construct()
     {
+        // Load serializer to serialize callback
         $this->serializer = new Serializer();
     }
 
@@ -159,7 +160,7 @@ class Model
         if ($this->isShorthand($answers))
             return array(Parser::parseAnswer($answers));
 
-        return array_map(array('\GigaAI\Core\Parser', 'parseAnswer'), $answers);
+        return array_map(['\GigaAI\Core\Parser', 'parseAnswer'], $answers);
     }
 
     private function isShorthand($answers)
@@ -196,7 +197,7 @@ class Model
             $related->save();
         }
         else {
-            $this->current_node->wait = $action;
+            $this->current_node->wait = ltrim($action, '@');
 
             $this->current_node = $this->current_node->save();
         }

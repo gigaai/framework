@@ -133,6 +133,12 @@ class Request
 		}
 	}
 
+    /**
+     * Send a single message
+     *
+     * @param $message
+     * @param $lead_id
+     */
 	private function sendMessage($message, $lead_id)
     {
         $message = Parser::parseShortcodes($message, Storage::get($lead_id));
@@ -146,7 +152,12 @@ class Request
             'message' => $message
         ];
 
-        Request::send("https://graph.facebook.com/v2.6/me/messages?access_token=" . self::$token, $body);
+        Request::send(self::PLATFORM_ENDPOINT . "me/messages?access_token=" . self::$token, $body);
+    }
+
+    private function sendMessages($messages, $lead_id)
+    {
+        array_map(['Request', 'sendMessage'], $messages);
     }
 
     public static function getInstance()

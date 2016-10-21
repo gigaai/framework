@@ -43,9 +43,14 @@ function giga_match($pattern, $string)
 	return preg_match("/^$pattern$/i", $string);
 }
 
-if ( ! function_exists( 'dd' ) )
+function current_lead_id()
 {
-	function dd($object)
+    
+}
+
+if ( ! function_exists( 'sd' ) )
+{
+	function sd($object)
 	{
 		echo '<pre>';
 		print_r($object);
