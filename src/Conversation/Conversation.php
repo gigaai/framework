@@ -1,13 +1,15 @@
 <?php
 
-namespace GigaAI\Http;
+namespace GigaAI\Conversation;
 
 use GigaAI\Shared\EasyCall;
 use GigaAI\Shared\Singleton;
 
-class Session
+class Conversation
 {
     use EasyCall, Singleton;
+
+    private $shared;
 
     /**
      * Get config by key
@@ -18,8 +20,8 @@ class Session
      */
     private function get($key, $default = null)
     {
-        if ( ! empty($_SESSION[$key]))
-            return $_SESSION[$key];
+        if ( ! empty($this->shared[$key]))
+            return $this->shared[$key];
 
         return $default;
     }
@@ -37,34 +39,24 @@ class Session
         {
             foreach ($key as $k => $v)
             {
-                $_SESSION[$k] = $v;
+                $this->shared[$k] = $v;
             }
 
             return $this;
         }
 
-        $_SESSION[$key] = $value;
+        $this->shared[$key] = $value;
 
         return $this;
     }
 
     private function has($key)
     {
-        return isset($_SESSION[$key]);
+        return isset($this->shared[$key]);
     }
 
     private function delete($key)
     {
-        unset($_SESSION[$key]);
-    }
-
-    public static function getInstance()
-    {
-        if (null === static::$instance) {
-            session_start();
-
-            static::$instance = new static();
-        }
-        return static::$instance;
+        unset($this->shared[$key]);
     }
 }

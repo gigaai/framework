@@ -2,6 +2,7 @@
 
 namespace GigaAI\Http;
 
+use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
 use GigaAI\Core\Parser;
 use GigaAI\Shared\Singleton;
@@ -142,9 +143,14 @@ class Request
      */
 	private function sendMessage($message)
     {
-        $lead_id = Session::get('lead_id');
+        $lead_id = Conversation::get('lead_id');
 
         $message = Parser::parseShortcodes($message, Storage::get($lead_id));
+
+        /** Support old _wait */
+        if (!empty($message['_wait']) && is_string($message['_wait'])) {
+            Storage::set($lead_id, '_wait', $message['_wait']);
+        }
 
         $response['metadata'] = 'SENT_BY_GIGA_AI';
 
