@@ -4,7 +4,7 @@ namespace GigaAI;
 
 use GigaAI\Storage\Storage;
 use GigaAI\Http\Request;
-use GigaAI\Core\Parser;
+use GigaAI\Http\Session;
 use GigaAI\Core\Model;
 use GigaAI\Core\Config;
 use SuperClosure\Serializer;

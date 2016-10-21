@@ -4,6 +4,7 @@ namespace GigaAI\Http;
 
 use GigaAI\Core\Config;
 use GigaAI\Core\Parser;
+use GigaAI\Shared\Singleton;
 use GigaAI\Storage\Storage;
 use GigaAI\Shared\EasyCall;
 /**
@@ -13,7 +14,7 @@ use GigaAI\Shared\EasyCall;
  */
 class Request
 {
-    use EasyCall;
+    use Singleton, EasyCall;
 
     /**
      * Received request data
@@ -160,6 +161,11 @@ class Request
         array_map(['Request', 'sendMessage'], $messages);
     }
 
+    /**
+     * Override Singleton trait
+     *
+     * @return Request|static
+     */
     public static function getInstance()
     {
         if (null === self::$instance) {
@@ -169,8 +175,4 @@ class Request
 
         return self::$instance;
     }
-
-    private function __construct(){}
-    private function __clone(){}
-    private function __wakeup(){}
 }
