@@ -134,12 +134,14 @@ class Model
 
     function isParsable($answer)
     {
-        if (
-            array_key_exists('_wait', $answer) ||
-            (array_key_exists('type', $answer) && $answer['type'] === 'callback') ||
-            array_key_exists('attachment', $answer)
-        )
-            return false;
+        if (is_array($answer)) {
+            if (
+                array_key_exists('_wait', $answer) ||
+                (array_key_exists('type', $answer) && $answer['type'] === 'callback') ||
+                array_key_exists('attachment', $answer)
+            )
+                return false;
+        }
 
         return true;
     }

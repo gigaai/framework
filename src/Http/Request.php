@@ -172,6 +172,39 @@ class Request
     }
 
     /**
+     * Get Message Type and Pattern of an Event
+     *
+     * @param $event
+     * @return array
+     */
+    private function getTypeAndPattern($event)
+    {
+        $type = 'text';
+        $pattern = '';
+
+        // For Text Message
+        if (isset($event->message) && isset($event->message->text))
+            $pattern = $event->message->text;
+
+        // For Attachment Message
+        if (isset($event->message) && isset($event->message->attachments)) {
+            $type = 'attachment';
+
+            if (isset($event->message->attachments[0]->type))
+                $pattern = $event->message->attachments[0]->type;
+        }
+
+        // For Payload Message
+        if (isset($event->postback->payload)) {
+            $type = 'payload';
+            $pattern = $event->postback->payload;
+        }
+
+        return compact('type', 'pattern');
+    }
+
+
+    /**
      * Override Singleton trait
      *
      * @return Request|static

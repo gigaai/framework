@@ -113,37 +113,29 @@ class MessengerBot
         if (isset($event->message)) {
             $this->message = $event->message;
 
+            // If current message is send from Lead
             if ( ! isset($event->message->metadata) || $event->message->metadata != 'SENT_BY_GIGA_AI') {
 
                 if ( ! $this->conversation->has('lead_id')) {
                     $this->conversation->set('lead_id', $event->sender->id);
 
-                    // Save user data if not exists.
+                    // Save lead data if not exists.
                     $this->storage->pull($event->sender->id);
                 }
             }
         }
 
-        $message_type = 'text';
-        $ask = '';
+        $type_pattern = $this->request->getTypeAndPattern($event);
 
-        if (isset($event->message) && isset($event->message->text))
-            $ask = $event->message->text;
+        // We'll check to response intended action first
+        if ($this->responseIntendedAction())
+            return;
 
-        if (isset($event->message) && isset($event->message->attachments)) {
-            $message_type = 'attachment';
+        $nodes = $this->findNodes($type_pattern['type'], $type_pattern['pattern']);
 
-            if (isset($event->message->attachments[0]->type))
-                $ask = $event->message->attachments[0]->type;
-        }
-
-        if (isset($event->postback->payload)) {
-            $message_type = 'payload';
-            $ask = $event->postback->payload;
-        }
-
-        $this->findAndResponse($message_type, $ask);
+        $this->response($nodes);
     }
+
 
     /**
      * Response sender message
@@ -220,21 +212,17 @@ class MessengerBot
      * @param String $ask Message or Payload name
      * @param string $data_set_type text, payload or default
      *
-     * @return void
+     * @return Node[]
      */
-    private function findAndResponse($message_type, $ask, $data_set_type = 'text')
+    private function findNodes($message_type, $ask, $data_set_type = 'text')
     {
-        // We'll check to response intended action first
-        if ($this->responseIntendedAction())
-            return;
-
         $nodes = Node::findByTypeAndPattern($message_type, $ask);
 
         if (empty($nodes)) {
             $nodes = Node::findByTypeAndPattern('default');
         }
 
-        $this->response($nodes);
+        return $nodes;
     }
 
     /**
@@ -253,6 +241,7 @@ class MessengerBot
 
             $this->storage->set($this->getLeadId(), '_wait', false);
 
+            // Get Nodes for intended actions.
             if (is_numeric($waiting))
             {
                 $nodes = Node::find($waiting);
@@ -340,7 +329,7 @@ class MessengerBot
     }
 
     /**
-     * Wait for intended actions
+     * Named Intended Action
      *
      * @param $action
      */
@@ -357,6 +346,12 @@ class MessengerBot
             $this->model->addIntendedAction($action);
     }
 
+    /**
+     * Index Intended Action
+     *
+     * @param callable $callback
+     * @return $this
+     */
     public function then(callable $callback)
     {
         $this->model->addIntendedAction($callback);
@@ -364,6 +359,11 @@ class MessengerBot
         return $this;
     }
 
+    /**
+     * Keep staying in current intended action.
+     *
+     * @param $messages
+     */
     public function keep($messages)
     {
         $previous_intended_action = Conversation::get('previous_intended_action');
