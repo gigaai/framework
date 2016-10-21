@@ -12,25 +12,6 @@ class Node extends \Illuminate\Database\Eloquent\Model
         'answers' => 'array'
     ];
 
-    public static function extractAnswers($nodes)
-    {
-        $output = [];
-
-        foreach ($nodes as $node) {
-
-            // If default, then return only first row fetched!
-            if ($node->type === 'default')
-                return ['default' => $node->answers];
-
-            if ( ! isset($output[$node->pattern]))
-                $output[$node->pattern] = [];
-
-            $output[$node->pattern] = $node->answers;
-        }
-
-        return $output;
-    }
-
     /**
      * Get node by node type and pattern
      *
