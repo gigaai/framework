@@ -165,7 +165,7 @@ class MessengerBot
                     // If the callback return, we'll send that message to user.
                     if ($return != null || ! empty($return))
                     {
-                        $return = $this->model->addReply($return);
+                        $return = $this->model->parseWithoutSave($return);
 
                         foreach ($return as $message) {
                             $this->request->sendMessage($message, $sender_id);
@@ -214,7 +214,7 @@ class MessengerBot
 	 */
 	public function says($messages)
 	{
-		$messages = $this->model->addReply($messages);
+		$messages = $this->model->parseWithoutSave($messages);
 
 		$this->response($messages);
 
@@ -355,7 +355,7 @@ class MessengerBot
 
 	public function then(callable $callback)
     {
-        $this->model->addThenAction($callback);
+        $this->model->addIntendedAction($callback);
 
         return $this;
     }

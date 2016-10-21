@@ -4,6 +4,7 @@ namespace GigaAI\Core;
 
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Storage;
+use SuperClosure\Serializer;
 
 class Model
 {
@@ -24,7 +25,7 @@ class Model
 
     public function __construct()
     {
-        //
+        $this->serializer = new Serializer();
     }
 
     /**
@@ -152,7 +153,7 @@ class Model
         return Node::findByTypeAndPattern($type, $pattern);
     }
 
-    public function addReply($answers)
+    public function parseWithoutSave($answers)
     {
         // Short hand method of attachments
         if ($this->isShorthand($answers))
@@ -180,25 +181,24 @@ class Model
             return;
 
         /** @todo  Support old syntax _wait => action */
-        $this->current_node->wait = $action;
 
-        $this->current_node = $this->current_node->save();
-    }
+        if (is_callable($action))
+        {
+            $related = $this->current_node;
 
-    public function addThenAction(callable $callback)
-    {
-        if (empty($this->current_node->type) || $this->current_node->type == 'welcome')
-            return;
+            $then_node = $this->addNode([
+                'type'      => 'callback',
+                'callback'  => $action
+            ], 'intended', 'IA#' . $related->id);
 
-        $related = $this->current_node;
+            $related->wait = $then_node->id;
 
-        $then_node = $this->addNode([
-            'type'      => 'callback',
-            'callback'  => $callback
-        ], 'intended', 'IA#' . $related->id);
+            $related->save();
+        }
+        else {
+            $this->current_node->wait = $action;
 
-        $related->wait = $then_node->id;
-
-        $related->save();
+            $this->current_node = $this->current_node->save();
+        }
     }
 }

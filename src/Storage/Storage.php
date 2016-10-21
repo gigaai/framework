@@ -88,7 +88,7 @@ class Storage
 
     private function insertOrUpdateUser($user)
     {
-        $meta = array();
+        $meta = [];
 
         foreach ($user as $key => $value) {
             if (!in_array($key, (new Lead)->getFillable())) {
