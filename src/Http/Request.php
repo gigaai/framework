@@ -150,6 +150,8 @@ class Request
         /** Support old _wait */
         if (!empty($message['_wait']) && is_string($message['_wait'])) {
             Storage::set($lead_id, '_wait', $message['_wait']);
+
+            return;
         }
 
         $response['metadata'] = 'SENT_BY_GIGA_AI';

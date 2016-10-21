@@ -246,11 +246,24 @@ class MessengerBot
     {
         $waiting = $this->storage->get($this->getLeadId(), '_wait');
 
+        // We set previous_waiting to back to support $bot->keep() method
+        $this->conversation->set('previous_intended_action', $waiting);
+
         if ( ! empty($waiting)) {
 
             $this->storage->set($this->getLeadId(), '_wait', false);
 
-            $nodes = Node::findByTypeAndPattern('intended', $waiting);
+            if (is_numeric($waiting))
+            {
+                $nodes = Node::find($waiting);
+
+                if ( ! empty($nodes))
+                    $nodes = [$nodes];
+            }
+            else
+            {
+                $nodes = Node::findByTypeAndPattern('intended', $waiting);
+            }
 
             $this->response($nodes);
 
@@ -333,9 +346,11 @@ class MessengerBot
      */
     public function wait($action)
     {
+        $lead_id = Conversation::get('lead_id');
+
         // For chaining after $bot->say() method
-        if (isset($this->sender_id) && ! empty($this->sender_id))
-            $this->storage->set($this->sender_id, '_wait', $action);
+        if ($lead_id != null)
+            $this->storage->set($lead_id, '_wait', $action);
 
         // For chaining after $bot->answer() method
         else
@@ -351,8 +366,12 @@ class MessengerBot
 
     public function keep($messages)
     {
-        $this->says($messages);
+        $previous_intended_action = Conversation::get('previous_intended_action');
 
-        //
+        if ($previous_intended_action == null)
+            return;
+
+        $this->says($messages);
+        $this->wait($previous_intended_action);
     }
 }
