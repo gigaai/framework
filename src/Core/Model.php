@@ -42,7 +42,7 @@ class Model
             $node_type = 'text';
 
             // If user set payload, default, welcome message.
-            foreach (array('payload', 'default', 'attachment') as $type) {
+            foreach (['payload', 'default', 'attachment'] as $type) {
                 if (strpos($asks, $type . ':') !== false) {
                     $node_type = $type;
 
@@ -57,7 +57,7 @@ class Model
 
             if (is_callable($answers)) {
                 $this->addNode(
-                    array('type' => 'callback', 'callback' => $answers),
+                    ['type' => 'callback', 'callback' => $answers],
                     $node_type,
                     $asks
                 );
@@ -77,12 +77,12 @@ class Model
                 if ($this->isParsable($answers))
                     $answers = Parser::parseAnswer($answers);
 
-                $this->addNode(array($answers), $node_type, $asks);
+                $this->addNode([$answers], $node_type, $asks);
 
                 return $this;
             }
 
-            $parsed = array();
+            $parsed = [];
 
             foreach ($answers as $answer) {
                 if ($this->isParsable($answer))
@@ -100,7 +100,7 @@ class Model
                 foreach ($asks as $event => $nodes) {
                     $prepend = $event === 'text' ? '' : $event . ':';
                     if ($event === 'default')
-                        $nodes = array($nodes);
+                        $nodes = [$nodes];
 
                     foreach ($nodes as $ask => $responses) {
                         $this->parseAnswers($prepend . $ask, $responses);
@@ -161,7 +161,7 @@ class Model
     {
         // Short hand method of attachments
         if ($this->isShorthand($answers))
-            return array(Parser::parseAnswer($answers));
+            return [Parser::parseAnswer($answers)];
 
         return array_map(['\GigaAI\Core\Parser', 'parseAnswer'], $answers);
     }

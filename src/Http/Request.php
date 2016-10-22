@@ -60,7 +60,7 @@ class Request
 
         $this->verifyTokenFromFacebook();
 
-		$this->subscribeFacebook();
+        $this->subscribeFacebook();
 
         // Run thread settings
         ThreadSettings::init();
@@ -122,18 +122,18 @@ class Request
     }
 
     private function subscribeFacebook()
-	{
+    {
         $end_point = self::PLATFORM_ENDPOINT . "me/subscribed_apps?access_token=" . self::$token;
 
         $received = $this->getReceivedData('subscribe');
 
-		if ($received != null) {
+        if ($received != null) {
 
-			$post = $this->send($end_point);
+            $post = $this->send($end_point);
 
-			dd($post);
-		}
-	}
+            dd($post);
+        }
+    }
 
     /**
      * Send a single message
@@ -141,7 +141,7 @@ class Request
      * @param $message
      * @param $lead_id
      */
-	private function sendMessage($message)
+    private function sendMessage($message)
     {
         $lead_id = Conversation::get('lead_id');
 
