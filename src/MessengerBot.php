@@ -150,6 +150,11 @@ class MessengerBot
 
         foreach ($nodes as $node) {
 
+            /** New wait */
+            if ( ! empty($node->wait)) {
+                $this->storage->set($lead_id, '_wait', $node->wait);
+            }
+
             /** Process callback */
             if (! empty($node->answers) && isset($node->answers['type']) && $node->answers['type'] === 'callback') {
 
@@ -168,11 +173,6 @@ class MessengerBot
                 }
 
                 continue;
-            }
-
-            /** New wait */
-            if ( ! empty($node->wait)) {
-                $this->storage->set($lead_id, '_wait', $node->wait);
             }
 
             $this->request->sendMessages($node->answers);

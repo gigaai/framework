@@ -50,6 +50,11 @@ class Model
                 }
             }
 
+            if ($asks[0] == '@') {
+                $node_type  = 'intended';
+                $asks       = ltrim($asks, '@');
+            }
+            
             if (is_callable($answers)) {
                 $this->addNode(
                     array('type' => 'callback', 'callback' => $answers),
@@ -194,7 +199,7 @@ class Model
             $related->save();
         }
         else {
-            $this->current_node->wait = ltrim($action, '@');
+            $this->current_node->wait = $action;
 
             $this->current_node = $this->current_node->save();
         }

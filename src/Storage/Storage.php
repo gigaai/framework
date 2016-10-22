@@ -54,7 +54,7 @@ class Storage
 
         $lead = Request::getUserProfile($lead_id);
 
-        if (empty($lead['first_name']))
+        if (empty($lead['first_name']) || empty($lead['last_name']))
             return;
 
         // Parse event to array
