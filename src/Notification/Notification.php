@@ -1,14 +1,13 @@
 <?php
 
-namespace GigaAI\Subscription;
+namespace GigaAI\Notification;
 
-class Subscription
+use GigaAI\Shared\EasyCall;
+use GigaAI\Shared\Singleton;
+
+class Notification
 {
-
-    public function __construct()
-    {
-
-    }
+    use EasyCall, Singleton;
 
     public function addSubscribers($user_ids, $channels = 1)
     {

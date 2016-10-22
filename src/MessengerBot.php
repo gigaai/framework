@@ -10,24 +10,73 @@ use GigaAI\Core\Config;
 use SuperClosure\Serializer;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Eloquent\Lead;
+use GigaAI\Notification\Notification;
 
 class MessengerBot
 {
+    /**
+     * Request instance
+     *
+     * @var Request|static
+     */
     public $request;
 
+    /**
+     * Storage instance
+     *
+     * @var Storage
+     */
     public $storage;
 
-    private $model;
-
+    /**
+     * Config instance
+     *
+     * @var Config
+     */
     public $config;
 
-    private $serializer;
-
+    /**
+     * Conversation instance
+     *
+     * @var Conversation
+     */
     public $conversation;
 
+    /**
+     * Received request
+     *
+     * @var object
+     */
     public $received;
 
+    /**
+     * Notification instance
+     *
+     * @var Notification
+     */
+    public $notification;
+
+    /**
+     * Model parser
+     *
+     * @var Model
+     */
+    private $model;
+
+    /**
+     * Current parsing message
+     *
+     * @var array
+     */
     private $message;
+
+    /**
+     * Serializer instance
+     *
+     * @var Serializer
+     */
+    private $serializer;
+
     /**
      * Load the required resources
      *
@@ -35,9 +84,9 @@ class MessengerBot
      */
     public function __construct($instance = null)
     {
-        // Extension version
+        // Package Version
         if ( ! defined('GIGAAI_VERSION'))
-            define('GIGAAI_VERSION', '1.2');
+            define('GIGAAI_VERSION', '2.0');
 
         // Setup the configuration data
         $this->config = Config::getInstance();
@@ -45,18 +94,22 @@ class MessengerBot
             $this->config->set($config);
 
         // Make a Request instance. Not required but it will help user use $bot->request syntax
-        $this->request  = Request::getInstance();
+        $this->request      = Request::getInstance();
 
         // Make a Session instance. Not required but it will help user use $bot->session syntax
         $this->conversation = Conversation::getInstance();
 
         // Load the storage
-        $this->storage  = new Storage;
+        $this->storage      = new Storage;
 
         // Load the model
-        $this->model    = new Model;
+        $this->model        = new Model;
 
-        $this->serializer = new Serializer();
+        // We need to serialize Closure for dynamic data and intended actions
+        $this->serializer   = new Serializer();
+
+        // Boot the notification feature
+        $this->notification = Notification::getInstance();
     }
 
     public function answer($ask, $answers = null)
@@ -373,6 +426,12 @@ class MessengerBot
         $this->says($messages)->wait($previous_intended_action);
     }
 
+    /**
+     * Set tag the for the node
+     *
+     * @param $tag
+     * @return $this
+     */
     public function taggedAs($tag)
     {
         $this->model->taggedAs($tag);
