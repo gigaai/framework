@@ -15,60 +15,60 @@ class Config
 {
     use Singleton, EasyCall;
 
-	/**
-	 * Get config by key
-	 *
-	 * @param $key
-	 * @param null $default
-	 * @return mixed|null
-	 */
-	private function get($key, $default = null)
-	{
-		if ( ! empty($this->config[$key]))
-			return $this->config[$key];
+    /**
+     * Get config by key
+     *
+     * @param $key
+     * @param null $default
+     * @return mixed|null
+     */
+    private function get($key, $default = null)
+    {
+        if ( ! empty($this->config[$key]))
+            return $this->config[$key];
 
-		return $default;
-	}
+        return $default;
+    }
 
-	/**
-	 * Set config
-	 *
-	 * @param mixed $key
-	 * @param null $value
-	 * @return $this
-	 */
-	private function set($key, $value = null)
-	{
-		if (is_array($key) && null === $value)
-		{
-			foreach ($key as $k => $v)
-			{
-				$this->config[$k] = $v;
-			}
+    /**
+     * Set config
+     *
+     * @param mixed $key
+     * @param null $value
+     * @return $this
+     */
+    private function set($key, $value = null)
+    {
+        if (is_array($key) && null === $value)
+        {
+            foreach ($key as $k => $v)
+            {
+                $this->config[$k] = $v;
+            }
 
-			return $this;
-		}
+            return $this;
+        }
 
-		$this->config[$key] = $value;
+        $this->config[$key] = $value;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Load configuration from file. The file should returns an array of settings.
-	 *
-	 * @param String $path File path
-	 *
-	 * @return $this|void
-	 */
-	private function loadFromFile($path)
-	{
-		if ( ! is_file($path))
-			return;
+    /**
+     * Load configuration from file. The file should returns an array of settings.
+     *
+     * @param String $path File path
+     *
+     * @return $this|void
+     */
+    private function loadFromFile($path)
+    {
+        if ( ! is_file($path))
+            return;
 
-		$config = require_once $path;
+        $config = require_once $path;
 
-		if (is_array($config))
-			$this->config = $config;
-	}
+        if (is_array($config))
+            $this->config = $config;
+    }
 }

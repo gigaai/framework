@@ -16,9 +16,9 @@ trait EasyCall
      * @param array $args
      * @return mixed
      */
-    public function __call($name, $args = array())
+    public function __call($name, $args = [])
     {
-        return call_user_func_array(array($this, $name), $args);
+        return call_user_func_array([$this, $name], $args);
     }
 
     /**
@@ -28,10 +28,10 @@ trait EasyCall
      * @param array $args
      * @return mixed
      */
-    public static function __callStatic($name, $args = array())
+    public static function __callStatic($name, $args = [])
     {
         // Check if class is single ton
-        if (method_exists( __CLASS__, 'getInstance')) {
+        if (method_exists(__CLASS__, 'getInstance')) {
             return self::getInstance()->__call($name, $args);
         }
 
