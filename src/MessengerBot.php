@@ -56,7 +56,6 @@ class MessengerBot
         // Load the model
         $this->model    = new Model;
 
-
         $this->serializer = new Serializer();
     }
 
@@ -371,7 +370,6 @@ class MessengerBot
         if ($previous_intended_action == null)
             return;
 
-        $this->says($messages);
-        $this->wait($previous_intended_action);
+        $this->says($messages)->wait($previous_intended_action);
     }
 }

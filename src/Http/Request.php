@@ -179,8 +179,8 @@ class Request
      */
     private function getTypeAndPattern($event)
     {
-        $type = 'text';
-        $pattern = '';
+        $type       = 'text';
+        $pattern    = '';
 
         // For Text Message
         if (isset($event->message) && isset($event->message->text))

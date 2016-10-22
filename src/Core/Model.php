@@ -54,7 +54,7 @@ class Model
                 $node_type  = 'intended';
                 $asks       = ltrim($asks, '@');
             }
-            
+
             if (is_callable($answers)) {
                 $this->addNode(
                     array('type' => 'callback', 'callback' => $answers),
@@ -68,6 +68,7 @@ class Model
             $answers = (array)$answers;
 
             // We will keep _wait format.
+            // todo: This is no longer exists
             if ( ! empty($answers['_wait']))
                 return $this;
 
@@ -182,8 +183,6 @@ class Model
     {
         if (empty($this->current_node->type) || $this->current_node->type == 'welcome')
             return;
-
-        /** @todo  Support old syntax _wait => action */
 
         if (is_callable($action))
         {
