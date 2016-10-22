@@ -31,9 +31,9 @@ class MessengerBot
     /**
      * Load the required resources
      *
-     * @param array $config
+     * @param $instance
      */
-    public function __construct(array $config = [])
+    public function __construct($instance = null)
     {
         // Extension version
         if ( ! defined('GIGAAI_VERSION'))
