@@ -115,7 +115,7 @@ class MessengerBot
             // If current message is send from Lead
             if ( ! isset($event->message->metadata) || $event->message->metadata != 'SENT_BY_GIGA_AI') {
 
-                if ( ! $this->conversation->has('lead_id')) {
+                if ( ! $this->conversation->has('lead_id') && $event->sender->id != Config::get('page_id')) {
                     $this->conversation->set('lead_id', $event->sender->id);
 
                     // Save lead data if not exists.

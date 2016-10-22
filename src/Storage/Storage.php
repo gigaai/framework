@@ -59,7 +59,7 @@ class Storage
 
         // Parse event to array
         $lead['user_id']    = $lead_id;
-        $lead['subscribed'] = 1;
+        $lead['subscribe']  = 1;
 
         // Then call set method
         self::set($lead);
