@@ -372,4 +372,11 @@ class MessengerBot
 
         $this->says($messages)->wait($previous_intended_action);
     }
+
+    public function taggedAs($tag)
+    {
+        $this->model->taggedAs($tag);
+
+        return $this;
+    }
 }

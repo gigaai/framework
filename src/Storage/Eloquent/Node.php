@@ -6,7 +6,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
 {
     public $table = 'bot_nodes';
 
-    protected $fillable = ['instance_id', 'pattern', 'answers', 'wait', 'sources', 'type', 'status'];
+    protected $fillable = ['instance_id', 'pattern', 'answers', 'wait', 'sources', 'type', 'status', 'tags'];
 
     protected $casts = [
         'answers' => 'array'
@@ -43,12 +43,5 @@ class Node extends \Illuminate\Database\Eloquent\Model
         }
 
         return Node::whereRaw($where, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
-    }
-
-    public static function getAnswersByTypeAndPatterns($type = '', $pattern = '')
-    {
-        $nodes = self::findByTypeAndPattern($type, $pattern);
-
-        return self::extractAnswers($nodes);
     }
 }

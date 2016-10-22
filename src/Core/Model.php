@@ -200,7 +200,16 @@ class Model
         else {
             $this->current_node->wait = $action;
 
-            $this->current_node = $this->current_node->save();
+            $this->current_node->save();
         }
+    }
+
+    public function taggedAs($tag)
+    {
+        if (empty($this->current_node))
+            return;
+
+        $this->current_node->tags = $tag;
+        $this->current_node->save();
     }
 }
