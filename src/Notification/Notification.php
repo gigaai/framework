@@ -2,13 +2,18 @@
 
 namespace GigaAI\Notification;
 
+use GigaAI\Core\Model;
+use GigaAI\Http\Request;
 use GigaAI\Shared\EasyCall;
 use GigaAI\Shared\Singleton;
 use GigaAI\Storage\Eloquent\Lead;
+use GigaAI\Storage\Eloquent\Message;
 
 class Notification
 {
     use EasyCall, Singleton;
+
+    private $current_message;
 
     /**
      * Add subscribers to channels
@@ -46,7 +51,7 @@ class Notification
      * [1, 'foo'] -> returns any subscribers in either channel 1 or foo
      * 1, 'foo' -> returns any subscriber in both channel 1 and foo
      */
-    public function getSubscribers()
+    private function getSubscribers()
     {
         // Num args = 1: all. > 1 any
         $num_args   = func_num_args();
@@ -68,7 +73,7 @@ class Notification
 
         $channels = array_map('trim', $channels);
 
-        $regexp = $this->buildSearchSyntax($channels);
+        $regexp = implode('|', $channels);
 
         $leads = Lead::where('subscribe', 'REGEXP', $regexp)->get();
 
@@ -81,7 +86,7 @@ class Notification
             // Array should in another array
             if ($num_args > 1 && ! array_diff($channels, $lead_channels)) {
 
-                $subscribers = $lead;
+                $subscribers[] = $lead->user_id;
 
                 continue;
             }
@@ -89,59 +94,125 @@ class Notification
             // One array in another array
             if ($num_args === 1 && array_intersect($channels, $lead_channels))
             {
-                $subscribers = $lead;
+                $subscribers[] = $lead->user_id;
             }
         }
 
-        return $subscribers;
+        return array_unique($subscribers);
     }
 
-    private function buildSearchSyntax($channels = [])
+    /**
+     * Send Message To Leads
+     *
+     * @param $messages
+     * @param $lead_ids
+     * @return $this
+     */
+    private function sendMessageToLeads($messages, $lead_ids, $save = 'save')
     {
-        return implode('|', $channels);
+        $leads_id = (array) $lead_ids;
+
+        $model      = new Model;
+
+        $messages   = $model->parseWithoutSave($messages);
+
+        if ($save == 'save') {
+            $this->current_message = Message::create([
+                'to_lead' => implode(',', $leads_id),
+                'content' => json_encode($messages)
+            ]);
+        }
+
+        foreach ($leads_id as $lead_id)
+        {
+            Request::sendMessages($messages, $lead_id);
+        }
+
+        return $this;
     }
 
-    public function messageTo($user_ids, $messages)
+    /**
+     * Send Message To Channels
+     *
+     * Parameters:
+     *
+     * First param: Messages to be send
+     *
+     * Next params:
+     * 1 -> Send to channel 1
+     * 1, 2 -> Send to leads in both channel 1 and 2
+     * [1,2] -> Send to leads in either channel 1 or 2
+     *
+     * @throws \Exception
+     * @return $this
+     */
+    private function sendMessageToChannels()
+    {
+        // Num args = 1: all. > 1 any
+        $num_args   = func_num_args();
+        $args       = func_get_args();
+
+        $channels = [];
+
+        if ($num_args < 2)
+        {
+            throw new \Exception('Invalid arguments!');
+        }
+
+        $messages = $args[0];
+
+        $channels = [$args[1]];
+
+        if ($num_args > 2)
+        {
+            array_shift($args);
+
+            $channels = $args;
+        }
+
+        $this->current_message = Message::create([
+            'to_channel' => implode(',', $channels),
+            'content' => json_encode($messages)
+        ]);
+
+        $subscribers = @call_user_func_array([$this, 'getSubscribers'], $channels);
+
+        $this->sendMessageToLeads($messages, $subscribers, 'no-save');
+
+        return $this;
+    }
+
+    private function at($time)
+    {
+
+    }
+
+    private function routines($routine)
     {
         return $this;
     }
 
-    public function messageToChannels($channels, $messages)
+    private function startAt($time)
     {
         return $this;
     }
 
-    public function at($time)
-    {
-
-    }
-
-    public function routines($routine)
+    private function endAt($time)
     {
         return $this;
     }
 
-    public function startAt($time)
+    private function taggedAs($tag)
     {
         return $this;
     }
 
-    public function endAt($time)
+    private function many()
     {
         return $this;
     }
 
-    public function taggedAs($tag)
-    {
-        return $this;
-    }
-
-    public function many()
-    {
-        return $this;
-    }
-
-    public function once()
+    private function once()
     {
         return $this;
     }

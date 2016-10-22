@@ -141,9 +141,10 @@ class Request
      * @param $message
      * @param $lead_id
      */
-    private function sendMessage($message)
+    private function sendMessage($message, $lead_id = null)
     {
-        $lead_id = Conversation::get('lead_id');
+        if (is_null($lead_id))
+            $lead_id = Conversation::get('lead_id');
 
         $message = Parser::parseShortcodes($message, Storage::get($lead_id));
 
@@ -166,9 +167,12 @@ class Request
         Request::send(self::PLATFORM_ENDPOINT . "me/messages?access_token=" . self::$token, $body);
     }
 
-    private function sendMessages($messages)
+    private function sendMessages($messages, $lead_id = null)
     {
-        array_map(['self', 'sendMessage'], $messages);
+        foreach ($messages as $message)
+        {
+            $this->sendMessage($message, $lead_id);
+        }
     }
 
     /**
