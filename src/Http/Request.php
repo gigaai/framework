@@ -184,7 +184,7 @@ class Request
 
         // For Text Message
         if (isset($event->message) && isset($event->message->text))
-            $pattern = $event->message->text;
+            $pattern    = $event->message->text;
 
         // For Attachment Message
         if (isset($event->message) && isset($event->message->attachments)) {
@@ -196,8 +196,16 @@ class Request
 
         // For Payload Message
         if (isset($event->postback->payload)) {
-            $type = 'payload';
-            $pattern = $event->postback->payload;
+            $type       = 'payload';
+            $pattern    = $event->postback->payload;
+        }
+
+        // For Quick Replies
+        if (isset($event->message) && isset($event->message->quick_reply) &&
+         ! empty($event->message->quick_reply->payload))
+        {
+            $type       = 'payload';
+            $pattern    = $event->message->quick_reply->payload;
         }
 
         return compact('type', 'pattern');
