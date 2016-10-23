@@ -69,7 +69,7 @@ class Notification
 
         if (isset($this->current_message->end_at) && $this->current_message->end_at > $now) {
             unset($this->current_message);
-            throw new \Exception('This notification is expired. Please create another!');
+            throw new \Exception('This notification has expired. Please create another!');
         }
 
         return $this;

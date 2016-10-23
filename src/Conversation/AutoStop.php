@@ -2,6 +2,7 @@
 
 namespace GigaAI\Conversation;
 
+use GigaAI\Storage\Eloquent\Lead;
 
 class AutoStop
 {
@@ -25,4 +26,20 @@ class AutoStop
      * @var string
      */
     public $block_when = '';
+
+
+    public static function init()
+    {
+
+    }
+
+    public static function getStatus($lead_id = null)
+    {
+        if (is_null($lead_id))
+            $lead_id = Conversation::get('lead_id');
+
+        return Lead::where('lead_id', $lead_id)->first()->pluck('auto_stop');
+    }
+
+
 }

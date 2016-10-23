@@ -4,8 +4,10 @@ RENAME TABLE `bot_answers` TO `bot_nodes`;
 ALTER TABLE `bot_nodes` ADD `wait` VARCHAR(99) NULL AFTER `answers`;
 ALTER TABLE `bot_nodes` ADD `instance_id` INT UNSIGNED NULL AFTER `id`;
 ALTER TABLE `bot_nodes` ADD `tags` VARCHAR(255) NULL AFTER `status`;
-ALTER TABLE `bot_leads` ADD `instance_id` INT UNSIGNED NULL AFTER `id`;
 
+
+ALTER TABLE `bot_leads` ADD `instance_id` INT UNSIGNED NULL AFTER `id`;
+ALTER TABLE `bot_leads` ADD `is_payment_enabled` VARCHAR(30) NULL AFTER `subscribe`;
 --
 -- Table structure for table `bot_instances`
 --

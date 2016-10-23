@@ -87,7 +87,7 @@ class MessengerBot
         // Package Version
         if ( ! defined('GIGAAI_VERSION'))
             define('GIGAAI_VERSION', '2.0');
-
+        
         // Setup the configuration data
         $this->config = Config::getInstance();
         if ( ! empty($config))
