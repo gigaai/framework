@@ -189,12 +189,18 @@ class MessengerBot
         }
 
         $type_pattern = $this->request->getTypeAndPattern($event);
-
+        
         // We'll check to response intended action first
         if ($this->responseIntendedAction())
             return;
 
         $nodes = $this->findNodes($type_pattern['type'], $type_pattern['pattern']);
+
+        foreach ($nodes as $index => $node)
+        {
+            if ( ! giga_match($node->pattern, $type_pattern['pattern']))
+                unset($nodes[$index]);
+        }
 
         $this->response($nodes);
     }
