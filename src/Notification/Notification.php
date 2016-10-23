@@ -44,7 +44,22 @@ class Notification
 
     private function create($notification)
     {
-        $this->current_message = Message::create($notification);
+        if (empty($notification['content']) || (empty($notification['to_lead']) && empty($notification['to_channel']))) {
+            throw new \Exception('Cannot create notification. A required field is missing!');
+        }
+
+        // If this notification has already been created. Just find the notification
+        if (! empty($notification['unique_id'])) {
+            $this->find($notification['unique_id']);
+        }
+
+        // Create the notification
+        if (is_null($this->current_message) || ! $this->current_message) {
+            $model = new Model;
+            $notification['content'] = $model->parseWithoutSave($notification['content']);
+
+            $this->current_message = Message::firstOrCreate($notification);
+        }
 
         return $this;
     }
@@ -60,17 +75,17 @@ class Notification
     {
         $now = Carbon::now();
 
-        $this->current_message = Message::where('unique_id', $unique_id)->first();
+        $message = Message::where('unique_id', $unique_id)->first();
 
-        if (isset($this->current_message->start_at) && $this->current_message->start_at < $now) {
-            unset($this->current_message);
+        if (isset($message->start_at) && $message->start_at < $now) {
             throw new \Exception('This notification is not ready to send. Please be patient!');
         }
 
-        if (isset($this->current_message->end_at) && $this->current_message->end_at > $now) {
-            unset($this->current_message);
+        if (isset($message->end_at) && $message->end_at > $now) {
             throw new \Exception('This notification has expired. Please create another!');
         }
+
+        $this->current_message = $message;
 
         return $this;
     }
@@ -82,7 +97,7 @@ class Notification
      */
     private function send()
     {
-        if ( ! $this->current_message) {
+        if ( ! $this->current_message || is_null($this->current_message)) {
             throw new \Exception('No notification found!');
         }
 
@@ -106,6 +121,7 @@ class Notification
         @call_user_func_array([$this, $call], [$notification->content, $to]);
 
         $notification->sent_count++;
+        $notification->sent_at = Carbon::now();
 
         $notification->save();
     }
