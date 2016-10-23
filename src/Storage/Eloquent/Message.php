@@ -12,7 +12,8 @@ class Message extends \Illuminate\Database\Eloquent\Model
     ];
 
     protected $casts = [
-        'to_channel' => 'array'
+        'to_channel' => 'array',
+        'content'    => 'array'
     ];
 
     protected $dates = [

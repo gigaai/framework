@@ -98,12 +98,12 @@ class Notification
             $call = 'sendMessageToLeads';
         }
 
-        if ($notification->sent_count >= $notification->send_limit)
+        if (is_numeric($notification->send_limit) && $notification->sent_count >= $notification->send_limit)
         {
             throw new \Exception('You have already reached limit notification to send!');
         }
 
-        @call_user_func_array([$this, $call], $to);
+        @call_user_func_array([$this, $call], [$notification->content, $to]);
 
         $notification->sent_count++;
 
@@ -166,13 +166,9 @@ class Notification
      */
     private function sendMessageToLeads($messages, $lead_ids)
     {
-        $leads_id = (array) $lead_ids;
+        $lead_ids = (array) $lead_ids;
 
-        $model      = new Model;
-
-        $messages   = $model->parseWithoutSave($messages);
-
-        foreach ($leads_id as $lead_id)
+        foreach ($lead_ids as $lead_id)
         {
             Request::sendMessages($messages, $lead_id);
         }

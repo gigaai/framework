@@ -52,10 +52,6 @@ class Request
     {
         self::$received = (!empty ($_REQUEST)) ? $_REQUEST : json_decode(file_get_contents('php://input'));
 
-        // Sleep if app don't get any request
-        if (empty(self::$received))
-            return;
-
         self::$token = Config::get('page_access_token');
 
         $this->verifyTokenFromFacebook();
@@ -155,7 +151,7 @@ class Request
             return;
         }
 
-        $response['metadata'] = 'SENT_BY_GIGA_AI';
+        // $message['metadata'] = 'SENT_BY_GIGA_AI';
 
         $body = [
             'recipient' => [
@@ -217,6 +213,7 @@ class Request
     {
         if (null === self::$instance) {
             self::$instance = new static();
+
             self::$instance->load();
         }
 

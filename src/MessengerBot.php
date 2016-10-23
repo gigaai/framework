@@ -112,6 +112,14 @@ class MessengerBot
         $this->notification = Notification::getInstance();
     }
 
+    /**
+     * Response user question with answers
+     *
+     * @param $ask
+     * @param null $answers
+     *
+     * @return MessengerBot
+     */
     public function answer($ask, $answers = null)
     {
         return $this->answers($ask, $answers);
@@ -132,6 +140,9 @@ class MessengerBot
         return $this;
     }
 
+    /**
+     * Run the bot
+     */
     public function run()
     {
         $received = $this->request->getReceivedData();
