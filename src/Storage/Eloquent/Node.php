@@ -6,7 +6,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
 {
     public $table = 'bot_nodes';
 
-    protected $fillable = ['instance_id', 'pattern', 'answers', 'wait', 'sources', 'type', 'status', 'tags'];
+    protected $fillable = ['instance_id', 'pattern', 'answers', 'wait', 'sources', 'type', 'notification_type', 'status', 'tags'];
 
     protected $casts = [
         'answers' => 'array'

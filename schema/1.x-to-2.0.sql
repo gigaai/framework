@@ -4,6 +4,7 @@ RENAME TABLE `bot_answers` TO `bot_nodes`;
 ALTER TABLE `bot_nodes` ADD `wait` VARCHAR(99) NULL AFTER `answers`;
 ALTER TABLE `bot_nodes` ADD `instance_id` INT UNSIGNED NULL AFTER `id`;
 ALTER TABLE `bot_nodes` ADD `tags` VARCHAR(255) NULL AFTER `status`;
+ALTER TABLE `bot_nodes` ADD `notification_type` VARCHAR(20) NULL DEFAULT 'REGULAR' AFTER `type`;
 
 
 ALTER TABLE `bot_leads` ADD `instance_id` INT UNSIGNED NULL AFTER `id`;
@@ -71,3 +72,5 @@ ALTER TABLE `bot_messages`
 --
 ALTER TABLE `bot_messages`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `bot_messages` ADD `notification_type` VARCHAR(20) NULL DEFAULT 'REGULAR' AFTER `status`;
