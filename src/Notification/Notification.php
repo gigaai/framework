@@ -2,6 +2,7 @@
 
 namespace GigaAI\Notification;
 
+use Carbon\Carbon;
 use GigaAI\Core\Model;
 use GigaAI\Http\Request;
 use GigaAI\Shared\EasyCall;
@@ -41,6 +42,74 @@ class Notification
         ]);
     }
 
+    private function create($notification)
+    {
+        $this->current_message = Message::create($notification);
+
+        return $this;
+    }
+
+    /**
+     * Find by unique id and check for start_at and end_at
+     *
+     * @param $unique_id
+     * @return $this
+     * @throws \Exception
+     */
+    private function find($unique_id)
+    {
+        $now = Carbon::now();
+
+        $this->current_message = Message::where('unique_id', $unique_id)->first();
+
+        if (isset($this->current_message->start_at) && $this->current_message->start_at < $now) {
+            unset($this->current_message);
+            throw new \Exception('This notification is not ready to send. Please be patient!');
+        }
+
+        if (isset($this->current_message->end_at) && $this->current_message->end_at > $now) {
+            unset($this->current_message);
+            throw new \Exception('This notification is expired. Please create another!');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Send Message with prepared data
+     *
+     * @throws \Exception
+     */
+    private function send()
+    {
+        if ( ! $this->current_message) {
+            throw new \Exception('No notification found!');
+        }
+
+        $notification = $this->current_message;
+
+        $call = 'sendMessageToChannels';
+
+        $to = $notification->to_channel;
+
+        if (empty($to))
+        {
+            $to = $notification->to_lead;
+            $call = 'sendMessageToLeads';
+        }
+
+        if ($notification->sent_count >= $notification->send_limit)
+        {
+            throw new \Exception('You have already reached limit notification to send!');
+        }
+
+        @call_user_func_array([$this, $call], $to);
+
+        $notification->sent_count++;
+
+        $notification->save();
+    }
+
     /**
      * Get subscribers of channels
      *
@@ -48,28 +117,15 @@ class Notification
      *
      * 1 -> returns any subscribers in channel 1
      * 'foo' -> returns any subscribers in channel foo
-     * [1, 'foo'] -> returns any subscribers in either channel 1 or foo
-     * 1, 'foo' -> returns any subscriber in both channel 1 and foo
+     * [1, 'foo'] -> returns any subscribers in both channel 1 and foo
+     * '1, foo' -> returns any subscriber in either channel 1 or foo
      */
-    private function getSubscribers()
+    private function getSubscribers($channels = 1)
     {
-        // Num args = 1: all. > 1 any
-        $num_args   = func_num_args();
-        $args       = func_get_args();
+        $all = is_array($channels);
 
-        $channels = [];
-
-        // Any syntax
-        if ($num_args === 1) {
-            if (is_array($args[0]))
-                $channels = $args[0];
-
-            if (is_string($args[0]) || is_numeric($args[0]))
-                $channels = [$args[0]];
-
-        } else {
-            $channels       = $args;
-        }
+        if (is_string($channels) || is_numeric($channels))
+            $channels = explode(',', $channels);
 
         $channels = array_map('trim', $channels);
 
@@ -84,15 +140,15 @@ class Notification
             $lead_channels = array_map('trim', explode(',', $lead->subscribe));
 
             // Array should in another array
-            if ($num_args > 1 && ! array_diff($channels, $lead_channels)) {
+            if ($all && ! array_diff($channels, $lead_channels)) {
 
                 $subscribers[] = $lead->user_id;
 
                 continue;
             }
 
-            // One array in another array
-            if ($num_args === 1 && array_intersect($channels, $lead_channels))
+            // One element of array in another array
+            if ( ! $all && array_intersect($channels, $lead_channels))
             {
                 $subscribers[] = $lead->user_id;
             }
@@ -108,7 +164,7 @@ class Notification
      * @param $lead_ids
      * @return $this
      */
-    private function sendMessageToLeads($messages, $lead_ids, $save = 'save')
+    private function sendMessageToLeads($messages, $lead_ids)
     {
         $leads_id = (array) $lead_ids;
 
@@ -116,19 +172,10 @@ class Notification
 
         $messages   = $model->parseWithoutSave($messages);
 
-        if ($save == 'save') {
-            $this->current_message = Message::create([
-                'to_lead' => implode(',', $leads_id),
-                'content' => json_encode($messages)
-            ]);
-        }
-
         foreach ($leads_id as $lead_id)
         {
             Request::sendMessages($messages, $lead_id);
         }
-
-        return $this;
     }
 
     /**
@@ -140,80 +187,16 @@ class Notification
      *
      * Next params:
      * 1 -> Send to channel 1
-     * 1, 2 -> Send to leads in both channel 1 and 2
+     * 1,2 or '1,2' -> Send to leads in both channel 1 and 2
      * [1,2] -> Send to leads in either channel 1 or 2
      *
      * @throws \Exception
      * @return $this
      */
-    private function sendMessageToChannels()
+    private function sendMessageToChannels($messages, $channels)
     {
-        // Num args = 1: all. > 1 any
-        $num_args   = func_num_args();
-        $args       = func_get_args();
+        $subscribers = $this->getSubscribers($channels);
 
-        $channels = [];
-
-        if ($num_args < 2)
-        {
-            throw new \Exception('Invalid arguments!');
-        }
-
-        $messages = $args[0];
-
-        $channels = [$args[1]];
-
-        if ($num_args > 2)
-        {
-            array_shift($args);
-
-            $channels = $args;
-        }
-
-        $this->current_message = Message::create([
-            'to_channel' => implode(',', $channels),
-            'content' => json_encode($messages)
-        ]);
-
-        $subscribers = @call_user_func_array([$this, 'getSubscribers'], $channels);
-
-        $this->sendMessageToLeads($messages, $subscribers, 'no-save');
-
-        return $this;
-    }
-
-    private function at($time)
-    {
-
-    }
-
-    private function routines($routine)
-    {
-        return $this;
-    }
-
-    private function startAt($time)
-    {
-        return $this;
-    }
-
-    private function endAt($time)
-    {
-        return $this;
-    }
-
-    private function taggedAs($tag)
-    {
-        return $this;
-    }
-
-    private function many()
-    {
-        return $this;
-    }
-
-    private function once()
-    {
-        return $this;
+        $this->sendMessageToLeads($messages, $subscribers);
     }
 }
