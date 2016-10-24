@@ -39,13 +39,6 @@ class Request
     public static $token;
 
     /**
-     * This class is singleton
-     *
-     * @var Request
-     */
-    private static $instance;
-
-    /**
      * Setup data and run command based on received data
      */
     private function load()

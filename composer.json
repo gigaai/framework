@@ -12,10 +12,7 @@
   "require": {
     "php": ">=5.4",
     "illuminate/database": "5.0.*",
-    "illuminate/session": "5.0.*",
-    "jeremeamia/superclosure": "^2.2",
-    "predis/predis": "^1.1",
-    "symfony/var-dumper": "^3.1"
+    "jeremeamia/superclosure": "^2.2"
   },
   "require-dev": {
 
