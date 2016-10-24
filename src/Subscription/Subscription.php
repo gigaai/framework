@@ -33,18 +33,28 @@ class Subscription
     {
         if (is_array($user_ids))
         {
-            foreach ($user_ids as $user_id => $channels) {
-                $this->addSubscribers($user_id, $channels);
+            if (is_null($channels)) {
+                foreach ($user_ids as $user_id => $channels) {
+                    $this->addSubscribers($user_id, $channels);
+                }
+            }
+            else {
+                foreach ($user_ids as $user_id) {
+                    $this->addSubscribers($user_id, $channels);
+                }
             }
             return;
         }
 
         // Merge lead channels with new channels
         $lead = Lead::where('user_id', $user_ids)->first();
-        $channels       = is_string($channels) ? explode(',', $channels) : $channels;
-        $lead_channels  = explode(',', $lead->channels);
-        $lead->channels = implode(',', array_unique(array_merge($lead_channels, $channels)));
 
+        if (is_null($lead))
+            return;
+
+        $channels       = is_string($channels) ? array_map('trim', explode(',', $channels)) : $channels;
+        $lead_channels  = ( ! empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
+        $lead->subscribe = implode(',', array_unique(array_merge($lead_channels, $channels)));
         $lead->save();
     }
 
