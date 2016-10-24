@@ -52,9 +52,16 @@ class Subscription
         if (is_null($lead))
             return;
 
+        // Convert channels to array
         $channels       = is_string($channels) ? array_map('trim', explode(',', $channels)) : $channels;
+
+        // Convert lead->subscribe to array
         $lead_channels  = ( ! empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
+
+        // Merge channels and lead->subscribe then convert to csv
         $lead->subscribe = implode(',', array_unique(array_merge($lead_channels, $channels)));
+
+        // Update the lead
         $lead->save();
     }
 
@@ -62,7 +69,7 @@ class Subscription
      * Create a subscription
      * 
      * @param  array $subscription
-     * 
+     * @throws \Exception
      * @return $this
      */
     private function create($subscription)
