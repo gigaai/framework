@@ -29,7 +29,7 @@ class Subscription
      *
      * @return mixed
      */
-    private function addSubscribers($user_ids, $channels = null)
+    private function addSubscribers($user_ids, $channels = 1)
     {
         if (is_array($user_ids))
         {
@@ -53,7 +53,7 @@ class Subscription
             return;
 
         // Convert channels to array
-        $channels       = is_string($channels) ? array_map('trim', explode(',', $channels)) : $channels;
+        $channels       = ! is_array($channels) ? array_map('trim', explode(',', $channels)) : $channels;
 
         // Convert lead->subscribe to array
         $lead_channels  = ( ! empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
