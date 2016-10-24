@@ -16,10 +16,9 @@ class ThreadSettings
 
         $request    = Request::getInstance();
         $action     = $request->getReceivedData('giga_action');
-
         if ($action != null && in_array($action, $allowed_actions))
         {
-            @call_user_func(['ThreadSettings', $action]);
+            @call_user_func([__CLASS__, $action]);
         }
     }
 
