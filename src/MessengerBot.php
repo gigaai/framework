@@ -10,7 +10,7 @@ use GigaAI\Core\Config;
 use SuperClosure\Serializer;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Eloquent\Lead;
-use GigaAI\Notification\Notification;
+use GigaAI\Subscription\Subscription;
 
 class MessengerBot
 {
@@ -50,11 +50,11 @@ class MessengerBot
     public $received;
 
     /**
-     * Notification instance
+     * Subscription instance
      *
-     * @var Notification
+     * @var Message
      */
-    public $notification;
+    public $subscription;
 
     /**
      * Model parser
@@ -108,8 +108,8 @@ class MessengerBot
         // We need to serialize Closure for dynamic data and intended actions
         $this->serializer   = new Serializer();
 
-        // Boot the notification feature
-        $this->notification = Notification::getInstance();
+        // Boot the subscription feature
+        $this->subscription = Subscription::getInstance();
     }
 
     /**

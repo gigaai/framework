@@ -1,6 +1,6 @@
 <?php
 
-namespace GigaAI\Notification;
+namespace GigaAI\Subscription;
 
 use Carbon\Carbon;
 use GigaAI\Core\Model;
@@ -10,10 +10,15 @@ use GigaAI\Shared\Singleton;
 use GigaAI\Storage\Eloquent\Lead;
 use GigaAI\Storage\Eloquent\Message;
 
-class Notification
+class Subscription
 {
     use EasyCall, Singleton;
 
+    /**
+     * Current notification message
+     * 
+     * @var Message
+     */
     private $current_message;
 
     /**
@@ -26,39 +31,47 @@ class Notification
      */
     private function addSubscribers($user_ids, $channels = null)
     {
-        if (is_array($user_ids) && is_null($channels))
+        if (is_array($user_ids))
         {
             foreach ($user_ids as $user_id => $channels) {
                 $this->addSubscribers($user_id, $channels);
             }
-
             return;
         }
 
-        $channels = is_array($channels) ? implode(',', $channels) : $channels;
+        // Merge lead channels with new channels
+        $lead = Lead::where('user_id', $user_ids)->first();
+        $channels       = is_string($channels) ? explode(',', $channels) : $channels;
+        $lead_channels  = explode(',', $lead->channels);
+        $lead->channels = implode(',', array_unique(array_merge($lead_channels, $channels)));
 
-        return Lead::whereIn('user_id', $user_ids)->update([
-            'subscribe' => $channels
-        ]);
+        $lead->save();
     }
 
-    private function create($notification)
+    /**
+     * Create a subscription
+     * 
+     * @param  array $subscription
+     * 
+     * @return $this
+     */
+    private function create($subscription)
     {
-        if (empty($notification['content']) || (empty($notification['to_lead']) && empty($notification['to_channel']))) {
-            throw new \Exception('Cannot create notification. A required field is missing!');
+        if (empty($subscription['content']) || (empty($subscription['to_lead']) && empty($subscription['to_channel']))) {
+            throw new \Exception('Cannot create subscription. A required field is missing!');
         }
 
         // If this notification has already been created. Just find the notification
-        if (! empty($notification['unique_id'])) {
-            $this->find($notification['unique_id']);
+        if (! empty($subscription['unique_id'])) {
+            $this->find($subscription['unique_id']);
         }
 
         // Create the notification
         if (is_null($this->current_message) || ! $this->current_message) {
             $model = new Model;
-            $notification['content'] = $model->parseWithoutSave($notification['content']);
+            $subscription['content'] = $model->parseWithoutSave($subscription['content']);
 
-            $this->current_message = Message::firstOrCreate($notification);
+            $this->current_message = Message::firstOrCreate($subscription);
         }
 
         return $this;
@@ -77,12 +90,12 @@ class Notification
 
         $message = Message::where('unique_id', $unique_id)->first();
 
-        if (isset($message->start_at) && $message->start_at < $now) {
-            throw new \Exception('This notification is not ready to send. Please be patient!');
+        if (isset($message->start_at) && $message->start_at > $now) {
+            throw new \Exception('This subscription is not ready to send. Please be patient!');
         }
 
-        if (isset($message->end_at) && $message->end_at > $now) {
-            throw new \Exception('This notification has expired. Please create another!');
+        if (isset($message->end_at) && $message->end_at < $now) {
+            throw new \Exception('This subscription has expired. Please create another!');
         }
 
         $this->current_message = $message;
@@ -98,32 +111,32 @@ class Notification
     private function send()
     {
         if ( ! $this->current_message || is_null($this->current_message)) {
-            throw new \Exception('No notification found!');
+            throw new \Exception('No subscription found!');
         }
 
-        $notification = $this->current_message;
+        $subscription = $this->current_message;
 
         $call = 'sendMessageToChannels';
 
-        $to = $notification->to_channel;
+        $to = $subscription->to_channel;
 
         if (empty($to))
         {
-            $to = $notification->to_lead;
+            $to = $subscription->to_lead;
             $call = 'sendMessageToLeads';
         }
 
-        if (is_numeric($notification->send_limit) && $notification->sent_count >= $notification->send_limit)
+        if (is_numeric($subscription->send_limit) && $subscription->sent_count >= $subscription->send_limit)
         {
             throw new \Exception('You have already reached limit notification to send!');
         }
 
-        @call_user_func_array([$this, $call], [$notification->content, $to]);
+        @call_user_func_array([$this, $call], [$subscription->content, $to]);
 
-        $notification->sent_count++;
-        $notification->sent_at = Carbon::now();
+        $subscription->sent_count++;
+        $subscription->sent_at = Carbon::now();
 
-        $notification->save();
+        $subscription->save();
     }
 
     /**
