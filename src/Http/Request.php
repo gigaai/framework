@@ -155,6 +155,12 @@ class Request
         Request::send(self::PLATFORM_ENDPOINT . "me/messages?access_token=" . self::$token, $body);
     }
 
+    /**
+     * Send multiple messages
+     *
+     * @param $messages
+     * @param null $lead_id
+     */
     private function sendMessages($messages, $lead_id = null)
     {
         foreach ($messages as $message)

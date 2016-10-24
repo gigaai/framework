@@ -74,22 +74,36 @@ class Model
 
             // Short hand method of attachments
             if ($this->isShorthand($answers)) {
-                if ($this->isParsable($answers))
+
+                if ($this->isParsable($answers)) {
                     $answers = Parser::parseAnswer($answers);
+                }
 
                 $this->addNode([$answers], $node_type, $asks);
 
                 return $this;
             }
 
-            $parsed = [];
+            // Move Quick Replies to the latest answer
+            $previous_index = 0;
+            foreach ($answers as $index => $answer) {
 
-            foreach ($answers as $answer) {
-                if ($this->isParsable($answer))
-                    $parsed[] = Parser::parseAnswer($answer);
-                else
-                    $parsed[] = $answer;
+                if ($index === 'quick_replies') {
+                    $answers[$previous_index] = (array)$answers[$previous_index];
+                    $answers[$previous_index]['quick_replies'] = $answer;
+                }
+
+                $previous_index = $index;
             }
+            unset($answers['quick_replies']);
+
+            // Iterate through answers and parse it if possible
+            $parsed = array_map(function ($answer) {
+                if ($this->isParsable($answer))
+                    return Parser::parseAnswer($answer);
+
+                return $answer;
+            }, $answers);
 
             $this->addNode($parsed, $node_type, $asks);
         }
@@ -98,7 +112,9 @@ class Model
         if (is_array($asks) && is_null($answers)) {
             if (array_key_exists('text', $asks) || array_key_exists('payload', $asks) || array_key_exists('attachment', $asks)) {
                 foreach ($asks as $event => $nodes) {
+
                     $prepend = $event === 'text' ? '' : $event . ':';
+
                     if ($event === 'default')
                         $nodes = [$nodes];
 
@@ -137,26 +153,45 @@ class Model
         return $this->current_node;
     }
 
-
-    function isParsable($answer)
+    /**
+     * Check if current answer is parsable
+     *
+     * @param $answer
+     * @return bool
+     */
+    public function isParsable($answer)
     {
         if (is_array($answer)) {
             if (
                 array_key_exists('_wait', $answer) ||
                 (array_key_exists('type', $answer) && $answer['type'] === 'callback') ||
                 array_key_exists('attachment', $answer)
-            )
+            ) {
                 return false;
+            }
         }
 
         return true;
     }
 
+    /**
+     * Get Nodes by type and patterns
+     *
+     * @param string $type
+     * @param string $pattern
+     * @return \GigaAI\Storage\Eloquent\Node[]
+     */
     public function getNodes($type = '', $pattern = '')
     {
         return Node::findByTypeAndPattern($type, $pattern);
     }
 
+    /**
+     * Parse [a] answers without save
+     *
+     * @param $answers
+     * @return array
+     */
     public function parseWithoutSave($answers)
     {
         // Short hand method of attachments
@@ -166,6 +201,12 @@ class Model
         return array_map(['\GigaAI\Core\Parser', 'parseAnswer'], $answers);
     }
 
+    /**
+     * Check if answers input is single answer
+     *
+     * @param $answers
+     * @return bool
+     */
     private function isShorthand($answers)
     {
         return (
@@ -174,16 +215,21 @@ class Model
             array_key_exists('elements', $answers) || // For Generic or Receipt
             (is_array($answers[0]) && array_key_exists('title', $answers[0])) || // For Generic
             array_key_exists('text', $answers) || // For Button
-            array_key_exists('type', $answers) ||
-            array_key_exists('quick_replies', $answers)
+            array_key_exists('type', $answers)
         );
     }
 
+    /**
+     * Add intended action for current node
+     *
+     * @param $action
+     */
     public function addIntendedAction($action)
     {
         if (empty($this->current_node->type) || $this->current_node->type == 'welcome')
             return;
 
+        // If it's ->then() intended action. We'll save next action as id
         if (is_callable($action))
         {
             $related = $this->current_node;
@@ -204,6 +250,11 @@ class Model
         }
     }
 
+    /**
+     * Tag a node
+     *
+     * @param $tag
+     */
     public function taggedAs($tag)
     {
         if (empty($this->current_node))

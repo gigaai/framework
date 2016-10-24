@@ -42,11 +42,14 @@ class Parser
                 $message['attachment']['payload']['template_type'] = $template_type;
         }
 
-        if (is_array($answer) && array_key_exists('quick_replies', $answer) && ! empty($answer[0]))
+        // Handling Quick Replies
+        if (is_array($answer) && array_key_exists('quick_replies', $answer))
         {
             $quick_replies = $answer['quick_replies'];
 
-            $content = self::parseAnswer($answer[0]);
+            unset($answer['quick_replies']);
+
+            $content = self::parseAnswer($answer);
 
             return $content + ['quick_replies' => $quick_replies];
         }
