@@ -42,6 +42,14 @@ class Node extends \Illuminate\Database\Eloquent\Model
             }
         }
 
-        return Node::whereRaw($where, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
+        $nodes = Node::whereRaw($where, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
+
+        foreach ($nodes as $index => $node)
+        {
+            if ( ! giga_match($node->pattern, $pattern))
+                unset($nodes[$index]);
+        }
+
+        return $nodes;
     }
 }

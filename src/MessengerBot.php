@@ -193,12 +193,6 @@ class MessengerBot
 
         $nodes = $this->findNodes($type_pattern['type'], $type_pattern['pattern']);
 
-        foreach ($nodes as $index => $node)
-        {
-            if ( ! giga_match($node->pattern, $type_pattern['pattern']))
-                unset($nodes[$index]);
-        }
-
         $this->response($nodes);
     }
 
