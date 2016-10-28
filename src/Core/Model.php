@@ -55,6 +55,10 @@ class Model
                 $asks       = ltrim($asks, '@');
             }
 
+            if (is_string($answers)) {
+                $answers = trim($answers);
+            }
+
             if (is_callable($answers)) {
                 $this->addNode(
                     ['type' => 'callback', 'callback' => $answers],

@@ -58,7 +58,6 @@ class Parser
                 if (strpos($answer, $type . ':') !== false)
                 {
                     $url = ltrim($answer, $type . ':');
-
                     return self::parseAnswer(compact('type', 'url'));
                 }
             }
@@ -66,10 +65,14 @@ class Parser
             // If it's URL. Detect is audio, video, image...
             if (filter_var($answer, FILTER_VALIDATE_URL))
             {
-                return self::parseAnswer([
-                    'type'  => self::detectAttachmentType($answer),
-                    'url'   => $answer
-                ]);
+                $detected = self::detectAttachmentType($answer);
+
+                if ($detected !== null) {
+                    return self::parseAnswer([
+                        'type'  => $detected,
+                        'url'   => $answer
+                    ]);
+                }
             }
 
             // If it's plain text
@@ -92,7 +95,7 @@ class Parser
         if (giga_match('%(.mp3|.wma|.midi|.au)%', $url))
             return 'audio';
 
-        return 'file';
+        return null;
     }
 
     public static function isAttachmentMessage($answer)
