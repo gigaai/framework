@@ -86,7 +86,7 @@ class MessengerBot
     {
         // Package Version
         if ( ! defined('GIGAAI_VERSION'))
-            define('GIGAAI_VERSION', '2.0');
+            define('GIGAAI_VERSION', '2.0.1');
         
         // Setup the configuration data
         $this->config = Config::getInstance();
@@ -278,7 +278,7 @@ class MessengerBot
     {
         $nodes = Node::findByTypeAndPattern($message_type, $ask);
 
-        if (empty($nodes)) {
+        if ($nodes->count() === 0) {
             $nodes = Node::findByTypeAndPattern('default');
         }
 

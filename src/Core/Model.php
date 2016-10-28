@@ -50,7 +50,7 @@ class Model
                 }
             }
 
-            if ($asks[0] == '@') {
+            if ( ! empty($asks) && $asks[0] == '@') {
                 $node_type  = 'intended';
                 $asks       = ltrim($asks, '@');
             }
@@ -84,26 +84,28 @@ class Model
                 return $this;
             }
 
-            // Move Quick Replies to the latest answer
+            // Iterate through answers and parse it if possible
+            // Also, move quick replies to the last answer
+
+            $parsed = [];
+
             $previous_index = 0;
             foreach ($answers as $index => $answer) {
 
-                if ($index === 'quick_replies') {
-                    $answers[$previous_index] = (array)$answers[$previous_index];
-                    $answers[$previous_index]['quick_replies'] = $answer;
+                if ($this->isParsable($answer) && $index !== 'quick_replies') {
+                    $answer = Parser::parseAnswer($answer);
                 }
 
+                if ($index === 'quick_replies') {
+                    $parsed[$previous_index] = (array)$parsed[$previous_index];
+                    $parsed[$previous_index]['quick_replies'] = $answer;
+                }
+
+                $parsed[$index] = $answer;
                 $previous_index = $index;
             }
-            unset($answers['quick_replies']);
 
-            // Iterate through answers and parse it if possible
-            $parsed = array_map(function ($answer) {
-                if ($this->isParsable($answer))
-                    return Parser::parseAnswer($answer);
-
-                return $answer;
-            }, $answers);
+            unset($parsed['quick_replies']);
 
             $this->addNode($parsed, $node_type, $asks);
         }

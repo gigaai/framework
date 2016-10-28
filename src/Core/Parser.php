@@ -25,7 +25,7 @@ class Parser
             $template_type = 'generic';
 
             // If it's generic and super short hand.
-            if ( ! empty($answer[0]) && array_key_exists('title', $answer[0]))
+            if ( ! empty($answer[0]) && is_array($answer[0]) && array_key_exists('title', $answer[0]))
             {
                 $message['attachment']['payload'] = [];
                 $message['attachment']['payload']['elements'] = $answer;
@@ -40,18 +40,6 @@ class Parser
             // Detect payload type here
             if ( ! isset($answer['template_type']))
                 $message['attachment']['payload']['template_type'] = $template_type;
-        }
-
-        // Handling Quick Replies
-        if (is_array($answer) && array_key_exists('quick_replies', $answer))
-        {
-            $quick_replies = $answer['quick_replies'];
-
-            unset($answer['quick_replies']);
-
-            $content = self::parseAnswer($answer);
-
-            return $content + ['quick_replies' => $quick_replies];
         }
 
         if (self::isAttachmentMessage($answer))
