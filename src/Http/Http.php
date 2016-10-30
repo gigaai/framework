@@ -26,7 +26,7 @@ class Http
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);  //to suppress the curl output 
-		
+
 		$result = curl_exec($ch);
 
 		curl_close ($ch);

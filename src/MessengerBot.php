@@ -2,6 +2,7 @@
 
 namespace GigaAI;
 
+use GigaAI\Core\DynamicParser;
 use GigaAI\Storage\Storage;
 use GigaAI\Http\Request;
 use GigaAI\Conversation\Conversation;
@@ -185,6 +186,13 @@ class MessengerBot
             $this->storage->pull($event->sender->id);
         }
 
+        DynamicParser::support([
+            'type'      => 'callback',
+            'callback'  => function ($content) {
+                return @call_user_func_array($content, [$this, $this->getLeadId(), $this->getReceivedText()]);
+            }
+        ]);
+
         $type_pattern = $this->request->getTypeAndPattern($event);
 
         // We'll check to response intended action first
@@ -209,33 +217,45 @@ class MessengerBot
             $lead_id = $this->conversation->get('lead_id');
 
         foreach ($nodes as $node) {
-
             /** New wait */
             if ( ! empty($node->wait)) {
                 $this->storage->set($lead_id, '_wait', $node->wait);
             }
 
-            /** Process callback */
-            if (! empty($node->answers) && isset($node->answers['type']) && $node->answers['type'] === 'callback') {
+            // Backward compatibility
+            if (array_key_exists('type', $node->answers)) {
+                $node->answers = [$node->answers];
+            }
 
-                $callback = $this->serializer->unserialize($node->answers['callback']);
+            foreach ($node->answers as $answer) {
 
-                if (is_callable($callback)) {
-                    $return = @call_user_func_array($callback, [$this, $this->getLeadId(), $this->getReceivedText()]);
+                /** Process dynamic content */
+                if (isset($answer['type'])) {
+
+                    // Backward compatibility
+                    if (isset($answer['callback']))
+                        $answer['content'] = $answer['callback'];
+
+                    if (giga_match('%SerializableClosure%', $answer['content']))
+                    {
+                        $answer['content'] = $this->serializer->unserialize($answer['content']);
+                    }
+
+                    $return = DynamicParser::parse($answer);
 
                     // If the callback return, we'll send that message to user.
                     if ($return != null || ! empty($return))
                     {
-                        $return = $this->model->parseWithoutSave($return);
+                        $answers = $this->model->parseWithoutSave($return);
 
-                        $this->request->sendMessages($return);
+                        $this->request->sendMessages($answers);
+
+                        continue;
                     }
                 }
 
-                continue;
+                $this->request->sendMessage($answer);
             }
-
-            $this->request->sendMessages($node->answers);
         }
     }
 
@@ -274,7 +294,7 @@ class MessengerBot
      *
      * @return Node[]
      */
-    private function findNodes($message_type, $ask, $data_set_type = 'text')
+    public function findNodes($message_type, $ask, $data_set_type = 'text')
     {
         $nodes = Node::findByTypeAndPattern($message_type, $ask);
 

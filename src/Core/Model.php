@@ -60,8 +60,9 @@ class Model
             }
 
             if (is_callable($answers)) {
+
                 $this->addNode(
-                    ['type' => 'callback', 'callback' => $answers],
+                    [['type' => 'callback', 'content' => $answers]],
                     $node_type,
                     $asks
                 );
@@ -71,13 +72,8 @@ class Model
 
             $answers = (array)$answers;
 
-            // We will keep _wait format.
-            // todo: This is no longer exists
-            if ( ! empty($answers['_wait']))
-                return $this;
-
             // Short hand method of attachments
-            if ($this->isShorthand($answers)) {
+            if ($this->isSingleAnswer($answers)) {
 
                 if ($this->isParsable($answers)) {
                     $answers = Parser::parseAnswer($answers);
@@ -94,7 +90,15 @@ class Model
             $parsed = [];
 
             $previous_index = 0;
+
             foreach ($answers as $index => $answer) {
+
+                if (is_callable($answer)) {
+                    $answer = [
+                        'type' => 'callback',
+                        'content' => $answer
+                    ];
+                }
 
                 if ($this->isParsable($answer) && $index !== 'quick_replies') {
                     $answer = Parser::parseAnswer($answer);
@@ -142,19 +146,22 @@ class Model
     /**
      * Add answer to node
      *
-     * @param Mixed $answer Message
+     * @param Mixed $answers Message
      * @param String $node_type Node Type
      * @param null $asks Question
      *
      * @return Node
      */
-    public function addNode($answer, $node_type, $asks = null)
+    public function addNode(array $answers, $node_type, $asks = null)
     {
-        if (isset($answer['type']) && $answer['type'] === 'callback') {
-            $answer['callback'] = $this->serializer->serialize($answer['callback']);
+        foreach ($answers as $index => $answer) {
+            if (isset($answer['type']) && isset($answer['content']) && is_callable($answer['content'])) {
+                $answer['content'] = $this->serializer->serialize($answer['content']);
+            }
+            $answers[$index] = $answer;
         }
 
-        $this->current_node = Storage::addNode($answer, $node_type, $asks);
+        $this->current_node = Storage::addNode($answers, $node_type, $asks);
 
         return $this->current_node;
     }
@@ -167,15 +174,8 @@ class Model
      */
     public function isParsable($answer)
     {
-        if (is_array($answer)) {
-            if (
-                array_key_exists('_wait', $answer) ||
-                (array_key_exists('type', $answer) && $answer['type'] === 'callback') ||
-                array_key_exists('attachment', $answer)
-            ) {
-                return false;
-            }
-        }
+        if (is_array($answer) && (array_key_exists('attachment', $answer) || array_key_exists('type', $answer)))
+            return false;
 
         return true;
     }
@@ -201,7 +201,7 @@ class Model
     public function parseWithoutSave($answers)
     {
         // Short hand method of attachments
-        if ($this->isShorthand($answers))
+        if ($this->isSingleAnswer($answers))
             return [Parser::parseAnswer($answers)];
 
         return array_map(['\GigaAI\Core\Parser', 'parseAnswer'], $answers);
@@ -210,18 +210,19 @@ class Model
     /**
      * Check if answers input is single answer
      *
-     * @param $answers
+     * @param $answer
      * @return bool
      */
-    private function isShorthand($answers)
+    private function isSingleAnswer($answer)
     {
         return (
-            is_string($answers) ||
-            array_key_exists('buttons', $answers) ||
-            array_key_exists('elements', $answers) || // For Generic or Receipt
-            (is_array($answers[0]) && array_key_exists('title', $answers[0])) || // For Generic
-            array_key_exists('text', $answers) || // For Button
-            array_key_exists('type', $answers)
+            is_string($answer) ||
+            is_callable($answer) ||
+            array_key_exists('buttons', $answer) ||
+            array_key_exists('elements', $answer) || // For Generic or Receipt
+            (is_array($answer[0]) && array_key_exists('title', $answer[0])) || // For Generic
+            array_key_exists('text', $answer) || // For Button
+            array_key_exists('type', $answer)
         );
     }
 
@@ -240,10 +241,10 @@ class Model
         {
             $related = $this->current_node;
 
-            $then_node = $this->addNode([
+            $then_node = $this->addNode([[
                 'type'      => 'callback',
-                'callback'  => $action
-            ], 'intended', 'IA#' . $related->id);
+                'content'   => $action
+            ]], 'intended', 'IA#' . $related->id);
 
             $related->wait = $then_node->id;
 
