@@ -96,7 +96,6 @@ class Storage
             }
         }
         try {
-
             $lead = Lead::updateOrCreate([
                 'source' => 'facebook',
                 'user_id' => $user['user_id']
@@ -168,17 +167,25 @@ class Storage
 
     private function getUserMeta($user_id, $key = '', $default = '')
     {
-        $meta = $this->db->table('bot_leads_meta')->where([
-            'user_id' => $user_id,
-            'meta_key' => $key
-        ])->first();
+        $where = [
+            'user_id' => $user_id
+        ];
 
-        if ( ! is_null($meta))
-            return $meta->meta_value;
+        if ( ! empty($key)) {
+            $where['meta_key'] = $key;
 
-        return $default;
+            $meta = $this->db->table('bot_leads_meta')->where($where)->first();
+
+            if ( ! is_null($meta))
+                return $meta['meta_value'];
+
+            return $default;
+        }
+        else {
+            $meta = $this->db->table('bot_leads_meta')->where($where)->lists('meta_value', 'meta_key');
+            return $meta;
+        }
     }
-
 
     /**
      * Search in collection
