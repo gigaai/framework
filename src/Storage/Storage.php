@@ -188,6 +188,54 @@ class Storage
     }
 
     /**
+     * Todo: Optimize this method
+     *
+     * @param $lead_id
+     * @param array $key
+     * @param null $value
+     */
+    private function updateLeadMeta($lead_id, $key = [], $value = null)
+    {
+        $meta = [];
+
+        if (is_string($key) && ! empty($value)) {
+            $meta[$key] = $value;
+        }
+        else {
+            $meta = $key;
+        }
+
+        // Is Lead Exists
+        $exists = Lead::where('user_id', $lead_id)->exists();
+
+        if ( ! $exists)
+            return;
+
+        foreach ($meta as $key => $value)
+        {
+            $exists = $this->db->table('bot_leads_meta')->where([
+                    'user_id' => $lead_id,
+                    'meta_key' => $key
+                ])->exists();
+
+            if ($exists) {
+                $this->db->table('bot_leads_meta')->where([
+                    'user_id' => $lead_id,
+                    'meta_key' => $key
+                ])->update([
+                    'meta_value' => $value
+                ]);
+            } else {
+                $this->db->table('bot_leads_meta')->insert([
+                    'user_id' => $lead_id,
+                    'meta_key' => $key,
+                    'meta_value' => $value
+                ]);
+            }
+        }
+    }
+
+    /**
      * Search in collection
      *
      * @param $terms
