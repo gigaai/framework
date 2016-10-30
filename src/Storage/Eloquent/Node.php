@@ -52,4 +52,28 @@ class Node extends \Illuminate\Database\Eloquent\Model
 
         return $nodes;
     }
+
+    public function scopeOfTag($query, $value)
+    {
+        if ( ! empty($value))
+            return $query->where('tags', 'like', '%' . $value . '%');
+
+        return $query;
+    }
+
+    public function scopeSearch($query, $value)
+    {
+        if ( ! empty($value))
+            return $query->where('pattern', 'like', '%' . $value . '%')
+                        ->orWhere('answers', 'like', '%' . $value . '%');
+
+        return $query;
+    }
+
+    public function scopeNotFluentIntended($query)
+    {
+        $query->where('pattern', 'not like', 'IA#%');
+
+        return $query;
+    }
 }
