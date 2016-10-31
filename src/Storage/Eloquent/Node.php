@@ -30,7 +30,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
         }
 
         if ( ! empty($pattern)) {
-            $placeholder[':pattern'] = $pattern;
+            $placeholder[':pattern'] = '%' . $pattern . '%';
 
             // Intended Action. We'll get first row.
             if ($pattern[0] === '@') {
@@ -38,7 +38,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
             }
             else {
                 $where .= " AND (:pattern RLIKE pattern OR :pattern2 LIKE pattern)";
-                $placeholder[':pattern2'] = $pattern;
+                $placeholder[':pattern2'] = '%' . $pattern . '%';
             }
         }
 
@@ -52,7 +52,6 @@ class Node extends \Illuminate\Database\Eloquent\Model
 
         return $nodes;
     }
-
     public function scopeOfTag($query, $value)
     {
         if ( ! empty($value))
