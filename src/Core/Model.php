@@ -196,10 +196,14 @@ class Model
      * Parse [a] answers without save
      *
      * @param $answers
-     * @return array
+     * @return mixed
      */
     public function parseWithoutSave($answers)
     {
+        if ( ! $this->isParsable($answers)) {
+            return false;
+        }
+
         // Short hand method of attachments
         if ($this->isSingleAnswer($answers))
             return [Parser::parseAnswer($answers)];

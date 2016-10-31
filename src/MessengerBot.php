@@ -246,9 +246,14 @@ class MessengerBot
                     // If the callback return, we'll send that message to user.
                     if ($return != null || ! empty($return))
                     {
-                        $answers = $this->model->parseWithoutSave($return);
+                        $answer = $this->model->parseWithoutSave($return);
 
-                        $this->request->sendMessages($answers);
+                        // Answer == 0 means that answers is already parsed and it's a single message.
+                        if ($answer != false) {
+                            $this->request->sendMessages($answer);
+                        } else {
+                            $this->request->sendMessage($return);
+                        }
 
                         continue;
                     }
