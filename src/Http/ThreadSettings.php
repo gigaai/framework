@@ -28,25 +28,21 @@ class ThreadSettings
 
         $end_point = Request::PLATFORM_ENDPOINT . 'me/thread_settings?access_token=' . Request::$token;
 
-        $params = array(
+        $params = [
             'setting_type' => 'call_to_actions',
             'thread_state' => 'new_thread'
-        );
+        ];
 
         if ( ! empty($payload))
         {
-            $params['call_to_actions'] = array(
+            $params['call_to_actions'] = [
                 compact('payload')
-            );
+            ];
 
-            $data = Request::send($end_point, $params);
-
-            dd($data);
+            return Request::send($end_point, $params);
         }
 
-        $data = Request::send($end_point, $params, 'delete');
-
-        dd($data);
+        Request::send($end_point, $params, 'delete');
     }
 
     public static function updateGreetingText()
@@ -55,16 +51,14 @@ class ThreadSettings
 
         $end_point = Request::PLATFORM_ENDPOINT . 'me/thread_settings?access_token=' . Request::$token;
 
-        $params = array(
+        $params = [
             'setting_type' => 'greeting',
-            'greeting' => array(
+            'greeting' => [
                 'text' => $greeting_text
-            )
-        );
+            ]
+        ];
 
-        $data = Request::send($end_point, $params);
-
-        dd($data);
+        return Request::send($end_point, $params);
     }
 
     public static function updatePersistentMenu()
@@ -73,22 +67,18 @@ class ThreadSettings
 
         $end_point = Request::PLATFORM_ENDPOINT . 'me/thread_settings?access_token=' . Request::$token;
 
-        $params = array(
+        $params = [
             'setting_type' => 'call_to_actions',
             'thread_state' => 'existing_thread'
-        );
+        ];
 
         if ( ! empty($menu))
         {
             $params['call_to_actions'] = $menu;
 
-            $data = Request::send($end_point, $params);
-
-            dd($data);
+            return Request::send($end_point, $params);
         }
 
-        $data = Request::send($end_point, $params, 'delete');
-
-        dd($data);
+        Request::send($end_point, $params, 'delete');
     }
 }
