@@ -18,27 +18,30 @@ class Node extends \Illuminate\Database\Eloquent\Model
     public static function findByTypeAndPattern($type = '', $pattern = '')
     {
         $where          = '1 = 1';
+        $where_type = '';
+        $where_like = '';
+        $where_rlike = '';
+
         $placeholder    = [];
 
         if ( ! empty($type)) {
-            $where                  .= ' AND type = :type';
+            $where_type             = ' AND type = :type';
             $placeholder[':type']   = $type;
         }
 
         if ( ! empty($pattern)) {
             $placeholder[':pattern'] = $pattern;
-
-            // Intended Action. We'll get first row.
-            if ($pattern[0] === '@') {
-                $where .= ' AND pattern = :pattern';
-            }
-            else {
-                $where .= " AND (:pattern RLIKE pattern OR :pattern2 LIKE pattern)";
-                $placeholder[':pattern2'] = $pattern;
-            }
+            $where_like = " AND :pattern LIKE pattern";
+            $where_rlike = " AND :pattern RLIKE pattern";
         }
 
-        $nodes = Node::whereRaw($where, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
+        // Where Like First
+        $nodes = Node::whereRaw($where . $where_type . $where_like, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
+
+        // If Not Found. Then Where Rlike
+        if ($nodes->count() === 0) {
+            $nodes = Node::whereRaw($where . $where_type . $where_rlike, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
+        }
 
         return $nodes;
     }
