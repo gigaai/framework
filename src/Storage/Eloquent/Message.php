@@ -11,11 +11,6 @@ class Message extends \Illuminate\Database\Eloquent\Model
         'created_at', 'updated_at', 'start_at', 'end_at', 'sent_at',
     ];
 
-    protected $casts = [
-        'to_channel' => 'array',
-        'content'    => 'array'
-    ];
-
     protected $dates = [
         'created_at',
         'updated_at',
@@ -24,8 +19,21 @@ class Message extends \Illuminate\Database\Eloquent\Model
         'sent_at'
     ];
 
-    public function getMultipleAttribute($value)
+    public function getSendLimitAttribute($value)
     {
         return ( ! empty($value)) ? $value : 1;
+    }
+
+    public function setContentAttribute($value)
+    {
+        if (is_array($value))
+            $this->attributes['content'] = json_encode($value, JSON_UNESCAPED_UNICODE);
+        else
+            $this->attributes['content'] = $value;
+    }
+
+    public function getContentAttribute($value)
+    {
+        return json_decode($value, true);
     }
 }

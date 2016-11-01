@@ -8,10 +8,6 @@ class Node extends \Illuminate\Database\Eloquent\Model
 
     protected $fillable = ['instance_id', 'pattern', 'answers', 'wait', 'sources', 'type', 'notification_type', 'status', 'tags'];
 
-    protected $casts = [
-        'answers' => 'array'
-    ];
-
     /**
      * Get node by node type and pattern
      *
@@ -30,7 +26,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
         }
 
         if ( ! empty($pattern)) {
-            $placeholder[':pattern'] = '%' . $pattern . '%';
+            $placeholder[':pattern'] = $pattern;
 
             // Intended Action. We'll get first row.
             if ($pattern[0] === '@') {
@@ -38,20 +34,15 @@ class Node extends \Illuminate\Database\Eloquent\Model
             }
             else {
                 $where .= " AND (:pattern RLIKE pattern OR :pattern2 LIKE pattern)";
-                $placeholder[':pattern2'] = '%' . $pattern . '%';
+                $placeholder[':pattern2'] = $pattern;
             }
         }
 
         $nodes = Node::whereRaw($where, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
 
-        foreach ($nodes as $index => $node)
-        {
-            if ( ! giga_match($node->pattern, $pattern))
-                unset($nodes[$index]);
-        }
-
         return $nodes;
     }
+
     public function scopeOfTag($query, $value)
     {
         if ( ! empty($value))
@@ -74,5 +65,18 @@ class Node extends \Illuminate\Database\Eloquent\Model
         $query->where('pattern', 'not like', 'IA#%');
 
         return $query;
+    }
+
+    public function setAnswersAttribute($value)
+    {
+        if (is_array($value))
+            $this->attributes['answers'] = json_encode($value, JSON_UNESCAPED_UNICODE);
+        else
+            $this->attributes['answers'] = $value;
+    }
+
+    public function getAnswersAttribute($value)
+    {
+        return json_decode($value, true);
     }
 }
