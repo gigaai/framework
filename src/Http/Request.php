@@ -117,10 +117,7 @@ class Request
         $received = $this->getReceivedData('subscribe');
 
         if ($received != null) {
-
-            $post = $this->send($end_point);
-
-            dd($post);
+            return $this->send($end_point);
         }
     }
 
