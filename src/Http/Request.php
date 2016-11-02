@@ -103,7 +103,6 @@ class Request
 
         if (is_array($received) && isset($received['hub_verify_token']) && $received['hub_verify_token'] == 'GigaAI'
         ) {
-
             echo $received['hub_challenge'];
 
             exit;
@@ -112,13 +111,19 @@ class Request
 
     private function subscribeFacebook()
     {
-        $end_point = self::PLATFORM_ENDPOINT . "me/subscribed_apps?access_token=" . self::$token;
-
         $received = $this->getReceivedData('subscribe');
 
         if ($received != null) {
-            return $this->send($end_point);
+
+            return $this->sendSubscribeRequest();
         }
+    }
+
+    private function sendSubscribeRequest()
+    {
+        $end_point = self::PLATFORM_ENDPOINT . "me/subscribed_apps?access_token=" . self::$token;
+
+        return $this->send($end_point);
     }
 
     /**
