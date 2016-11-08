@@ -10,5 +10,5 @@ Installation:
 composer require "gigaai/framework" "dev-master"
 ```
 
-Project Page: https://gigaai.com
-PHP Standalone Documentation: https://gigaai.com/docs/standalone
+Project Page: https://giga.ai
+PHP Standalone Documentation: https://giga.ai/docs/standalone
