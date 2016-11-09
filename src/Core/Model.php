@@ -84,36 +84,7 @@ class Model
                 return $this;
             }
 
-            // Iterate through answers and parse it if possible
-            // Also, move quick replies to the last answer
-
-            $parsed = [];
-
-            $previous_index = 0;
-
-            foreach ($answers as $index => $answer) {
-
-                if (is_callable($answer)) {
-                    $answer = [
-                        'type' => 'callback',
-                        'content' => $answer
-                    ];
-                }
-
-                if ($this->isParsable($answer) && $index !== 'quick_replies') {
-                    $answer = Parser::parseAnswer($answer);
-                }
-
-                if ($index === 'quick_replies') {
-                    $parsed[$previous_index] = (array)$parsed[$previous_index];
-                    $parsed[$previous_index]['quick_replies'] = $answer;
-                }
-
-                $parsed[$index] = $answer;
-                $previous_index = $index;
-            }
-
-            unset($parsed['quick_replies']);
+            $parsed = $this->parseQuickReplies($answers);
 
             $this->addNode($parsed, $node_type, $asks);
         }
@@ -193,6 +164,44 @@ class Model
     }
 
     /**
+     * Parse Quick Replies
+     */
+    private function parseQuickReplies($answers)
+    {
+        // Iterate through answers and parse it if possible
+        // Also, move quick replies to the last answer
+        $parsed = [];
+
+        $previous_index = 0;
+
+        foreach ($answers as $index => $answer) {
+
+            if (is_callable($answer)) {
+                $answer = [
+                    'type' => 'callback',
+                    'content' => $answer
+                ];
+            }
+
+            if ($this->isParsable($answer) && $index !== 'quick_replies') {
+                $answer = Parser::parseAnswer($answer);
+            }
+
+            if ($index === 'quick_replies') {
+                $parsed[$previous_index] = (array)$parsed[$previous_index];
+                $parsed[$previous_index]['quick_replies'] = $answer;
+            }
+
+            $parsed[$index] = $answer;
+            $previous_index = $index;
+        }
+
+        unset($parsed['quick_replies']);
+
+        return $parsed;
+    }
+
+    /**
      * Parse [a] answers without save
      *
      * @param $answers
@@ -208,7 +217,7 @@ class Model
         if ($this->isSingleAnswer($answers))
             return [Parser::parseAnswer($answers)];
 
-        return array_map(['\GigaAI\Core\Parser', 'parseAnswer'], $answers);
+        return $this->parseQuickReplies($answers);
     }
 
     /**
