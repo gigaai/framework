@@ -115,7 +115,7 @@ class Request
 
         if ($received != null) {
 
-            return $this->sendSubscribeRequest();
+            dd($this->sendSubscribeRequest());
         }
     }
 
