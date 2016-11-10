@@ -46,6 +46,13 @@ class Node extends \Illuminate\Database\Eloquent\Model
         return $nodes;
     }
 
+    /**
+     * Query scope tag
+     *
+     * @param $query
+     * @param $value
+     * @return mixed
+     */
     public function scopeOfTag($query, $value)
     {
         if ( ! empty($value))
@@ -54,6 +61,13 @@ class Node extends \Illuminate\Database\Eloquent\Model
         return $query;
     }
 
+    /**
+     * Query scope search
+     *
+     * @param $query
+     * @param $value
+     * @return mixed
+     */
     public function scopeSearch($query, $value)
     {
         if ( ! empty($value))
@@ -63,6 +77,12 @@ class Node extends \Illuminate\Database\Eloquent\Model
         return $query;
     }
 
+    /**
+     * Query Scope
+     *
+     * @param $query
+     * @return mixed
+     */
     public function scopeNotFluentIntended($query)
     {
         $query->where('pattern', 'not like', 'IA#%');
@@ -70,6 +90,11 @@ class Node extends \Illuminate\Database\Eloquent\Model
         return $query;
     }
 
+    /**
+     * Auto json encode the answers attribute
+     *
+     * @param $value
+     */
     public function setAnswersAttribute($value)
     {
         if (is_array($value))
@@ -78,6 +103,12 @@ class Node extends \Illuminate\Database\Eloquent\Model
             $this->attributes['answers'] = $value;
     }
 
+    /**
+     * Auto json decode the answer attribute
+     *
+     * @param $value
+     * @return mixed
+     */
     public function getAnswersAttribute($value)
     {
         return json_decode($value, true);
