@@ -6,7 +6,7 @@
 --
 
 CREATE TABLE `bot_instances` (
-  `id` varchar(255) NOT NULL,
+  `id` varchar(150) NOT NULL,
   `name` varchar(255) NOT NULL,
   `meta` text,
   `status` varchar(50) NOT NULL
@@ -53,7 +53,7 @@ CREATE TABLE `bot_leads` (
 CREATE TABLE `bot_leads_meta` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` varchar(30) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `meta_key` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `meta_key` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
   `meta_value` longtext COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -75,7 +75,7 @@ CREATE TABLE `bot_messages` (
   `send_limit` varchar(10) DEFAULT '1',
   `sent_count` int(11) UNSIGNED NOT NULL DEFAULT '0',
   `routines` varchar(255) DEFAULT NULL,
-  `unique_id` varchar(255) DEFAULT NULL,
+  `unique_id` varchar(150) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL,
   `start_at` timestamp NULL DEFAULT NULL,
