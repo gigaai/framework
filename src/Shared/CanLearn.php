@@ -96,7 +96,7 @@ trait CanLearn
      */
     public function keep($messages)
     {
-        $previous_intended_action = Conversation::get('previous_intended_action');
+        $previous_intended_action = $this->conversation->get('previous_intended_action');
 
         if ($previous_intended_action == null)
             return;
