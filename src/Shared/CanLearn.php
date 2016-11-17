@@ -65,7 +65,7 @@ trait CanLearn
      */
     public function wait($action)
     {
-        $lead_id = Conversation::get('lead_id');
+        $lead_id = $this->conversation->get('lead_id');
 
         // For chaining after $bot->say() method
         if ($lead_id != null)
@@ -124,3 +124,4 @@ trait CanLearn
         return ! $this->understand($pattern);
     }
 }
+
