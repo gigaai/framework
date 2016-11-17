@@ -43,6 +43,14 @@ function giga_match($pattern, $string)
 	return preg_match("/^$pattern$/i", $string);
 }
 
+/**
+ * Check if WP installed
+ */
+function giga_wp_exists()
+{
+    return defined('DB_NAME');
+}
+
 if ( ! function_exists( 'sd' ) )
 {
 	function sd($object)

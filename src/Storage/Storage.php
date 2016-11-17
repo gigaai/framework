@@ -25,7 +25,14 @@ class Storage
 
     public function __construct()
     {
+        $this->createConnection();
+    }
+
+    private function createConnection()
+    {
         $this->db = new Capsule;
+
+        $this->createConfigFromWordPress();
 
         $config = Config::get('mysql');
 
@@ -44,6 +51,26 @@ class Storage
         $this->db->setAsGlobal();
 
         $this->db->bootEloquent();
+    }
+
+    private function createConfigFromWordPress()
+    {
+        if (defined('DB_HOST') && defined('DB_NAME') && defined('DB_USER') && defined('DB_PASSWORD') && defined('DB_CHARSET'))
+        {
+            global $wpdb;
+
+            $mysql = [
+                'host'      => DB_HOST,
+                'database'  => DB_NAME,
+                'username'  => DB_USER,
+                'password'  => DB_PASSWORD,
+                'charset'   => DB_CHARSET,
+                'collation' => null,
+                'prefix'    => $wpdb->prefix,
+            ];
+
+            Config::set('mysql', $mysql);
+        }
     }
 
     private function pull($lead_id)
