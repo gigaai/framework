@@ -40,6 +40,4 @@ class AutoStop
 
         return Lead::where('lead_id', $lead_id)->first()->pluck('auto_stop');
     }
-
-
 }

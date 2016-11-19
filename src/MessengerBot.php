@@ -89,7 +89,7 @@ class MessengerBot
     {
         // Package Version
         if ( ! defined('GIGAAI_VERSION'))
-            define('GIGAAI_VERSION', '2.0.2');
+            define('GIGAAI_VERSION', '2.0.3');
         
         // Setup the configuration data
         $this->config = Config::getInstance();
@@ -191,6 +191,7 @@ class MessengerBot
             $lead_id = $this->conversation->get('lead_id');
 
         foreach ($nodes as $node) {
+
             /** New wait */
             if ( ! empty($node->wait)) {
                 $this->storage->set($lead_id, '_wait', $node->wait);
@@ -202,7 +203,7 @@ class MessengerBot
             }
 
             foreach ($node->answers as $answer) {
-
+                
                 /** Process dynamic content */
                 if (isset($answer['type'])) {
 
