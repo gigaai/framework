@@ -29,89 +29,66 @@ class Model
         $this->serializer = new Serializer();
     }
 
-    /**
-     * Parse $bot->answer() method to extract the answers
-     *
-     * @param $asks
-     * @param null $answers
-     * @return $this
-     */
-    public function parseAnswers($asks, $answers = null)
+    public function addNode($pattern, $answers = null)
     {
-        if (is_string($asks)) {
-            $node_type = 'text';
+        // If user like to use $pattern => $answers method
+        if (is_array($pattern) && is_null($answers)) {
+            $this->addNodes($pattern);
 
-            // If user set payload, default, welcome message.
-            foreach (['payload', 'default', 'attachment'] as $type) {
-                if (strpos($asks, $type . ':') !== false) {
-                    $node_type = $type;
-
-                    $asks = ltrim($asks, $type . ':');
-                }
-            }
-
-            if ( ! empty($asks) && $asks[0] == '@') {
-                $node_type  = 'intended';
-                $asks       = ltrim($asks, '@');
-            }
-
-            if (is_string($answers)) {
-                $answers = trim($answers);
-            }
-
-            if (is_callable($answers)) {
-
-                $this->addNode(
-                    [['type' => 'callback', 'content' => $answers]],
-                    $node_type,
-                    $asks
-                );
-
-                return $this;
-            }
-
-            $answers = (array)$answers;
-
-            // Short hand method of attachments
-            if ($this->isSingleAnswer($answers)) {
-
-                if ($this->isParsable($answers)) {
-                    $answers = Parser::parseAnswer($answers);
-                }
-
-                $this->addNode([$answers], $node_type, $asks);
-
-                return $this;
-            }
-
-            $parsed = $this->parseQuickReplies($answers);
-
-            $this->addNode($parsed, $node_type, $asks);
+            return null;
         }
 
-        // Recursive if we set multiple asks, responses
-        if (is_array($asks) && is_null($answers)) {
-            if (array_key_exists('text', $asks) || array_key_exists('payload', $asks) || array_key_exists('attachment', $asks)) {
-                foreach ($asks as $event => $nodes) {
+        $type_pattern = $this->getNodeTypeAndPattern($pattern);
+        list($type, $pattern) = $type_pattern;
 
-                    $prepend = $event === 'text' ? '' : $event . ':';
+        if (is_callable($pattern)) {
 
-                    if ($event === 'default')
-                        $nodes = [$nodes];
+            $this->persistNode(
+                [['type' => 'callback', 'content' => $answers]],
+                $type,
+                $pattern
+            );
 
-                    foreach ($nodes as $ask => $responses) {
-                        $this->parseAnswers($prepend . $ask, $responses);
-                    }
-                }
-            }
-            else {
-                foreach ($asks as $ask => $answers) {
-                    $this->parseAnswers($ask, $answers);
-                }
-            }
+            return $this;
         }
+
+        if (is_string($answers)) {
+            $answers = trim($answers);
+        }
+
+        $answers = (array) $answers;
+        $answers = $this->parseAnswers($answers);
+
+        $this->persistNode($answers, $type, $pattern);
 
         return $this;
+    }
+
+    private function getNodeTypeAndPattern($pattern)
+    {
+        $node_type = 'text';
+
+        // If user set payload, default, welcome message.
+        foreach (['payload', 'default', 'attachment'] as $type) {
+            if (strpos($pattern, $type . ':') !== false) {
+                $node_type = $type;
+                $pattern = ltrim($pattern, $node_type . ':');
+            }
+        }
+
+        if ( ! empty($pattern) && $pattern[0] == '@') {
+            $node_type  = 'intended';
+            $pattern    = ltrim($pattern, '@');
+        }
+
+        return [$node_type, $pattern];
+    }
+
+    public function addNodes($nodes)
+    {
+        foreach ($nodes as $pattern => $answers) {
+            $this->addNode($pattern, $answers);
+        }
     }
 
     /**
@@ -119,11 +96,11 @@ class Model
      *
      * @param Mixed $answers Message
      * @param String $node_type Node Type
-     * @param null $asks Question
+     * @param null $pattern Question
      *
      * @return Node
      */
-    public function addNode(array $answers, $node_type, $asks = null)
+    public function persistNode(array $answers, $node_type, $pattern = null)
     {
         foreach ($answers as $index => $answer) {
             if (isset($answer['type']) && isset($answer['content']) && is_callable($answer['content'])) {
@@ -132,7 +109,7 @@ class Model
             $answers[$index] = $answer;
         }
 
-        $this->current_node = Storage::addNode($answers, $node_type, $asks);
+        $this->current_node = Storage::addNode($answers, $node_type, $pattern);
 
         return $this->current_node;
     }
@@ -166,13 +143,17 @@ class Model
     /**
      * Parse Quick Replies
      */
-    private function parseQuickReplies($answers)
+    private function parseAnswers($answers)
     {
         // Iterate through answers and parse it if possible
         // Also, move quick replies to the last answer
         $parsed = [];
 
         $previous_index = 0;
+
+        if ($this->isSingleAnswer($answers)) {
+            $answers = [$answers];
+        }
 
         foreach ($answers as $index => $answer) {
 
@@ -184,7 +165,16 @@ class Model
             }
 
             if ($this->isParsable($answer) && $index !== 'quick_replies') {
-                $answer = Parser::parseAnswer($answer);
+
+                $message_types = ['Media', 'Text', 'Generic', 'Button', 'Receipt'];
+
+                foreach ($message_types as $type) {
+                    $parsed_answer = call_user_func_array(["\\GigaAI\\Message\\$type", 'load'], [$answer]);
+
+                    if ($parsed_answer !== false) {
+                        $answer = $parsed_answer;
+                    }
+                }
             }
 
             if ($index === 'quick_replies') {
@@ -197,7 +187,6 @@ class Model
         }
 
         unset($parsed['quick_replies']);
-
         return $parsed;
     }
 
@@ -209,15 +198,7 @@ class Model
      */
     public function parseWithoutSave($answers)
     {
-        if ( ! $this->isParsable($answers)) {
-            return false;
-        }
-
-        // Short hand method of attachments
-        if ($this->isSingleAnswer($answers))
-            return [Parser::parseAnswer($answers)];
-
-        return $this->parseQuickReplies($answers);
+        return $this->parseAnswers($answers);
     }
 
     /**
@@ -254,7 +235,7 @@ class Model
         {
             $related = $this->current_node;
 
-            $then_node = $this->addNode([[
+            $then_node = $this->persistNode([[
                 'type'      => 'callback',
                 'content'   => $action
             ]], 'intended', 'IA#' . $related->id);
