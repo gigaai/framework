@@ -27,7 +27,7 @@ trait CanLearn
      */
     public function answers($asks, $answers = null)
     {
-        $this->model->parseAnswers($asks, $answers);
+        $this->model->addNode($asks, $answers);
 
         return $this;
     }
@@ -104,12 +104,12 @@ trait CanLearn
         $this->says($messages)->wait($previous_intended_action);
     }
 
-    public function maybeWait($action)
+    public function shouldWait($action)
     {
         $this->wait($action . '?');
     }
 
-    public function maybeThen()
+    public function shouldThen()
     {
 
     }

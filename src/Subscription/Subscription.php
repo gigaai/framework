@@ -225,7 +225,7 @@ class Subscription
      *
      * Parameters:
      *
-     * First param: Messages to be send
+     * First param: Message to be send
      *
      * Next params:
      * 1 -> Send to channel 1

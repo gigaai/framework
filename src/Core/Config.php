@@ -24,7 +24,6 @@ class Config
      */
     private function get($key, $default = null)
     {
-        
         if ( ! empty($this->config[$key]))
             return $this->config[$key];
 
