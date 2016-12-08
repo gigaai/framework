@@ -178,6 +178,11 @@ class MessengerBot
             // Save lead data if not exists.
             $this->storage->pull($event->sender->id);
         }
+    
+        // Message was sent by page, we don't need to response.
+        if (isset($event->message) && isset($event->message->is_echo) && $event->message->is_echo == true) {
+            return null;
+        }
         
         DynamicParser::support([
             'type'     => 'callback',
