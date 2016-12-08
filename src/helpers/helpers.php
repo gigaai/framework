@@ -32,13 +32,13 @@ function giga_match($pattern, $string)
 		return preg_match($pattern, $string);
 	}
 
-	$pattern = strtr($pattern, array(
+	$pattern = strtr($pattern, [
 		'%' => '[\s\S]*',
 		'?' => '\?',
 		'*' => '\*',
 		'+' => '\+',
 		'.' => '\.'
-	));
+	]);
 
 	return preg_match("/^$pattern$/i", $string);
 }
