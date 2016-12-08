@@ -2,8 +2,8 @@
 
 namespace GigaAI\Message;
 
-class ListMessage extends AbstractMessage {
-
+class Lists extends AbstractMessage
+{
     public function expectedFormat()
     {
         return is_array($this->body) && array_key_exists('elements', $this->body);

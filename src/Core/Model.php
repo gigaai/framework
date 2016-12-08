@@ -48,7 +48,7 @@ class Model
         $type_pattern = $this->getNodeTypeAndPattern($pattern);
         list($type, $pattern) = $type_pattern;
 
-        if (is_callable($pattern)) {
+        if ( ! is_string($pattern) && is_callable($pattern)) {
 
             $this->persistNode(
                 [['type' => 'callback', 'content' => $answers]],
@@ -177,7 +177,7 @@ class Model
         foreach ($answers as $index => $answer) {
 
             // If the answer is a Closure
-            if (is_callable($answer)) {
+            if ( ! is_string( $answer ) && is_callable($answer)) {
                 $answer = [
                     'type' => 'callback',
                     'content' => $answer
@@ -189,7 +189,7 @@ class Model
             if ($this->isParsable($answer) && $index !== 'quick_replies') {
 
                 // Supported message types
-                $message_types = ['Media', 'Text', 'Generic', 'Button', 'ListMessage', 'Receipt'];
+                $message_types = ['Media', 'Text', 'Generic', 'Button', 'Lists', 'Receipt'];
 
                 foreach ($message_types as $type) {
                     // If not supported, it will return false, otherwise, return parsed data
