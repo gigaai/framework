@@ -33,7 +33,7 @@ class Http
 		
 		if ( false !== $result )
 			$result = json_decode( $result );
-
+        
 		return $result;
 	}
 

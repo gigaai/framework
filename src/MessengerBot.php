@@ -2,6 +2,7 @@
 
 namespace GigaAI;
 
+use GigaAI\Conversation\AutoStop;
 use GigaAI\Core\AccountLinking;
 use GigaAI\Core\DynamicParser;
 use GigaAI\Shared\CanLearn;
@@ -132,6 +133,7 @@ class MessengerBot
         $this->received = $received;
         
         foreach ($received->entry as $entry) {
+            
             foreach ($entry->messaging as $event) {
                 $this->conversation->set([
                     'sender_id'    => $event->sender->id,
@@ -153,16 +155,25 @@ class MessengerBot
         
         // Handle message and postback
         if ( ! isset($event->message) && ! isset($event->postback)) {
-            return;
+            return null;
         }
         
         if (isset($event->message)) {
             $this->message = $event->message;
         }
         
+        // If auto stop is run and it return true. Terminate
+        if (AutoStop::run($event)) {
+            return null;
+        }
+        
         // If current message is send from Lead
         if ( ! $this->conversation->has('lead_id') && $event->sender->id != Config::get('page_id')) {
             $this->conversation->set('lead_id', $event->sender->id);
+            
+            if (AutoStop::isStopped()) {
+                return null;
+            }
             
             // Save lead data if not exists.
             $this->storage->pull($event->sender->id);
