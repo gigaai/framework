@@ -6,8 +6,9 @@ class Generic extends AbstractMessage
 {
     public function expectedFormat()
     {
-        return is_array($this->body) && ! empty($this->body[0]) &&
-            is_array($this->body[0]) && array_key_exists('title', $this->body[0]);
+        return is_array($this->body) && !empty($this->body[0]) &&
+            is_array($this->body[0]) && array_key_exists('title', $this->body[0])
+            && !array_key_exists('buttons', $this->body);
     }
 
     public function normalize()

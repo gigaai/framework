@@ -189,7 +189,7 @@ class Model
             if ($this->isParsable($answer) && $index !== 'quick_replies') {
 
                 // Supported message types
-                $message_types = ['Media', 'Text', 'Generic', 'Button', 'Receipt'];
+                $message_types = ['Media', 'Text', 'Generic', 'Button', 'ListMessage', 'Receipt'];
 
                 foreach ($message_types as $type) {
                     // If not supported, it will return false, otherwise, return parsed data
