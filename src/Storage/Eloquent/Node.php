@@ -89,7 +89,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
 
         return $query;
     }
-
+    
     /**
      * Auto json encode the answers attribute
      *
@@ -97,10 +97,12 @@ class Node extends \Illuminate\Database\Eloquent\Model
      */
     public function setAnswersAttribute($value)
     {
-        if (is_array($value))
+        if (is_array($value)) {
+            $value = giga_array_filter($value);
             $this->attributes['answers'] = json_encode($value, JSON_UNESCAPED_UNICODE);
-        else
+        } else {
             $this->attributes['answers'] = $value;
+        }
     }
 
     /**

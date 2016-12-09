@@ -119,7 +119,6 @@ class ThreadSettings
         
         $params = [
             'setting_type' => 'account_linking',
-            
         ];
         
         if ( ! empty($account_linking_url)) {

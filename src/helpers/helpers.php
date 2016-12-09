@@ -67,3 +67,30 @@ if ( ! function_exists('cl')) {
 		file_put_contents(GigaAI\Core\Config::get('cache_path') . 'log.txt', print_r($content, true));
 	}
 }
+
+/**
+ * Recursive filter array elements and remove empty key => value pairs.
+ *
+ * @param array $array
+ *
+ * @return array
+ */
+function giga_array_filter(array $array)
+{
+    $output = [];
+    
+    foreach ($array as $key => $value) {
+        
+        if (is_null($value) || empty($value)) {
+            continue;
+        }
+        
+        if (is_array($value)) {
+            $output[$key] = giga_array_filter($value);
+        } else {
+            $output[$key] = $value;
+        }
+    }
+    
+    return $output;
+}
