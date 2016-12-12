@@ -87,9 +87,9 @@ class Request
     private function getUserProfile($user_id)
     {
         $end_point  = self::PLATFORM_ENDPOINT . "{$user_id}?access_token=" . self::$token;
-
-        $data       = file_get_contents($end_point);
-
+    
+        $data       = giga_remote_get($end_point);
+    
         return json_decode($data, true);
     }
 
