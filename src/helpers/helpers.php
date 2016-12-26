@@ -2,7 +2,7 @@
 
 function giga_remote_post($url, $args = array())
 {
-	return GigaAI\Http\Http::post($url, $args);
+    return GigaAI\Http\Http::post($url, $args);
 }
 
 function giga_remote_get($url)
@@ -12,7 +12,7 @@ function giga_remote_get($url)
 
 function giga_remote_delete($url, $args = array())
 {
-	return GigaAI\Http\Http::delete($url, $args);
+    return GigaAI\Http\Http::delete($url, $args);
 }
 
 /**
@@ -20,27 +20,27 @@ function giga_remote_delete($url, $args = array())
  *
  * @param  String $pattern Pattern
  * @param  String $string  User Text
- * 
+ *
  * @return bool
  */
 function giga_match($pattern, $string)
 {
-	if (strpos($pattern, 'regex:') !== false)
-	{
-		$pattern = str_replace('regex:', '', $pattern);
-
-		return preg_match($pattern, $string);
-	}
-
-	$pattern = strtr($pattern, [
-		'%' => '[\s\S]*',
-		'?' => '\?',
-		'*' => '\*',
-		'+' => '\+',
-		'.' => '\.'
-	]);
-
-	return preg_match("/^$pattern$/i", $string);
+    if (strpos($pattern, 'regex:') !== false)
+    {
+        $pattern = str_replace('regex:', '', $pattern);
+        
+        return preg_match($pattern, $string);
+    }
+    
+    $pattern = strtr($pattern, [
+        '%' => '[\s\S]*',
+        '?' => '\?',
+        '*' => '\*',
+        '+' => '\+',
+        '.' => '\.'
+    ]);
+    
+    return preg_match("/^$pattern$/i", $string);
 }
 
 /**
@@ -53,19 +53,19 @@ function giga_wp_exists()
 
 if ( ! function_exists( 'sd' ) )
 {
-	function sd($object)
-	{
-		echo '<pre>';
-		print_r($object);
-		exit;
-	}
+    function sd($object)
+    {
+        echo '<pre>';
+        print_r($object);
+        exit;
+    }
 }
 
 if ( ! function_exists('cl')) {
-	function cl($content)
-	{
-		file_put_contents(GigaAI\Core\Config::get('cache_path') . 'log.txt', print_r($content, true));
-	}
+    function cl($content)
+    {
+        file_put_contents(GigaAI\Core\Config::get('cache_path') . 'log.txt', print_r($content, true));
+    }
 }
 
 /**

@@ -9,18 +9,60 @@ use GigaAI\Shared\EasyCall;
 use GigaAI\Shared\Singleton;
 use GigaAI\Storage\Eloquent\Lead;
 use GigaAI\Storage\Eloquent\Message;
+use GigaAI\Storage\Storage;
 
 class Subscription
 {
     use EasyCall, Singleton;
-
+    
     /**
      * Current notification message
-     * 
+     *
      * @var Message
      */
     private $current_message;
-
+    
+    
+    private function setSubscriptionChannel($user_ids, $channels, $type = 'add')
+    {
+        if (is_array($user_ids))
+        {
+            if (is_null($channels)) {
+                foreach ($user_ids as $user_id => $channels) {
+                    $this->setSubscriptionChannel($user_id, $channels, $type);
+                }
+            }
+            else {
+                foreach ($user_ids as $user_id) {
+                    $this->setSubscriptionChannel($user_id, $channels, $type);
+                }
+            }
+            return;
+        }
+        
+        // Merge lead channels with new channels
+        $lead = Lead::where('user_id', $user_ids)->first();
+        
+        if (is_null($lead))
+            return;
+        
+        // Convert channels to array
+        $channels       = ! is_array($channels) ? array_map('trim', explode(',', $channels)) : $channels;
+        
+        // Convert lead->subscribe to array
+        $lead_channels  = ( ! empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
+        
+        if ($type === 'add') {
+            // Merge channels and lead->subscribe then convert to csv
+            $lead->subscribe = implode(',', array_unique(array_merge($lead_channels, $channels)));
+        } else {
+            $lead->subscribe = implode(',', array_unique(array_diff($lead_channels, $channels)));
+        }
+        
+        // Update the lead
+        $lead->save();
+    }
+    
     /**
      * Add subscribers to channels
      *
@@ -31,43 +73,17 @@ class Subscription
      */
     private function addSubscribers($user_ids, $channels = 1)
     {
-        if (is_array($user_ids))
-        {
-            if (is_null($channels)) {
-                foreach ($user_ids as $user_id => $channels) {
-                    $this->addSubscribers($user_id, $channels);
-                }
-            }
-            else {
-                foreach ($user_ids as $user_id) {
-                    $this->addSubscribers($user_id, $channels);
-                }
-            }
-            return;
-        }
-
-        // Merge lead channels with new channels
-        $lead = Lead::where('user_id', $user_ids)->first();
-
-        if (is_null($lead))
-            return;
-
-        // Convert channels to array
-        $channels       = ! is_array($channels) ? array_map('trim', explode(',', $channels)) : $channels;
-
-        // Convert lead->subscribe to array
-        $lead_channels  = ( ! empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
-
-        // Merge channels and lead->subscribe then convert to csv
-        $lead->subscribe = implode(',', array_unique(array_merge($lead_channels, $channels)));
-
-        // Update the lead
-        $lead->save();
+        $this->setSubscriptionChannel($user_ids, $channels);
     }
-
+    
+    private function removeSubscribers($user_ids, $channels)
+    {
+        $this->setSubscriptionChannel($user_ids, $channels, 'remove');
+    }
+    
     /**
      * Create a subscription
-     * 
+     *
      * @param  array $subscription
      * @throws \Exception
      * @return $this
@@ -77,23 +93,23 @@ class Subscription
         if (empty($subscription['content']) || (empty($subscription['to_lead']) && empty($subscription['to_channel']))) {
             throw new \Exception('Cannot create subscription. A required field is missing!');
         }
-
+        
         // If this notification has already been created. Just find the notification
         if (! empty($subscription['unique_id'])) {
             $this->find($subscription['unique_id']);
         }
-
+        
         // Create the notification
         if (is_null($this->current_message) || ! $this->current_message) {
             $model = new Model;
             $subscription['content'] = $model->parseWithoutSave($subscription['content']);
-
+            
             $this->current_message = Message::firstOrCreate($subscription);
         }
-
+        
         return $this;
     }
-
+    
     /**
      * Find by unique id and check for start_at and end_at
      *
@@ -104,22 +120,26 @@ class Subscription
     private function find($unique_id)
     {
         $now = Carbon::now();
-
-        $message = Message::where('unique_id', $unique_id)->first();
-
-        if (isset($message->start_at) && $message->start_at > $now) {
+        
+        $message = Message::find($unique_id);
+        
+        if (is_null($message)) {
+            $message = Message::whereUniqueId($unique_id)->first();
+        }
+        
+        if (strtotime($message->start_at) != 0 && $message->start_at > $now) {
             throw new \Exception('This subscription is not ready to send. Please be patient!');
         }
-
-        if (isset($message->end_at) && $message->end_at < $now) {
+        
+        if (strtotime($message->end_at) != 0 && $message->end_at < $now) {
             throw new \Exception('This subscription has expired. Please create another!');
         }
-
+        
         $this->current_message = $message;
-
+        
         return $this;
     }
-
+    
     /**
      * Send Message with prepared data
      *
@@ -130,32 +150,34 @@ class Subscription
         if ( ! $this->current_message || is_null($this->current_message)) {
             throw new \Exception('No subscription found!');
         }
-
+        
         $subscription = $this->current_message;
-
+        
         $call = 'sendMessageToChannels';
-
+        
         $to = $subscription->to_channel;
-
+        
         if (empty($to))
         {
             $to = $subscription->to_lead;
             $call = 'sendMessageToLeads';
         }
-
-        if (is_numeric($subscription->send_limit) && $subscription->sent_count >= $subscription->send_limit)
+        
+        if (is_numeric($subscription->send_limit) &&
+            $subscription->sent_count >= $subscription->send_limit &&
+            $subscription->send_limit > 0)
         {
             throw new \Exception('You have already reached limit notification to send!');
         }
-
-        @call_user_func_array([$this, $call], [$subscription->content, $to]);
-
+        
+        @call_user_func_array([$this, $call], [$subscription, $to]);
+        
         $subscription->sent_count++;
         $subscription->sent_at = Carbon::now();
-
+        
         $subscription->save();
     }
-
+    
     /**
      * Get subscribers of channels
      *
@@ -169,57 +191,61 @@ class Subscription
     private function getSubscribers($channels = 1)
     {
         $all = is_array($channels);
-
+        
         if (is_string($channels) || is_numeric($channels))
             $channels = explode(',', $channels);
-
+        
         $channels = array_map('trim', $channels);
-
+        
         $regexp = implode('|', $channels);
-
+        
         $leads = Lead::where('subscribe', 'REGEXP', $regexp)->get();
-
+        
         $subscribers = [];
-
+        
         foreach ($leads as $lead) {
-
+            
             $lead_channels = array_map('trim', explode(',', $lead->subscribe));
-
+            
             // Array should in another array
             if ($all && ! array_diff($channels, $lead_channels)) {
-
+                
                 $subscribers[] = $lead->user_id;
-
+                
                 continue;
             }
-
+            
             // One element of array in another array
             if ( ! $all && array_intersect($channels, $lead_channels))
             {
                 $subscribers[] = $lead->user_id;
             }
         }
-
+        
         return array_unique($subscribers);
     }
-
+    
     /**
      * Send Message To Leads
      *
-     * @param $messages
+     * @param $message
      * @param $lead_ids
      * @return $this
      */
-    private function sendMessageToLeads($messages, $lead_ids)
+    private function sendMessageToLeads($message, $lead_ids)
     {
         $lead_ids = (array) $lead_ids;
-
+        
         foreach ($lead_ids as $lead_id)
         {
-            Request::sendMessages($messages, $lead_id);
+            Request::sendMessages($message->content, $lead_id);
+            
+            if ( ! empty($message->wait)) {
+                Storage::set($lead_id, '_wait', $message->wait);
+            }
         }
     }
-
+    
     /**
      * Send Message To Channels
      *
@@ -235,10 +261,33 @@ class Subscription
      * @throws \Exception
      * @return $this
      */
-    private function sendMessageToChannels($messages, $channels)
+    private function sendMessageToChannels($message, $channels)
     {
         $subscribers = $this->getSubscribers($channels);
-
-        $this->sendMessageToLeads($messages, $subscribers);
+        
+        $this->sendMessageToLeads($message, $subscribers);
+    }
+    
+    /**
+     * Get all channels
+     */
+    private function getAllChannels()
+    {
+        $channels = Lead::lists('subscribe');
+        
+        $channels = array_map(function ($channel) {
+            return explode(',', $channel);
+        }, $channels);
+        
+        $channels = array_flatten($channels);
+        
+        // Make sure 1 exists
+        $channels = array_merge($channels, ['1']);
+        
+        $channels = array_filter(array_unique($channels));
+        
+        sort($channels);
+        
+        return $channels;
     }
 }

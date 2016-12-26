@@ -5,9 +5,9 @@ namespace GigaAI\Storage\Eloquent;
 class Node extends \Illuminate\Database\Eloquent\Model
 {
     public $table = 'bot_nodes';
-
+    
     protected $fillable = ['instance_id', 'pattern', 'answers', 'wait', 'sources', 'type', 'notification_type', 'status', 'tags'];
-
+    
     /**
      * Get node by node type and pattern
      *
@@ -21,31 +21,31 @@ class Node extends \Illuminate\Database\Eloquent\Model
         $where_type = '';
         $where_like = '';
         $where_rlike = '';
-
+        
         $placeholder    = [];
-
+        
         if ( ! empty($type)) {
             $where_type             = ' AND type = :type';
             $placeholder[':type']   = $type;
         }
-
+        
         if ( ! empty($pattern)) {
             $placeholder[':pattern'] = $pattern;
             $where_like = " AND :pattern LIKE pattern";
             $where_rlike = " AND :pattern RLIKE pattern";
         }
-
+        
         // Where Like First
         $nodes = Node::whereRaw($where . $where_type . $where_like, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
-
+        
         // If Not Found. Then Where Rlike
         if ($nodes->count() === 0) {
             $nodes = Node::whereRaw($where . $where_type . $where_rlike, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
         }
-
+        
         return $nodes;
     }
-
+    
     /**
      * Query scope tag
      *
@@ -57,10 +57,10 @@ class Node extends \Illuminate\Database\Eloquent\Model
     {
         if ( ! empty($value))
             return $query->where('tags', 'like', '%' . $value . '%');
-
+        
         return $query;
     }
-
+    
     /**
      * Query scope search
      *
@@ -72,11 +72,11 @@ class Node extends \Illuminate\Database\Eloquent\Model
     {
         if ( ! empty($value))
             return $query->where('pattern', 'like', '%' . $value . '%')
-                        ->orWhere('answers', 'like', '%' . $value . '%');
-
+                ->orWhere('answers', 'like', '%' . $value . '%');
+        
         return $query;
     }
-
+    
     /**
      * Query Scope
      *
@@ -86,7 +86,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
     public function scopeNotFluentIntended($query)
     {
         $query->where('pattern', 'not like', 'IA#%');
-
+        
         return $query;
     }
     
@@ -104,7 +104,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
             $this->attributes['answers'] = $value;
         }
     }
-
+    
     /**
      * Auto json decode the answer attribute
      *
