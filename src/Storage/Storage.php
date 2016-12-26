@@ -132,14 +132,7 @@ class Storage
             dd($pe);
         }
         if (!empty($meta)) {
-            foreach ($meta as $key => $value) {
-                $this->db->table('bot_leads_meta')->updateOrCreate([
-                    'user_id' => $lead->user_id,
-                    'meta_key' => $key
-                ], [
-                    'meta_value' => $value
-                ]);
-            }
+            $this->updateLeadMeta($lead->user_id, $meta);
         }
     }
     
