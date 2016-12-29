@@ -21,6 +21,7 @@ CREATE TABLE `bot_instances` (
 CREATE TABLE `bot_leads` (
   `id` int(10) UNSIGNED NOT NULL,
   `instance_id` int(10) UNSIGNED DEFAULT NULL,
+  `creator_id` int(10) UNSIGNED DEFAULT NULL,
   `source` varchar(50) COLLATE utf8_unicode_ci DEFAULT 'facebook',
   `user_id` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `first_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -66,10 +67,12 @@ CREATE TABLE `bot_leads_meta` (
 CREATE TABLE `bot_messages` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `instance_id` int(10) UNSIGNED DEFAULT NULL,
+  `creator_id` int(10) UNSIGNED DEFAULT NULL,
   `to_lead` text,
   `to_channel` text,
   `content` text NOT NULL,
   `description` varchar(255) DEFAULT NULL,
+  `wait` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `notification_type` varchar(20) DEFAULT 'REGULAR',
   `send_limit` varchar(10) DEFAULT '1',
@@ -92,6 +95,7 @@ CREATE TABLE `bot_messages` (
 CREATE TABLE `bot_nodes` (
   `id` int(10) UNSIGNED NOT NULL,
   `instance_id` int(10) UNSIGNED DEFAULT NULL,
+  `creator_id` int(10) UNSIGNED DEFAULT NULL,
   `pattern` text COLLATE utf8_unicode_ci,
   `answers` text COLLATE utf8_unicode_ci NOT NULL,
   `wait` varchar(99) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -101,7 +105,8 @@ CREATE TABLE `bot_nodes` (
   `status` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
   `tags` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --

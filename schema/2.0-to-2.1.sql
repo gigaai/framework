@@ -1,1 +1,0 @@
-ALTER TABLE `bot_nodes` ADD `deleted_at` TIMESTAMP NULL AFTER `updated_at`;
