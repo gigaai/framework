@@ -2,7 +2,7 @@
 
 namespace GigaAI\Message;
 
-class Button extends AbstractMessage
+class Button extends Message
 {
     public function expectedFormat()
     {
