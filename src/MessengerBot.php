@@ -91,7 +91,7 @@ class MessengerBot
     {
         // Package Version
         if ( ! defined('GIGAAI_VERSION')) {
-            define('GIGAAI_VERSION', '2.0.3');
+            define('GIGAAI_VERSION', '2.2');
         }
         
         // Setup the configuration data

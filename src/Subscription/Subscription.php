@@ -148,7 +148,7 @@ class Subscription
     private function send()
     {
         if ( ! $this->current_message || is_null($this->current_message)) {
-            throw new \Exception('No subscription found!');
+            throw new \Exception('No notification found!');
         }
         
         $subscription = $this->current_message;
