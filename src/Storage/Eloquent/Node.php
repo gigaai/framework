@@ -32,7 +32,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
         if ( ! empty($pattern)) {
             $placeholder[':pattern'] = $pattern;
             $where_like = " AND :pattern LIKE pattern";
-            $where_rlike = " AND :pattern RLIKE pattern";
+            $where_rlike = " AND :pattern RLIKE CONCAT('^',pattern,'$')";
         }
         
         // Where Like First
