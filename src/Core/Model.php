@@ -162,7 +162,7 @@ class Model
     /**
      * Parse the answers to correct FB Format.
      */
-    private function parseAnswers($answers)
+    public function parseAnswers($answers)
     {
         // Iterate through answers and parse it if possible
         // Also, move quick replies to the last answer
