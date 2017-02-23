@@ -44,7 +44,9 @@ class Request
      */
     private function load()
     {
-        self::$received = (!empty ($_REQUEST)) ? $_REQUEST : json_decode(file_get_contents('php://input'));
+        $stream = json_decode(file_get_contents('php://input'));
+
+        self::$received = (!empty ($stream)) ? $stream : $_REQUEST;
         
         self::$token = Config::get('page_access_token');
         
