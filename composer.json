@@ -10,12 +10,12 @@
     "wordpress"
   ],
   "require": {
-    "php": ">=5.4"
-  },
-  "require-dev": {
+    "php": ">=5.4",
     "jeremeamia/superclosure": "2.2.*",
     "illuminate/database": "5.0.*",
     "symfony/var-dumper": "2.8.*"
+  },
+  "require-dev": {
   },
   "autoload": {
     "psr-4": {
