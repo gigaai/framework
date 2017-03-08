@@ -6,7 +6,7 @@ class Lists extends Message
 {
     public function expectedFormat()
     {
-        return is_array($this->body) && array_key_exists('elements', $this->body);
+        return is_array($this->body) && array_key_exists('elements', $this->body) && ! array_key_exists('order_number', $this->body);
     }
     
     public function normalize()
