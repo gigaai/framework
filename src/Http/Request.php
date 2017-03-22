@@ -30,7 +30,7 @@ class Request
      *
      * @var string
      */
-    const PLATFORM_ENDPOINT = 'https://graph.facebook.com/v2.6/';
+    const PLATFORM_RESOURCE = 'https://graph.facebook.com/v2.6/';
     
     /**
      * Page access token
@@ -53,9 +53,6 @@ class Request
         $this->verifyTokenFromFacebook();
         
         $this->subscribeFacebook();
-        
-        // Run thread settings
-        ThreadSettings::init();
     }
     
     /**
@@ -88,7 +85,7 @@ class Request
     
     private function getUserProfile($user_id)
     {
-        $end_point  = self::PLATFORM_ENDPOINT . "{$user_id}?access_token=" . self::$token;
+        $end_point  = self::PLATFORM_RESOURCE . "{$user_id}?access_token=" . self::$token;
         
         $data       = giga_remote_get($end_point);
         
@@ -124,7 +121,7 @@ class Request
     
     private function sendSubscribeRequest()
     {
-        $end_point = self::PLATFORM_ENDPOINT . "me/subscribed_apps?access_token=" . self::$token;
+        $end_point = self::PLATFORM_RESOURCE . "me/subscribed_apps?access_token=" . self::$token;
         
         return $this->send($end_point);
     }
@@ -150,7 +147,7 @@ class Request
             'message' => $message
         ];
         
-        Request::send(self::PLATFORM_ENDPOINT . "me/messages?access_token=" . self::$token, $body);
+        Request::send(self::PLATFORM_RESOURCE . "me/messages?access_token=" . self::$token, $body);
     }
     
     /**
