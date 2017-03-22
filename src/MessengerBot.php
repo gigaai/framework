@@ -76,6 +76,13 @@ class MessengerBot
     private $message;
     
     /**
+     * Current parsing postback
+     *
+     * @var array
+     */
+    private $postback;
+    
+    /**
      * Serializer instance
      *
      * @var Serializer
@@ -162,6 +169,10 @@ class MessengerBot
             $this->message = $event->message;
         }
         
+        if (isset($event->postback)) {
+            $this->postback = $event->postback;
+        }
+        
         // If auto stop is run and it return true. Terminate
         if (AutoStop::run($event)) {
             return null;
@@ -187,7 +198,7 @@ class MessengerBot
         DynamicParser::support([
             'type'     => 'callback',
             'callback' => function ($content) {
-                return @call_user_func_array($content, [$this, $this->getLeadId(), $this->getReceivedText()]);
+                return @call_user_func_array($content, [$this, $this->getLeadId(), $this->getReceivedInput()]);
             },
         ]);
         
@@ -366,11 +377,28 @@ class MessengerBot
         return '';
     }
     
+    public function getReceivedInput()
+    {
+        if ( ! $this->isUserMessage()) {
+            return;
+        }
+        
+        if (isset($this->message->text))
+            return $this->message->text;
+        
+        if (isset($this->postback->payload))
+            return $this->postback->payload;
+        
+        return null;
+    }
+    
     private function isUserMessage()
     {
         if ( ! empty($this->message)) {
             return $this->message->metadata != 'SENT_BY_GIGA_AI';
         }
+        
+        return true;
     }
     
     public function getLeadId()
