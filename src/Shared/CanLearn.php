@@ -103,7 +103,12 @@ trait CanLearn
 
         $this->says($messages)->wait($previous_intended_action);
     }
-
+    
+    public function release()
+    {
+        $this->run();
+    }
+    
     public function shouldWait($action)
     {
         $this->wait($action . '?');
