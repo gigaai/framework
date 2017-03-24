@@ -108,20 +108,10 @@ trait CanLearn
     {
         $this->run();
     }
-    
-    public function shouldWait($action)
-    {
-        $this->wait($action . '?');
-    }
-
-    public function shouldThen()
-    {
-
-    }
 
     public function understand($pattern)
     {
-
+        
     }
 
     public function doesntUnderstand($pattern)
