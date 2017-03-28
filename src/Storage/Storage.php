@@ -2,6 +2,7 @@
 
 namespace GigaAI\Storage;
 
+use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
 use GigaAI\Http\Request;
 use GigaAI\Storage\Eloquent\Node;
@@ -75,9 +76,11 @@ class Storage
     
     private function pull($lead_id)
     {
-        // Todo: Check cache time and fetch new data
-        if (self::has($lead_id))
+        $lead = self::getUser($lead_id);
+        
+        if ( ! empty($lead['source']) && $lead['source'] !== 'facebook') {
             return;
+        }
         
         $lead = Request::getUserProfile($lead_id);
         
@@ -87,7 +90,8 @@ class Storage
         // Parse event to array
         $lead['user_id']    = $lead_id;
         $lead['subscribe']  = 1;
-        
+        $lead['source']    = Conversation::get('page_id');
+            
         // Then call set method
         self::set($lead);
     }
@@ -124,7 +128,6 @@ class Storage
         }
         try {
             $lead = Lead::updateOrCreate([
-                'source' => 'facebook',
                 'user_id' => $user['user_id']
             ], $user);
         } catch (\PDOException $pe) {
@@ -146,7 +149,6 @@ class Storage
     private function getUser($user_id)
     {
         $user = Lead::where([
-            'source' => 'facebook',
             'user_id' => $user_id
         ])->first();
         
