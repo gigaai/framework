@@ -73,14 +73,14 @@ class MessengerBot
      *
      * @var array
      */
-    private $message;
+    public $message;
     
     /**
      * Current parsing postback
      *
      * @var array
      */
-    private $postback;
+    public $postback;
     
     /**
      * Serializer instance

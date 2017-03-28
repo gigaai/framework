@@ -118,5 +118,15 @@ trait CanLearn
     {
         return ! $this->understand($pattern);
     }
+    
+    public function isText()
+    {
+        return ( ! empty($this->message));
+    }
+    
+    public function isPostback()
+    {
+        return ( ! empty($this->postback));
+    }
 }
 
