@@ -181,6 +181,7 @@ class MessengerBot
         // If current message is send from Lead
         if ( ! $this->conversation->has('lead_id') && $event->sender->id != Config::get('page_id')) {
             $this->conversation->set('lead_id', $event->sender->id);
+            $this->conversation->set('page_id', $event->recipient->id);
             
             if (AutoStop::isStopped()) {
                 return null;
@@ -430,5 +431,10 @@ class MessengerBot
         $this->model->taggedAs($tag);
         
         return $this;
+    }
+    
+    public function withAttributes($attributes = [])
+    {
+        //
     }
 }

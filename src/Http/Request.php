@@ -101,7 +101,8 @@ class Request
     {
         $received = $this->getReceivedData();
         
-        if (is_array($received) && isset($received['hub_verify_token']) && $received['hub_verify_token'] == 'GigaAI'
+        if (is_array($received) && isset($received['hub_verify_token'])
+            && strtolower($received['hub_verify_token']) == 'gigaai'
         ) {
             echo $received['hub_challenge'];
             
