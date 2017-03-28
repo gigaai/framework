@@ -272,24 +272,32 @@ class Storage
     /**
      * Add Answer to the database
      *
-     * @param $answer
-     * @param $node_type
+     * @param mixed $answers
+     * @param string $node_type
      * @param string $ask
+     * @param array $attributes
      *
      * @return Node
      */
-    private function addNode($answers, $node_type, $ask = '')
+    private function addNode($answers, $node_type, $ask = '', array $attributes = [])
     {
         $node = Node::where(['type' => $node_type, 'pattern' => $ask])->first();
         
         if (is_null($node)) {
-            $node = Node::create([
+            $node = Node::create(array_merge([
                 'type'      => $node_type,
                 'pattern'   => $ask,
                 'answers'   => $answers
-            ]);
+            ], $attributes));
         } else {
             $node->answers = $answers;
+            
+            // Allows people set attributes
+            foreach ($attributes as $key => $value) {
+                if ( ! in_array($key, ['type', 'pattern', 'answers'])) {
+                    $node->$key = $value;
+                }
+            }
             
             $node->save();
         }

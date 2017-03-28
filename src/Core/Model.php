@@ -34,13 +34,15 @@ class Model
      *
      * @param $pattern
      * @param null $answers
+     * @param array $attributes
+     *
      * @return $this|null
      */
-    public function addNode($pattern, $answers = null)
+    public function addNode($pattern, $answers = null, $attributes = [])
     {
-        // Multiple nodes. If user like to use $pattern => $answers method
+        // Multiple nodes. If user like to use $patterns => $answers method
         if (is_array($pattern) && is_null($answers)) {
-            $this->addNodes($pattern);
+            $this->addNodes($pattern, $attributes);
 
             return null;
         }
@@ -53,7 +55,8 @@ class Model
             $this->persistNode(
                 [['type' => 'callback', 'content' => $answers]],
                 $type,
-                $pattern
+                $pattern,
+                $attributes
             );
 
             return $this;
@@ -67,7 +70,7 @@ class Model
         $answers = $this->parseAnswers($answers);
 
         // Persist to DB
-        $this->persistNode($answers, $type, $pattern);
+        $this->persistNode($answers, $type, $pattern, $attributes);
 
         return $this;
     }
@@ -103,10 +106,10 @@ class Model
      *
      * @param $nodes
      */
-    public function addNodes($nodes)
+    public function addNodes($nodes, $attributes = [])
     {
         foreach ($nodes as $pattern => $answers) {
-            $this->addNode($pattern, $answers);
+            $this->addNode($pattern, $answers, $attributes);
         }
     }
 
@@ -119,7 +122,7 @@ class Model
      *
      * @return Node
      */
-    public function persistNode(array $answers, $node_type, $pattern = null)
+    public function persistNode(array $answers, $node_type, $pattern = null, $attributes = [])
     {
         foreach ($answers as $index => $answer) {
             if (isset($answer['type']) && isset($answer['content']) && is_callable($answer['content'])) {
@@ -128,7 +131,7 @@ class Model
             $answers[$index] = $answer;
         }
 
-        $this->current_node = Storage::addNode($answers, $node_type, $pattern);
+        $this->current_node = Storage::addNode($answers, $node_type, $pattern, $attributes);
 
         return $this->current_node;
     }
@@ -215,7 +218,7 @@ class Model
     }
 
     /**
-     * Parse [a] answers without save
+     * Parse [an] answers without save
      *
      * @param $answers
      * @return mixed

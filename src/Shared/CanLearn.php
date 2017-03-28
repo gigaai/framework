@@ -12,9 +12,9 @@ trait CanLearn
      *
      * @return $this
      */
-    public function answer($ask, $answers = null)
+    public function answer($ask, $answers = null, $attributes = [])
     {
-        return $this->answers($ask, $answers);
+        return $this->answers($ask, $answers, $attributes);
     }
 
     /**
@@ -25,9 +25,9 @@ trait CanLearn
      *
      * @return $this For chaining method
      */
-    public function answers($asks, $answers = null)
+    public function answers($asks, $answers = null, $attributes = [])
     {
-        $this->model->addNode($asks, $answers);
+        $this->model->addNode($asks, $answers, $attributes);
 
         return $this;
     }
@@ -38,9 +38,9 @@ trait CanLearn
      * @param $messages
      * @return $this
      */
-    public function say($messages)
+    public function say($messages, $attributes = [])
     {
-        return $this->says($messages);
+        return $this->says($messages, $attributes);
     }
 
     /**
@@ -49,9 +49,9 @@ trait CanLearn
      * @param $messages
      * @return $this
      */
-    public function says($messages)
+    public function says($messages, $attributes = [])
     {
-        $messages = $this->model->parseWithoutSave($messages);
+        $messages = $this->model->parseWithoutSave($messages, $attributes);
 
         $this->request->sendMessages($messages);
 
