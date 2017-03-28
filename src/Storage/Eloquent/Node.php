@@ -35,12 +35,14 @@ class Node extends \Illuminate\Database\Eloquent\Model
             $where_rlike = " AND :pattern RLIKE CONCAT('^',pattern,'$')";
         }
         
+        $columns = ['type', 'pattern', 'answers', 'wait', 'sources'];
+        
         // Where Like First
-        $nodes = Node::whereRaw($where . $where_type . $where_like, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
+        $nodes = Node::whereRaw($where . $where_type . $where_like, $placeholder)->get($columns);
         
         // If Not Found. Then Where Rlike
         if ($nodes->count() === 0) {
-            $nodes = Node::whereRaw($where . $where_type . $where_rlike, $placeholder)->get(['type', 'pattern', 'answers', 'wait']);
+            $nodes = Node::whereRaw($where . $where_type . $where_rlike, $placeholder)->get($columns);
         }
         
         return $nodes;
