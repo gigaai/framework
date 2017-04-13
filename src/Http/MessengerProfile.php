@@ -2,7 +2,7 @@
 
 namespace GigaAI\Http;
 
-use GigaAI\Core\Config;
+use GigaAI\Storage\Eloquent\Instance;
 
 class MessengerProfile
 {
@@ -39,7 +39,6 @@ class MessengerProfile
     
         $irregular = [
             'get_started' => 'get_started_button_payload',
-            'greeting'    => 'greeting_text'
         ];
     
         $resource = self::getResourceUrl();
@@ -47,9 +46,9 @@ class MessengerProfile
         foreach (self::$fields as $field_name) {
     
             if ( ! isset($irregular[$field_name])) {
-                $field_value = Config::get($field_name);
+                $field_value = Instance::get($field_name);
             } else {
-                $field_value = Config::get($irregular[$field_name]);
+                $field_value = Instance::get($irregular[$field_name]);
             }
             
             if ( ! empty($field_value) && ! is_null($field_value)) {
@@ -114,9 +113,9 @@ class MessengerProfile
         ];
         
         if ( ! isset($irregular[$field_name])) {
-            $field_value = Config::get($field_name);
+            $field_value = Instance::get($field_name);
         } else {
-            $field_value = Config::get($irregular[$field_name]);
+            $field_value = Instance::get($irregular[$field_name]);
         }
     
         $resource = self::getResourceUrl();

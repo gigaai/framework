@@ -6,6 +6,7 @@ use GigaAI\Conversation\AutoStop;
 use GigaAI\Core\AccountLinking;
 use GigaAI\Core\DynamicParser;
 use GigaAI\Shared\CanLearn;
+use GigaAI\Storage\Eloquent\Instance;
 use GigaAI\Storage\Storage;
 use GigaAI\Http\Request;
 use GigaAI\Conversation\Conversation;
@@ -92,26 +93,27 @@ class MessengerBot
     /**
      * Load the required resources
      *
-     * @param $instance
+     * @param $config
      */
-    public function __construct($instance = null)
+    public function __construct($config = null)
     {
         // Package Version
         if ( ! defined('GIGAAI_VERSION')) {
-            define('GIGAAI_VERSION', '2.2.1');
+            define('GIGAAI_VERSION', '2.3');
         }
+    
+        // Make a conversation instance to share the data across whole application.
+        $this->conversation = Conversation::getInstance();
         
         // Setup the configuration data
         $this->config = Config::getInstance();
+        
         if ( ! empty($config)) {
             $this->config->set($config);
         }
         
         // Make a Request instance. Not required but it will help user use $bot->request syntax
         $this->request = Request::getInstance();
-        
-        // Make a Session instance. Not required but it will help user use $bot->session syntax
-        $this->conversation = Conversation::getInstance();
         
         // Load the storage
         $this->storage = new Storage;
@@ -177,18 +179,26 @@ class MessengerBot
         if (AutoStop::run($event)) {
             return null;
         }
+    
+        $this->conversation->set('lead_id', $event->sender->id);
+        $this->conversation->set('page_id', $event->recipient->id);
         
-        // If current message is send from Lead
-        if ( ! $this->conversation->has('lead_id') && $event->sender->id != Config::get('page_id')) {
-            $this->conversation->set('lead_id', $event->sender->id);
-            $this->conversation->set('page_id', $event->recipient->id);
+        // If current message is sent from Lead
+        if ( ! isset($event->message->is_echo)) {
             
             if (AutoStop::isStopped()) {
                 return null;
             }
-            
-            // Save lead data if not exists.
-            $this->storage->pull($event->sender->id);
+        } else {
+            $this->conversation->set('lead_id', $event->recipient->id);
+            $this->conversation->set('page_id', $event->sender->id);
+        }
+    
+        $this->setAccessToken();
+    
+        // Save lead data if not exists.
+        if ( ! isset($event->message->is_echo)) {
+            $this->storage->pull();
         }
         
         // Message was sent by page, we don't need to response.
@@ -213,6 +223,18 @@ class MessengerBot
         $nodes = $this->findNodes($type_pattern['type'], $type_pattern['pattern']);
         
         $this->response($nodes);
+    }
+    
+    /**
+     * Load page access token from database and set
+     */
+    public function setAccessToken()
+    {
+        $access_token = Instance::get('page_access_token');
+        
+        Config::set('page_access_token', $access_token);
+        
+        Request::$token = $access_token;
     }
     
     /**
@@ -280,11 +302,10 @@ class MessengerBot
      *
      * @param String $message_type  text or payload
      * @param String $ask           Message or Payload name
-     * @param string $data_set_type text, payload or default
      *
      * @return Node[]
      */
-    public function findNodes($message_type, $ask, $data_set_type = 'text')
+    public function findNodes($message_type, $ask)
     {
         $nodes = Node::findByTypeAndPattern($message_type, $ask);
         

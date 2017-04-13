@@ -2,19 +2,19 @@
 
 namespace GigaAI\Conversation;
 
-use GigaAI\Core\Config;
+use GigaAI\Storage\Eloquent\Instance;
 use GigaAI\Storage\Storage;
 
 class AutoStop
 {
     public static function run($event)
     {
-        $auto_stop_config = Config::get('auto_stop');
+        $auto_stop_config = Instance::get('auto_stop');
         
         if ( ! $auto_stop_config)
             return false;
         
-        if ($event->sender->id == Config::get('page_id')) {
+        if ($event->sender->id == Conversation::get('page_id')) {
             $administrator_text = null;
             $lead_id = $event->recipient->id;
         
@@ -45,7 +45,7 @@ class AutoStop
     
     public static function isStopped()
     {
-        $auto_stop_config = Config::get('auto_stop');
+        $auto_stop_config = Instance::get('auto_stop');
     
         if ( ! $auto_stop_config)
             return false;

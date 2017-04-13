@@ -8,11 +8,6 @@ class AccountLinking
 {
     public static function process($event)
     {
-        // Never happen, but we have to check to make sure
-        if ($event->sender->id == Config::get('page_id')) {
-            return;
-        }
-        
         // Link Lead with User
         if ($event->account_linking->status === 'linked') {
             $authorization_code = $event->account_linking->authorization_code;

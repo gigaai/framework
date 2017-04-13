@@ -135,10 +135,12 @@ class Request
      */
     private function sendMessage($message, $lead_id = null)
     {
-        if (is_null($lead_id))
+        if (is_null($lead_id)) {
             $lead_id = Conversation::get('lead_id');
+        }
         
         $message                = Parser::parseShortcodes($message, Storage::get($lead_id));
+        
         $message['metadata']    = 'SENT_BY_GIGA_AI';
         
         $body = [

@@ -74,11 +74,13 @@ class Storage
         }
     }
     
-    private function pull($lead_id)
+    private function pull()
     {
+        $lead_id = Conversation::get('lead_id');
+        
         $lead = self::getUser($lead_id);
         
-        if ( ! empty($lead['source']) && $lead['source'] !== 'facebook') {
+        if ( ! empty($lead) || ! is_null($lead)) {
             return;
         }
         
@@ -91,7 +93,7 @@ class Storage
         $lead['user_id']    = $lead_id;
         $lead['subscribe']  = 1;
         $lead['source']    = Conversation::get('page_id');
-            
+        
         // Then call set method
         self::set($lead);
     }
