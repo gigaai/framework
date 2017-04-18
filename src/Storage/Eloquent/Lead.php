@@ -27,9 +27,8 @@ class Lead extends \Illuminate\Database\Eloquent\Model
      */
     public function scopeOfSource($query, $value)
     {
-        if ( ! empty($value)) {
+        if ( ! empty($value))
             return $query->where('source', $value);
-        }
         
         return $query;
     }
@@ -43,12 +42,11 @@ class Lead extends \Illuminate\Database\Eloquent\Model
      */
     public function scopeSearch($query, $value)
     {
-        if ( ! empty($value)) {
+        if ( ! empty($value))
             return $query->where('first_name', 'like', '%' . $value . '%')
                 ->orWhere('last_name', 'like', '%' . $value . '%')
                 ->orWhere('email', 'like', '%' . $value . '%')
                 ->orWhere('phone', 'like', '%' . $value . '%');
-        }
         
         return $query;
     }

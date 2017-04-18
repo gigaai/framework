@@ -230,11 +230,15 @@ class MessengerBot
      */
     public function setAccessToken()
     {
-        $access_token = Instance::get('page_access_token');
+        $is_multipage = Config::get('multipage');
         
-        Config::set('page_access_token', $access_token);
-        
-        Request::$token = $access_token;
+        if ($is_multipage) {
+            $access_token = Instance::get('page_access_token');
+    
+            Config::set('page_access_token', $access_token);
+    
+            Request::$token = $access_token;
+        }
     }
     
     /**

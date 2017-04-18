@@ -3,10 +3,12 @@
 namespace GigaAI\Subscription;
 
 use Carbon\Carbon;
+use GigaAI\Core\Config;
 use GigaAI\Core\Model;
 use GigaAI\Http\Request;
 use GigaAI\Shared\EasyCall;
 use GigaAI\Shared\Singleton;
+use GigaAI\Storage\Eloquent\Instance;
 use GigaAI\Storage\Eloquent\Lead;
 use GigaAI\Storage\Eloquent\Message;
 use GigaAI\Storage\Storage;
@@ -25,32 +27,32 @@ class Subscription
     
     private function setSubscriptionChannel($user_ids, $channels, $type = 'add')
     {
-        if (is_array($user_ids))
-        {
+        if (is_array($user_ids)) {
             if (is_null($channels)) {
                 foreach ($user_ids as $user_id => $channels) {
                     $this->setSubscriptionChannel($user_id, $channels, $type);
                 }
-            }
-            else {
+            } else {
                 foreach ($user_ids as $user_id) {
                     $this->setSubscriptionChannel($user_id, $channels, $type);
                 }
             }
+            
             return;
         }
         
         // Merge lead channels with new channels
         $lead = Lead::where('user_id', $user_ids)->first();
         
-        if (is_null($lead))
+        if (is_null($lead)) {
             return;
+        }
         
         // Convert channels to array
-        $channels       = ! is_array($channels) ? array_map('trim', explode(',', $channels)) : $channels;
+        $channels = ! is_array($channels) ? array_map('trim', explode(',', $channels)) : $channels;
         
         // Convert lead->subscribe to array
-        $lead_channels  = ( ! empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
+        $lead_channels = ( ! empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
         
         if ($type === 'add') {
             // Merge channels and lead->subscribe then convert to csv
@@ -85,6 +87,7 @@ class Subscription
      * Create a subscription
      *
      * @param  array $subscription
+     *
      * @throws \Exception
      * @return $this
      */
@@ -95,7 +98,7 @@ class Subscription
         }
         
         // If this notification has already been created. Just find the notification
-        if (! empty($subscription['unique_id'])) {
+        if ( ! empty($subscription['unique_id'])) {
             $this->find($subscription['unique_id']);
         }
         
@@ -114,6 +117,7 @@ class Subscription
      * Find by unique id and check for start_at and end_at
      *
      * @param $unique_id
+     *
      * @return $this
      * @throws \Exception
      */
@@ -157,16 +161,15 @@ class Subscription
         
         $to = $subscription->to_channel;
         
-        if (empty($to))
-        {
+        if (empty($to)) {
             $to = $subscription->to_lead;
             $call = 'sendMessageToLeads';
         }
         
         if (is_numeric($subscription->send_limit) &&
             $subscription->sent_count >= $subscription->send_limit &&
-            $subscription->send_limit > 0)
-        {
+            $subscription->send_limit > 0
+        ) {
             throw new \Exception('You have already reached limit notification to send!');
         }
         
@@ -192,8 +195,9 @@ class Subscription
     {
         $all = is_array($channels);
         
-        if (is_string($channels) || is_numeric($channels))
+        if (is_string($channels) || is_numeric($channels)) {
             $channels = explode(',', $channels);
+        }
         
         $channels = array_map('trim', $channels);
         
@@ -216,8 +220,7 @@ class Subscription
             }
             
             // One element of array in another array
-            if ( ! $all && array_intersect($channels, $lead_channels))
-            {
+            if ( ! $all && array_intersect($channels, $lead_channels)) {
                 $subscribers[] = $lead->user_id;
             }
         }
@@ -230,14 +233,33 @@ class Subscription
      *
      * @param $message
      * @param $lead_ids
+     *
      * @return $this
      */
     private function sendMessageToLeads($message, $lead_ids)
     {
-        $lead_ids = (array) $lead_ids;
+        $lead_ids = (array)$lead_ids;
         
-        foreach ($lead_ids as $lead_id)
-        {
+        $is_multipage = Config::get('multipage');
+        
+        $tokens = [];
+        $leads = [];
+        if ($is_multipage) {
+            $instances = Instance::all();
+            foreach ($instances as $instance) {
+                $tokens[$instance->id] = $instance->meta['page_access_token'];
+            }
+            
+            $leads = Lead::whereIn('user_id', $lead_ids)->lists('source', 'user_id');
+        }
+        
+        foreach ($lead_ids as $lead_id) {
+            
+            if ($is_multipage) {
+                $instance_id = $leads[$lead_id];
+                Request::$token = $tokens[$instance_id];
+            }
+            
             Request::sendMessages($message->content, $lead_id);
             
             if ( ! empty($message->wait)) {
