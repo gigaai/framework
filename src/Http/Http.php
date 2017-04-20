@@ -2,6 +2,8 @@
 
 namespace GigaAI\Http;
 
+use GigaAI\Core\Logger;
+
 class Http
 {
     /**
@@ -17,6 +19,7 @@ class Http
         $ch = curl_init();
         
         if ( ! empty($data)) {
+            Logger::put($data, 'outcoming');
             $data = http_build_query($data);
         }
         
@@ -36,6 +39,8 @@ class Http
             $result = json_decode($result);
         }
         
+        Logger::put($result, 'response');
+        
         return $result;
     }
     
@@ -51,11 +56,16 @@ class Http
         $data = curl_exec($ch);
         curl_close($ch);
         
+        Logger::put($url, 'outcoming');
+        Logger::put($data, 'response');
+        
         return $data;
     }
     
     public static function delete($url, $data = [])
     {
-        return self::post($url, $data, 'DELETE');
+        $data = self::post($url, $data, 'DELETE');
+        
+        Logger::put($data, 'response');
     }
 }

@@ -68,7 +68,7 @@ class MessengerProfile
         if ( ! empty($update)) {
             $messages['update'] = Request::send($resource, $update);
         }
-
+        
         if ( ! empty($delete)) {
             $messages['delete'] = self::deleteFields($delete);
         }

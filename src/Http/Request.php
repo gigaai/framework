@@ -4,6 +4,7 @@ namespace GigaAI\Http;
 
 use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
+use GigaAI\Core\Logger;
 use GigaAI\Core\Parser;
 use GigaAI\Shared\Singleton;
 use GigaAI\Storage\Storage;
@@ -47,6 +48,8 @@ class Request
         $stream = json_decode(file_get_contents('php://input'));
 
         self::$received = (!empty ($stream)) ? $stream : $_REQUEST;
+        
+        Logger::put($stream, 'incoming');
         
         self::$token = Config::get('page_access_token');
         

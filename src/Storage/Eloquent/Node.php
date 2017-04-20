@@ -6,7 +6,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
 {
     public $table = 'bot_nodes';
     
-    protected $fillable = ['instance_id', 'pattern', 'answers', 'wait', 'sources', 'type', 'notification_type', 'status', 'tags'];
+    protected $fillable = ['pattern', 'answers', 'wait', 'source', 'type', 'notification_type', 'status', 'tags'];
     
     /**
      * Get node by node type and pattern
@@ -35,11 +35,10 @@ class Node extends \Illuminate\Database\Eloquent\Model
             $where_rlike = " AND :pattern RLIKE CONCAT('^',pattern,'$')";
         }
         
-        $columns = ['type', 'pattern', 'answers', 'wait', 'sources'];
+        $columns = ['type', 'pattern', 'answers', 'wait', 'source'];
         
         // Where Like First
         $nodes = Node::whereRaw($where . $where_type . $where_like, $placeholder)->get($columns);
-        
         // If Not Found. Then Where Rlike
         if ($nodes->count() === 0) {
             $nodes = Node::whereRaw($where . $where_type . $where_rlike, $placeholder)->get($columns);

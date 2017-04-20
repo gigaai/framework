@@ -105,6 +105,8 @@ class MessengerBot
         // Make a conversation instance to share the data across whole application.
         $this->conversation = Conversation::getInstance();
         
+        $this->conversation->set('token', strtotime('now'));
+        
         // Setup the configuration data
         $this->config = Config::getInstance();
         
@@ -141,7 +143,15 @@ class MessengerBot
         
         $this->received = $received;
         
+        if ( ! isset($received->entry)) {
+            return;
+        }
+        
         foreach ($received->entry as $entry) {
+            
+            if ( ! isset($entry->messaging)) {
+                return;
+            }
             
             foreach ($entry->messaging as $event) {
                 $this->conversation->set([
@@ -312,18 +322,18 @@ class MessengerBot
     public function findNodes($message_type, $ask)
     {
         $nodes = Node::findByTypeAndPattern($message_type, $ask);
-        
+       
         if ($nodes->count() === 0) {
             $nodes = Node::findByTypeAndPattern('default');
         }
         
         // Remove all nodes which are owned by other pages
         foreach ($nodes as $index => $node) {
-            if (empty($node->sources)) {
+            if (empty($node->source)) {
                 continue;
             }
             
-            $sources = array_map('trim', explode(',', $node->sources));
+            $sources = array_map('trim', explode(',', $node->source));
             
             if ( ! in_array(Conversation::get('page_id'), $sources)) {
                 unset($nodes[$index]);

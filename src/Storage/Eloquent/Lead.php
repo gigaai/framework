@@ -9,7 +9,7 @@ class Lead extends \Illuminate\Database\Eloquent\Model
     
     public $table = 'bot_leads';
     
-    protected $fillable = ['instance_id', 'source', 'user_id', 'first_name', 'last_name', 'profile_pic',
+    protected $fillable = ['source', 'user_id', 'first_name', 'last_name', 'profile_pic',
         'locale', 'timezone', 'gender', 'email', 'phone', 'country', 'location', '_wait', '_quick_save',
         'linked_account', 'subscribe', 'is_payment_enabled', 'auto_stop'];
     
