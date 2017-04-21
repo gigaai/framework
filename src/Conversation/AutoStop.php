@@ -15,6 +15,7 @@ class AutoStop
             return false;
         
         if ($event->sender->id == Conversation::get('page_id')) {
+            
             $administrator_text = null;
             $lead_id = $event->recipient->id;
         

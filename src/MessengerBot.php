@@ -184,24 +184,23 @@ class MessengerBot
         if (isset($event->postback)) {
             $this->postback = $event->postback;
         }
+    
+        $this->conversation->set('lead_id', $event->sender->id);
+        $this->conversation->set('page_id', $event->recipient->id);
+        
+        // If current message is sent from Page
+        if (isset($event->message->is_echo)) {
+            $this->conversation->set('lead_id', $event->recipient->id);
+            $this->conversation->set('page_id', $event->sender->id);
+        }
         
         // If auto stop is run and it return true. Terminate
         if (AutoStop::run($event)) {
             return null;
         }
-    
-        $this->conversation->set('lead_id', $event->sender->id);
-        $this->conversation->set('page_id', $event->recipient->id);
         
-        // If current message is sent from Lead
-        if ( ! isset($event->message->is_echo)) {
-            
-            if (AutoStop::isStopped()) {
-                return null;
-            }
-        } else {
-            $this->conversation->set('lead_id', $event->recipient->id);
-            $this->conversation->set('page_id', $event->sender->id);
+        if (AutoStop::isStopped()) {
+            return null;
         }
     
         $this->setAccessToken();
