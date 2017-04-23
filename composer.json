@@ -1,6 +1,6 @@
 {
   "name": "gigaai/framework",
-  "description": "Rapid Messenger Bot Framework",
+  "description": "Ultimate Messenger for Developers and Marketers",
   "license": "GPL 2+",
   "keywords": [
     "php",
@@ -11,9 +11,7 @@
   ],
   "require": {
     "php": ">=5.4",
-    "jeremeamia/superclosure": "2.2.*",
-    "illuminate/database": "5.0.*",
-    "symfony/var-dumper": "2.8.*"
+    "jeremeamia/superclosure": "2.2.*"
   },
   "require-dev": {
   },
