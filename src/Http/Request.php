@@ -46,12 +46,12 @@ class Request
     private function load()
     {
         $stream = json_decode(file_get_contents('php://input'));
-
+        
         self::$received = (!empty ($stream)) ? $stream : $_REQUEST;
         
         Logger::put($stream, 'incoming');
         
-        self::$token = Config::get('page_access_token');
+        self::$token = Config::get('page_access_token', self::$token);
         
         $this->verifyTokenFromFacebook();
         
@@ -220,7 +220,6 @@ class Request
     {
         if (null === self::$instance) {
             self::$instance = new static();
-            
             self::$instance->load();
         }
         

@@ -15,7 +15,6 @@ class AutoStop
             return false;
         
         if ($event->sender->id == Conversation::get('page_id')) {
-            
             $administrator_text = null;
             $lead_id = $event->recipient->id;
         
@@ -47,7 +46,7 @@ class AutoStop
     public static function isStopped()
     {
         $auto_stop_config = Instance::get('auto_stop');
-    
+        
         if ( ! $auto_stop_config)
             return false;
         

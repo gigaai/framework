@@ -22,7 +22,7 @@ class Subscription
      *
      * @var Message
      */
-    private $current_message;
+    public $current_message;
     
     
     private function setSubscriptionChannel($user_ids, $channels, $type = 'add')
@@ -250,7 +250,13 @@ class Subscription
                 $tokens[$instance->id] = $instance->meta['page_access_token'];
             }
             
-            $leads = Lead::whereIn('user_id', $lead_ids)->lists('source', 'user_id');
+            // Should user this instead of ->pluck() to compatibility with both Laravel 5.0 and 5.4
+            $leads_source = Lead::whereIn('user_id', $lead_ids)->get(['user_id', 'source'])->toArray();
+            
+            $leads = [];
+            foreach ($leads_source as $lead) {
+                $leads[$lead['user_id']] = $lead['source'];
+            }
         }
         
         foreach ($lead_ids as $lead_id) {
@@ -295,7 +301,7 @@ class Subscription
      */
     private function getAllChannels()
     {
-        $channels = Lead::lists('subscribe');
+        $channels = Lead::pluck('subscribe')->toArray();
         
         $channels = array_map(function ($channel) {
             return explode(',', $channel);

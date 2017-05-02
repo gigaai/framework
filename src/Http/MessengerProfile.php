@@ -2,6 +2,7 @@
 
 namespace GigaAI\Http;
 
+use GigaAI\Core\Config;
 use GigaAI\Storage\Eloquent\Instance;
 
 class MessengerProfile
@@ -23,7 +24,9 @@ class MessengerProfile
      */
     private static function getResourceUrl()
     {
-        return Request::PLATFORM_RESOURCE . 'me/messenger_profile?access_token=' . Request::$token;
+        $token = Config::get('page_access_token');
+        
+        return Request::PLATFORM_RESOURCE . 'me/messenger_profile?access_token=' . $token;
     }
     
     
@@ -72,6 +75,9 @@ class MessengerProfile
         if ( ! empty($delete)) {
             $messages['delete'] = self::deleteFields($delete);
         }
+        
+        // Update cache
+        self::getFields(self::$fields);
         
         return $messages;
     }

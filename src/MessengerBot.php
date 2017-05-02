@@ -101,7 +101,7 @@ class MessengerBot
         if ( ! defined('GIGAAI_VERSION')) {
             define('GIGAAI_VERSION', '2.3');
         }
-    
+        
         // Make a conversation instance to share the data across whole application.
         $this->conversation = Conversation::getInstance();
         
@@ -184,7 +184,7 @@ class MessengerBot
         if (isset($event->postback)) {
             $this->postback = $event->postback;
         }
-    
+        
         $this->conversation->set('lead_id', $event->sender->id);
         $this->conversation->set('page_id', $event->recipient->id);
         
@@ -194,6 +194,8 @@ class MessengerBot
             $this->conversation->set('page_id', $event->sender->id);
         }
         
+        $this->conversation->set('received_input', $this->getReceivedInput());
+        
         // If auto stop is run and it return true. Terminate
         if (AutoStop::run($event)) {
             return null;
@@ -202,9 +204,9 @@ class MessengerBot
         if (AutoStop::isStopped()) {
             return null;
         }
-    
+        
         $this->setAccessToken();
-    
+        
         // Save lead data if not exists.
         if ( ! isset($event->message->is_echo)) {
             $this->storage->pull();
@@ -243,9 +245,9 @@ class MessengerBot
         
         if ($is_multipage) {
             $access_token = Instance::get('page_access_token');
-    
+            
             Config::set('page_access_token', $access_token);
-    
+            
             Request::$token = $access_token;
         }
     }
@@ -275,7 +277,6 @@ class MessengerBot
             }
             
             foreach ($node->answers as $answer) {
-                
                 /** Process dynamic content */
                 if (isset($answer['type'])) {
                     
@@ -313,15 +314,15 @@ class MessengerBot
     /**
      * Find a response for current request
      *
-     * @param String $message_type  text or payload
-     * @param String $ask           Message or Payload name
+     * @param String $message_type text or payload
+     * @param String $ask          Message or Payload name
      *
      * @return Node[]
      */
     public function findNodes($message_type, $ask)
     {
         $nodes = Node::findByTypeAndPattern($message_type, $ask);
-       
+        
         if ($nodes->count() === 0) {
             $nodes = Node::findByTypeAndPattern('default');
         }
@@ -431,18 +432,20 @@ class MessengerBot
             return;
         }
         
-        if (isset($this->message->text))
+        if (isset($this->message->text)) {
             return $this->message->text;
+        }
         
-        if (isset($this->postback->payload))
+        if (isset($this->postback->payload)) {
             return $this->postback->payload;
+        }
         
         return null;
     }
     
     private function isUserMessage()
     {
-        if ( ! empty($this->message)) {
+        if ( ! empty($this->message) && isset($this->message->metadata)) {
             return $this->message->metadata != 'SENT_BY_GIGA_AI';
         }
         

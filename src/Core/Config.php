@@ -16,7 +16,7 @@ class Config
 {
     use Singleton, EasyCall;
     
-    private $config = [];
+    // private $config = [];
     
     /**
      * Get config by key

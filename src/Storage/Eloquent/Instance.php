@@ -13,6 +13,10 @@ class Instance extends \Illuminate\Database\Eloquent\Model
     
     public $timestamps = false;
     
+    public $casts = [
+        'id' => 'string'
+    ];
+    
     public function setMetaAttribute($value)
     {
         if (is_array($value))
@@ -56,5 +60,16 @@ class Instance extends \Illuminate\Database\Eloquent\Model
         $instance = self::find($page_id);
         $instance->meta[$key] = $value;
         $instance->save();
+    }
+    
+    public function getMeta($key, $default = null)
+    {
+        $meta = $this->meta;
+        
+        if (isset($meta[$key])) {
+            return $meta[$key];
+        }
+        
+        return $default;
     }
 }
