@@ -9,6 +9,7 @@ use GigaAI\Core\Parser;
 use GigaAI\Shared\Singleton;
 use GigaAI\Storage\Storage;
 use GigaAI\Shared\EasyCall;
+use GigaAI\Drivers\Driver;
 
 /**
  * Class Request
@@ -45,12 +46,16 @@ class Request
      */
     private function load()
     {
+        // Get the received data from request
         $stream = json_decode(file_get_contents('php://input'));
-        
         self::$received = (!empty ($stream)) ? $stream : $_REQUEST;
-        
-        Logger::put($stream, 'incoming');
-        
+
+        // Load driver to parse request
+        $this->driver = Driver::getInstance();
+        $this->driver->detectAndFormat(self::$received);
+
+        // Logger::put($stream, 'incoming');
+
         self::$token = Config::get('page_access_token', self::$token);
         
         $this->verifyTokenFromFacebook();
@@ -78,16 +83,31 @@ class Request
             return null;
         }
         
-        return $received;
+        return is_object($received) ? (array) $received : $received;
     }
     
+    /**
+     * Send request
+     *
+     * @param String $end_point
+     * @param array $body
+     * @param string $method
+     */
     private function send($end_point, $body = [], $method = 'post')
     {
         return call_user_func_array('giga_remote_' . $method, [$end_point, $body]);
     }
     
+    /**
+     * Get User Profile
+     *
+     * @param String $user_id
+     * @return String Json
+     */
     private function getUserProfile($user_id)
     {
+        return GigaAI\Driver::getUserProfile($user_id);
+
         $end_point  = self::PLATFORM_RESOURCE . "{$user_id}?access_token=" . self::$token;
         
         $data       = giga_remote_get($end_point);
@@ -113,13 +133,17 @@ class Request
         }
     }
     
+    /**
+     * Subscribe Facebook
+     *
+     * @return void
+     */
     private function subscribeFacebook()
     {
         $received = $this->getReceivedData('subscribe');
         
         if ($received != null) {
-            
-            dd($this->sendSubscribeRequest());
+            dd($this->sendSubscribeRequestToTelegram());
         }
     }
     
@@ -128,6 +152,15 @@ class Request
         $end_point = self::PLATFORM_RESOURCE . "me/subscribed_apps?access_token=" . self::$token;
         
         return $this->send($end_point);
+    }
+
+    private function sendSubscribeRequestToTelegram()
+    {
+        $end_point = 'https://api.telegram.org/bot418818588:AAHUT_KvzAIOPRRRMT_Lo6ChblvbqU1i9zc/setWebhook';
+        
+        return $this->send($end_point, [
+            'url' => 'https://4fcc11c1.ngrok.io/api/messenger'
+        ]);
     }
     
     /**
@@ -152,7 +185,28 @@ class Request
             ],
             'message' => $message
         ];
+
+        $this->driver->sendMessage($body);
         
+        Request::send(self::PLATFORM_RESOURCE . "me/messages?access_token=" . self::$token, $body);
+    }
+
+    /**
+     * Send typing indicator to Facebook
+     *
+     * @return void
+     */
+    private function sendTyping()
+    {
+        $lead_id = Conversation::get('lead_id');
+
+        $body = [
+            'recipient' => [
+                'id' => $lead_id
+            ],
+            'sender_action' => 'typing_on'
+        ];
+
         Request::send(self::PLATFORM_RESOURCE . "me/messages?access_token=" . self::$token, $body);
     }
     
@@ -182,29 +236,29 @@ class Request
         $pattern    = '';
         
         // For Text Message
-        if (isset($event->message) && isset($event->message->text))
-            $pattern    = $event->message->text;
+        if (isset($event['message']) && isset($event['message']['text']))
+            $pattern    = $event['message']['text'];
         
         // For Attachment Message
-        if (isset($event->message) && isset($event->message->attachments)) {
+        if (isset($event['message']) && isset($event['message']['attachments'])) {
             $type = 'attachment';
             
-            if (isset($event->message->attachments[0]->type))
-                $pattern = $event->message->attachments[0]->type;
+            if (isset($event['message']['attachments'][0]['type']))
+                $pattern = $event['message']['attachments'][0]['type'];
         }
         
         // For Payload Message
-        if (isset($event->postback->payload)) {
+        if (isset($event['postback']['payload'])) {
             $type       = 'payload';
-            $pattern    = $event->postback->payload;
+            $pattern    = $event['postback']['payload'];
         }
         
         // For Quick Replies
-        if (isset($event->message) && isset($event->message->quick_reply) &&
-            ! empty($event->message->quick_reply->payload))
+        if (isset($event['message']) && isset($event['message']['quick_reply']) &&
+            ! empty($event['message']['quick_reply']['payload']))
         {
             $type       = 'payload';
-            $pattern    = $event->message->quick_reply->payload;
+            $pattern    = $event['message']['quick_reply']['payload'];
         }
         
         return compact('type', 'pattern');

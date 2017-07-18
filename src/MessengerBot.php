@@ -15,6 +15,7 @@ use GigaAI\Core\Config;
 use SuperClosure\Serializer;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Subscription\Subscription;
+use GigaAI\Drivers\Driver;
 
 class MessengerBot
 {
@@ -97,7 +98,7 @@ class MessengerBot
      */
     public function __construct($config = null)
     {
-        // Package Version
+        // Framework Version
         if ( ! defined('GIGAAI_VERSION')) {
             define('GIGAAI_VERSION', '2.3');
         }
@@ -114,9 +115,9 @@ class MessengerBot
             $this->config->set($config);
         }
         
-        // Make a Request instance. Not required but it will help user use $bot->request syntax
+        // Load request instance
         $this->request = Request::getInstance();
-        
+
         // Load the storage
         $this->storage = new Storage;
         
@@ -124,7 +125,7 @@ class MessengerBot
         $this->model = new Model;
         
         // We need to serialize Closure for dynamic data and intended actions
-        $this->serializer = new Serializer();
+        $this->serializer = new Serializer;
         
         // Boot the subscription feature
         $this->subscription = Subscription::getInstance();
@@ -137,27 +138,27 @@ class MessengerBot
     {
         $received = $this->request->getReceivedData();
         
-        if ( ! $received || empty($received->object) || $received->object != 'page') {
+        if ( ! $received || empty($received['object']) || $received['object'] != 'page') {
             return;
         }
         
         $this->received = $received;
         
-        if ( ! isset($received->entry)) {
+        if ( ! isset($received['entry'])) {
             return;
         }
         
-        foreach ($received->entry as $entry) {
+        foreach ($received['entry'] as $entry) {
             
-            if ( ! isset($entry->messaging)) {
+            if ( ! isset($entry['messaging'])) {
                 return;
             }
             
-            foreach ($entry->messaging as $event) {
+            foreach ($entry['messaging'] as $event) {
                 $this->conversation->set([
-                    'sender_id'    => $event->sender->id,
-                    'recipient_id' => $event->recipient->id,
-                    'timestamp'    => $event->timestamp,
+                    'sender_id'    => $event['sender']['id'],
+                    'recipient_id' => $event['recipient']['id'],
+                    'timestamp'    => $event['timestamp'],
                 ]);
                 
                 $this->processEvent($event);
@@ -165,33 +166,39 @@ class MessengerBot
         }
     }
     
+    /**
+     * Process the event and response
+     *
+     * @param Array $event
+     * @return void
+     */
     public function processEvent($event)
     {
         // Handle Account Linking and Unlinking
-        if (isset($event->account_linking)) {
+        if (isset($event['account_linking'])) {
             return AccountLinking::process($event);
         }
         
         // Handle message and postback
-        if ( ! isset($event->message) && ! isset($event->postback)) {
+        if ( ! isset($event['message']) && ! isset($event['postback'])) {
             return null;
         }
         
-        if (isset($event->message)) {
-            $this->message = $event->message;
+        if (isset($event['message'])) {
+            $this->message = $event['message'];
         }
         
-        if (isset($event->postback)) {
-            $this->postback = $event->postback;
+        if (isset($event['postback'])) {
+            $this->postback = $event['postback'];
         }
         
-        $this->conversation->set('lead_id', $event->sender->id);
-        $this->conversation->set('page_id', $event->recipient->id);
+        $this->conversation->set('lead_id', $event['sender']['id']);
+        $this->conversation->set('page_id', $event['recipient']['id']);
         
         // If current message is sent from Page
-        if (isset($event->message->is_echo)) {
-            $this->conversation->set('lead_id', $event->recipient->id);
-            $this->conversation->set('page_id', $event->sender->id);
+        if (isset($event['message']['is_echo'])) {
+            $this->conversation->set('lead_id', $event['recipient']['id']);
+            $this->conversation->set('page_id', $event['sender']['id']);
         }
         
         $this->conversation->set('received_input', $this->getReceivedInput());
@@ -208,12 +215,14 @@ class MessengerBot
         $this->setAccessToken();
         
         // Save lead data if not exists.
-        if ( ! isset($event->message->is_echo)) {
-            $this->storage->pull();
+        if ( ! isset($event['message']['is_echo'])) {
+            // $this->storage->pull();
+
+            // Todo: Pull Telegram Lead
         }
-        
+
         // Message was sent by page, we don't need to response.
-        if (isset($event->message) && isset($event->message->is_echo) && $event->message->is_echo == true) {
+        if (isset($event['message']) && isset($event['message']['is_echo']) && $event['message']['is_echo'] == true) {
             return null;
         }
         
@@ -225,14 +234,13 @@ class MessengerBot
         ]);
         
         $type_pattern = $this->request->getTypeAndPattern($event);
-        
+
         // We'll check to response intended action first
         if ($this->responseIntendedAction()) {
             return;
         }
         
         $nodes = $this->findNodes($type_pattern['type'], $type_pattern['pattern']);
-        
         $this->response($nodes);
     }
     
@@ -391,8 +399,8 @@ class MessengerBot
         
         $location = new \stdClass();
         
-        if ( ! empty($attachments) && isset($attachments[0]->type) && $attachments[0]->type === 'location') {
-            $location = $attachments[0]->payload->coordinates;
+        if ( ! empty($attachments) && isset($attachments[0]['type']) && $attachments[0]['type'] === 'location') {
+            $location = $attachments[0]['payload']->coordinates;
         }
         
         if ( ! empty($output)) {
@@ -432,26 +440,36 @@ class MessengerBot
             return;
         }
         
-        if (isset($this->message->text)) {
-            return $this->message->text;
+        if (isset($this->message['text'])) {
+            return $this->message['text'];
         }
         
-        if (isset($this->postback->payload)) {
-            return $this->postback->payload;
+        if (isset($this->postback['payload'])) {
+            return $this->postback['payload'];
         }
         
         return null;
     }
     
+    /**
+     * Check if current message is sent by user
+     *
+     * @return boolean
+     */
     private function isUserMessage()
     {
-        if ( ! empty($this->message) && isset($this->message->metadata)) {
-            return $this->message->metadata != 'SENT_BY_GIGA_AI';
+        if ( ! empty($this->message) && isset($this->message['metadata'])) {
+            return $this->message['metadata'] != 'SENT_BY_GIGA_AI';
         }
         
         return true;
     }
     
+    /**
+     * Get lead id
+     *
+     * @return void
+     */
     public function getLeadId()
     {
         return $this->conversation->get('lead_id', null);
@@ -481,10 +499,5 @@ class MessengerBot
         $this->model->taggedAs($tag);
         
         return $this;
-    }
-    
-    public function withAttributes($attributes = [])
-    {
-        //
     }
 }

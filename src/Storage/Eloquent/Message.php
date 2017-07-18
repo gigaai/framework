@@ -46,7 +46,12 @@ class Message extends \Illuminate\Database\Eloquent\Model
         return json_decode($value, true);
     }
     
-    
+    /**
+     * Set To Channel Attribute
+     *
+     * @param String $value
+     * @return void
+     */
     public function setToChannelAttribute($value)
     {
         if (is_array($value)) {
@@ -75,6 +80,11 @@ class Message extends \Illuminate\Database\Eloquent\Model
         return json_decode($value, true);
     }
     
+    /**
+     * Get total leads of a channel
+     *
+     * @return void
+     */
     public function leadsCount()
     {
         if (isset($this->to_lead)) {

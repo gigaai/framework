@@ -167,6 +167,13 @@ class Storage
         }
     }
     
+    /**
+     * Check if current user has given field
+     *
+     * @param Int $user_id
+     * @param string $key
+     * @return boolean
+     */
     private function has($user_id, $key = '')
     {
         $user = $this->getUser($user_id);
@@ -219,6 +226,15 @@ class Storage
         return $user;
     }
     
+    /**
+     * Get meta data of current user
+     *
+     * @param Int $user_id
+     * @param string $key
+     * @param string $default
+     * 
+     * @return Mixed
+     */
     private function getUserMeta($user_id, $key = '', $default = '')
     {
         $where = [

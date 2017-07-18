@@ -128,5 +128,20 @@ trait CanLearn
     {
         return ( ! empty($this->postback));
     }
+
+    /**
+     * Send typing indicator
+     *
+     * @param int $delay Typing in seconds
+     * 
+     * @return void
+     */
+    public function typing($delay = 2)
+    {
+        $this->request->sendTyping();
+        sleep($delay);
+
+        return $this;
+    }
 }
 
