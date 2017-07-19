@@ -125,6 +125,7 @@ class Storage
     
     private function set($user, $key = '', $value = '')
     {
+        if ( ! is_array($user)) {
             if (is_array($key)) {
                 $key['user_id'] = $user;
                 
