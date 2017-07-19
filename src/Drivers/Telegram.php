@@ -24,6 +24,7 @@ class Telegram
     public function __construct()
     {
         $token = Config::get('messenger.telegram_token');
+
         $this->resource = "https://api.telegram.org/bot{$token}/";
     }
     /**
@@ -44,31 +45,35 @@ class Telegram
      */
     public function formatIncomingRequest($telegram)
     {
-        $facebook = [
-            'object' => 'page',
-            'entry' => [
-                [
-                    'id' => rand(),
-                    'time' => $telegram['message']['date'],
-                    'messaging' => [
-                        [
-                            'sender' => [
-                                'id' => $telegram['message']['from']['id'],
-                            ],
-                            'recipient' => [
-                                'id' => rand()
-                            ],
-                            'timestamp' => $telegram['message']['date'],
-                            'message' => [
-                                'text' => $telegram['message']['text']
+        if ( ! empty($telegram) && is_array($telegram)) {
+            $facebook = [
+                'object' => 'page',
+                'entry' => [
+                    [
+                        'id' => rand(),
+                        'time' => $telegram['message']['date'],
+                        'messaging' => [
+                            [
+                                'sender' => [
+                                    'id' => $telegram['message']['from']['id'],
+                                ],
+                                'recipient' => [
+                                    'id' => rand()
+                                ],
+                                'timestamp' => $telegram['message']['date'],
+                                'message' => [
+                                    'text' => $telegram['message']['text']
+                                ]
                             ]
                         ]
                     ]
                 ]
-            ]
-        ];
+            ];
 
-        return $facebook;
+            return $facebook;
+        }
+
+        return null;
     }
 
     /**
@@ -78,12 +83,39 @@ class Telegram
      */
     public function sendMessage($body)
     {
+        $type = 'Message';
+        
         $telegram = [
-            'chat_id' => $body['recipient']['id'],
-            'text'    => $body['message']['text']
+            'chat_id' => $body['recipient']['id']
         ];
 
-        giga_remote_post($this->resource . 'sendMessage', $telegram);
+        $message = $body['message'];
+
+        // Send Text
+        if (isset($message['text'])) {
+            $telegram['text'] = $message['text'];
+        }
+
+        // Send Attachment
+        if (isset($message['attachment']['type'])) {
+            $convert = [
+                'image' => 'photo',
+                'audio' => 'audio',
+                'video' => 'video',
+                'file'  => 'document'
+            ];
+
+            foreach ($convert as $facebook_template => $telegram_template)
+            {
+                if ($message['attachment']['type'] === $facebook_template) {
+                    $telegram[$telegram_template] = $message['attachment']['payload']['url'];
+                    $type = ucfirst($telegram_template);
+                }
+            }
+        }
+
+
+        giga_remote_post($this->resource . 'send' . $type, $telegram);
     }
 
     /**
