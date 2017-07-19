@@ -3,14 +3,29 @@
 namespace GigaAI\Drivers;
 
 use GigaAI\Conversation\Conversation;
+use GigaAI\Core\Config;
 
 class Telegram
-{
+{    
     /**
      * Telegram Endpoint
+     * 
+     * @var String
      */
-    private $resource = 'https://api.telegram.org/bot418818588:AAHUT_KvzAIOPRRRMT_Lo6ChblvbqU1i9zc/';
+    private $resource = null;
 
+    /**
+     * Access Token
+     * 
+     * @var String
+     */
+    private $token = null;
+
+    public function __construct()
+    {
+        $token = Config::get('messenger.telegram_token');
+        $this->resource = "https://api.telegram.org/bot{$token}/";
+    }
     /**
      * Expected format to be sent from Telegram
      *
@@ -88,6 +103,8 @@ class Telegram
 
     /**
      * Method to get current user
+     * 
+     * @return Array format as Facebook
      */
     public function getUser($lead_id)
     {
@@ -99,7 +116,7 @@ class Telegram
             'user_id'    => $lead_id,
             'first_name' => $user['first_name'],
             'last_name'  => $user['last_name'],
-            'source'     => 'telegram:' . $lead_id,
+            'source'     => 'telegram:' . Conversation::get('page_id'),
             'locale'     => str_replace('-', '_', $user['language_code'])
         ];
     }

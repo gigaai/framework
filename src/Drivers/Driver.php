@@ -58,7 +58,7 @@ class Driver
      * @param Mixed $request
      * @return void
      */
-    public function detectAndFormat(&$request)
+    public function run(&$request)
     {
         $this->detect($request);
         $request = $this->driver->formatIncomingRequest($request);

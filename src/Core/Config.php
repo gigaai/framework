@@ -31,6 +31,12 @@ class Config
         if ( ! empty($this->config[$key])) {
             return $this->config[$key];
         }
+
+        if (function_exists('config')) {
+            if (null !== (config($key))) {
+                return config($key);
+            }
+        }
         
         return $default;
     }

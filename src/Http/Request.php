@@ -54,8 +54,8 @@ class Request
 
         // Load driver to parse request
         $this->driver = Driver::getInstance();
-        $this->driver->detectAndFormat(self::$received);
-
+        $this->driver->run(self::$received);
+        
         // Logger::put($stream, 'incoming');
 
         self::$token = Config::get('page_access_token', self::$token);

@@ -4,8 +4,7 @@ namespace GigaAI\Drivers;
 
 class Facebook
 {
-    public $resource = '';
-    public $token = '';
+    public $token = null;
 
     public function expectedFormat($request)
     {

@@ -110,7 +110,7 @@ class MessengerBot
         
         // Setup the configuration data
         $this->config = Config::getInstance();
-        
+
         if ( ! empty($config)) {
             $this->config->set($config);
         }
