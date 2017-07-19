@@ -125,7 +125,6 @@ class Storage
     
     private function set($user, $key = '', $value = '')
     {
-        if (is_string($user)) {
             if (is_array($key)) {
                 $key['user_id'] = $user;
                 
@@ -137,6 +136,8 @@ class Storage
                 $key      => $value,
             ];
         }
+
+        
         
         if (is_array($user) && isset($user['user_id'])) {
             return $this->insertOrUpdateUser($user);
