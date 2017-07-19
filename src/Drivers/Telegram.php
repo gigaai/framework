@@ -2,8 +2,13 @@
 
 namespace GigaAI\Drivers;
 
+use GigaAI\Conversation\Conversation;
+
 class Telegram
 {
+    /**
+     * Telegram Endpoint
+     */
     private $resource = 'https://api.telegram.org/bot418818588:AAHUT_KvzAIOPRRRMT_Lo6ChblvbqU1i9zc/';
 
     /**
@@ -29,18 +34,18 @@ class Telegram
             'entry' => [
                 [
                     'id' => rand(),
-                    'time' => $telegram->message->date,
+                    'time' => $telegram['message']['date'],
                     'messaging' => [
                         [
                             'sender' => [
-                                'id' => $telegram->message->from->id,
+                                'id' => $telegram['message']['from']['id'],
                             ],
                             'recipient' => [
                                 'id' => rand()
                             ],
-                            'timestamp' => $telegram->message->date,
+                            'timestamp' => $telegram['message']['date'],
                             'message' => [
-                                'text' => $telegram->message->text
+                                'text' => $telegram['message']['text']
                             ]
                         ]
                     ]
@@ -53,6 +58,8 @@ class Telegram
 
     /**
      * Convert Facebook request back to Telegram request
+     * 
+     * @param $body Body as Facebook format
      */
     public function sendMessage($body)
     {
@@ -62,6 +69,39 @@ class Telegram
         ];
 
         giga_remote_post($this->resource . 'sendMessage', $telegram);
+    }
+
+    /**
+     * Send typing indicator
+     */
+    public function sendTyping()
+    {
+        $lead_id = Conversation::get('lead_id');
+        
+        $body = [
+            'chat_id'   => $lead_id,
+            'action'    => 'typing'
+        ];
+
+        giga_remote_post($this->resource . 'sendChatAction', $body);
+    }
+
+    /**
+     * Method to get current user
+     */
+    public function getUser($lead_id)
+    {
+        // Because the requested data contains the user so we don't need to make any request
+        $raw = Conversation::get('request_raw');
+        $user = $raw['message']['from'];
+
+        return [
+            'user_id'    => $lead_id,
+            'first_name' => $user['first_name'],
+            'last_name'  => $user['last_name'],
+            'source'     => 'telegram:' . $lead_id,
+            'locale'     => str_replace('-', '_', $user['language_code'])
+        ];
     }
 
     public function getWebhookInfo()

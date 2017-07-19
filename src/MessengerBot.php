@@ -216,11 +216,8 @@ class MessengerBot
         
         // Save lead data if not exists.
         if ( ! isset($event['message']['is_echo'])) {
-            // $this->storage->pull();
-
-            // Todo: Pull Telegram Lead
+            $this->storage->pull();
         }
-
         // Message was sent by page, we don't need to response.
         if (isset($event['message']) && isset($event['message']['is_echo']) && $event['message']['is_echo'] == true) {
             return null;

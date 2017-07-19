@@ -64,11 +64,30 @@ class Driver
         $request = $this->driver->formatIncomingRequest($request);
     }
 
+    public function getUser($lead_id)
+    {
+        return $this->driver->getUser($lead_id);
+    }
+
+    public function sendTyping()
+    {
+        $this->driver->sendTyping();
+    }
+    /**
+     * Send message with body
+     * 
+     * @param Array $body Body with Facebook format
+     */
     public function sendMessage($body)
     {
         $request = $this->driver->sendMessage($body);
     }
 
+    /**
+     * Get Webhook Info
+     * 
+     * @return array
+     */
     public function getWebhookInfo()
     {
         return $this->driver->getWebhookInfo();

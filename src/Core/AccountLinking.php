@@ -6,6 +6,12 @@ use GigaAI\Storage\Storage;
 
 class AccountLinking
 {
+    /**
+     * Process the account linking
+     * 
+     * @param Array $event
+     * @return bool
+     */
     public static function process($event)
     {
         // Link Lead with User
@@ -23,11 +29,22 @@ class AccountLinking
         return true;
     }
     
+    /**
+     * Set the linked_account field for current user
+     * 
+     * @param String $lead_id Facebook Lead ID
+     * @param String $user_id User ID
+     */
     private static function linkWithExistingUser($lead_id, $user_id)
     {
         Storage::set($lead_id, 'linked_account', $user_id);
     }
     
+    /**
+     * Unset the linked_account field for current user
+     * 
+     * @param String $lead_id Facebook Lead ID
+     */
     private static function unlinkWithExistingUser($lead_id)
     {
         Storage::set($lead_id, 'linked_account', '');

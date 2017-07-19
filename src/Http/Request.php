@@ -47,8 +47,10 @@ class Request
     private function load()
     {
         // Get the received data from request
-        $stream = json_decode(file_get_contents('php://input'));
+        $stream = json_decode(file_get_contents('php://input'), true);
         self::$received = (!empty ($stream)) ? $stream : $_REQUEST;
+
+        Conversation::set('request_raw', self::$received);
 
         // Load driver to parse request
         $this->driver = Driver::getInstance();
@@ -106,13 +108,7 @@ class Request
      */
     private function getUserProfile($user_id)
     {
-        return GigaAI\Driver::getUserProfile($user_id);
-
-        $end_point  = self::PLATFORM_RESOURCE . "{$user_id}?access_token=" . self::$token;
-        
-        $data       = giga_remote_get($end_point);
-        
-        return json_decode($data, true);
+        return $this->driver->getUser($user_id);
     }
     
     /**
@@ -187,8 +183,7 @@ class Request
         ];
 
         $this->driver->sendMessage($body);
-        
-        Request::send(self::PLATFORM_RESOURCE . "me/messages?access_token=" . self::$token, $body);
+        // Request::send(self::PLATFORM_RESOURCE . "me/messages?access_token=" . self::$token, $body);
     }
 
     /**
@@ -198,16 +193,7 @@ class Request
      */
     private function sendTyping()
     {
-        $lead_id = Conversation::get('lead_id');
-
-        $body = [
-            'recipient' => [
-                'id' => $lead_id
-            ],
-            'sender_action' => 'typing_on'
-        ];
-
-        Request::send(self::PLATFORM_RESOURCE . "me/messages?access_token=" . self::$token, $body);
+        $this->driver->sendTyping();
     }
     
     /**

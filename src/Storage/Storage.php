@@ -115,9 +115,9 @@ class Storage
         }
         
         // Parse event to array
-        $lead['user_id'] = $lead_id;
-        $lead['subscribe'] = 1;
-        $lead['source'] = Conversation::get('page_id');
+        $lead['user_id']    = isset($lead['user_id']) ? $lead['user_id'] : $lead_id;
+        $lead['subscribe']  = 1;
+        $lead['source']     = isset($lead['source']) ? $lead['source'] : Conversation::get('page_id');
         
         // Then call set method
         self::set($lead);
@@ -143,6 +143,13 @@ class Storage
         }
     }
     
+    /**
+     * Insert if user has already exists or update if exists
+     * 
+     * @param Array $user
+     * 
+     * @return void
+     */
     private function insertOrUpdateUser($user)
     {
         $meta = [];
@@ -181,6 +188,13 @@ class Storage
         return $user || ! empty($user[$key]);
     }
     
+    /**
+     * Get User by Facebook app scoped ID
+     * 
+     * @param String $user_id App Scoped Id
+     * 
+     * @return Mixed
+     */
     private function getUser($user_id)
     {
         $user = Lead::where([
