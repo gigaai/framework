@@ -231,7 +231,7 @@ class MessengerBot
         ]);
         
         $type_pattern = $this->request->getTypeAndPattern($event);
-
+        
         // We'll check to response intended action first
         if ($this->responseIntendedAction()) {
             return;

@@ -46,29 +46,51 @@ class Telegram
     public function formatIncomingRequest($telegram)
     {
         if ( ! empty($telegram) && is_array($telegram)) {
+            
+            $sender_id = null;
+            $time = null;
+
+            if (isset($telegram['callback_query'])) {
+                $message    = $telegram['callback_query'];
+                $sender_id  = $telegram['callback_query']['from']['id'];
+                $time       = $telegram['callback_query']['message']['date'];
+            } else {
+                $sender_id = $telegram['message']['from']['id'];
+                $time = $telegram['message']['date'];
+            }
+
             $facebook = [
                 'object' => 'page',
                 'entry' => [
                     [
                         'id' => rand(),
-                        'time' => $telegram['message']['date'],
+                        'time' => $time,
                         'messaging' => [
                             [
                                 'sender' => [
-                                    'id' => $telegram['message']['from']['id'],
+                                    'id' => $sender_id,
                                 ],
                                 'recipient' => [
                                     'id' => rand()
                                 ],
-                                'timestamp' => $telegram['message']['date'],
-                                'message' => [
-                                    'text' => $telegram['message']['text']
-                                ]
+                                'timestamp' => $time,
                             ]
                         ]
                     ]
                 ]
             ];
+
+            if ( ! empty($telegram['message']['text'])) {
+                $facebook['entry'][0]['messaging'][0]['message'] = [
+                    'text' => $telegram['message']['text']
+                ];
+            }
+
+            if ( ! empty($telegram['callback_query']['data'])) {
+                $facebook['entry'][0]['messaging'][0]['postback'] = [
+                    'payload' => $telegram['callback_query']['data']
+                ];
+            }
 
             return $facebook;
         }
@@ -83,7 +105,7 @@ class Telegram
      */
     public function sendMessage($body)
     {
-        $type = 'Message';
+        $action = 'sendMessage';
         
         $telegram = [
             'chat_id' => $body['recipient']['id']
@@ -96,8 +118,10 @@ class Telegram
             $telegram['text'] = $message['text'];
         }
 
-        // Send Attachment
+        // Sending Attachment
         if (isset($message['attachment']['type'])) {
+
+             // Send Audio, Video, Image, File
             $convert = [
                 'image' => 'photo',
                 'audio' => 'audio',
@@ -109,13 +133,75 @@ class Telegram
             {
                 if ($message['attachment']['type'] === $facebook_template) {
                     $telegram[$telegram_template] = $message['attachment']['payload']['url'];
-                    $type = ucfirst($telegram_template);
+                    $action = 'send' . ucfirst($telegram_template);
+                }
+            }
+            
+            // Sending Button
+            // Facebook Button will be converted to InlineKeyboard
+            if ($message['attachment']['type'] === 'template' && 
+                isset($message['attachment']['payload']) &&
+                $message['attachment']['payload']['template_type'] === 'button'
+            ) {
+                $telegram['text'] = $message['attachment']['payload']['text'];
+                $telegram['reply_markup'] = [
+                    'inline_keyboard' => []
+                ];
+
+                foreach ($message['attachment']['payload']['buttons'] as $button) {
+                    $telegram_button = [
+                        'text' => $button['title']
+                    ];
+
+                    if (isset($button['type']) && $button['type'] === 'web_url') {
+                        $telegram_button['url'] = $button['url'];
+                    }
+
+                    if (isset($button['type']) && $button['type'] === 'postback') {
+                        $telegram_button['callback_data'] = $button['payload'];
+                    }
+
+                    $telegram['reply_markup']['inline_keyboard'][] = [
+                        $telegram_button
+                    ];
                 }
             }
         }
 
+        // Facebook Quick Replies will be converted to ReplyKeyboardMarkup
+        if ( ! empty($message['quick_replies'])) {
+            $telegram['reply_markup'] = [
+                'keyboard' => [],
+                'one_time_keyboard' => true,
+            ];
 
-        giga_remote_post($this->resource . 'send' . $type, $telegram);
+            foreach ($message['quick_replies'] as $reply) {
+                if ($reply['content_type'] === 'text') {
+                    $telegram['reply_markup']['keyboard'][] = [
+                        [
+                            'text'  => $reply['title']
+                        ]
+                    ];
+                }
+
+                if ($reply['content_type'] === 'location') {
+                    $telegram['reply_markup']['keyboard'][] = [
+                        [
+                            'text'              => 'Send Location',
+                            'request_location'  => true
+                        ]
+                    ];
+                }
+            }
+        }
+
+        if (isset($telegram['reply_markup'])) {
+            $telegram['reply_markup'] = json_encode($telegram['reply_markup']);
+        }
+
+        // Facebook Quick Replies will convert to InlineKeyboard
+
+        giga_remote_post($this->resource . $action, $telegram);
     }
 
     /**
@@ -142,7 +228,14 @@ class Telegram
     {
         // Because the requested data contains the user so we don't need to make any request
         $raw = Conversation::get('request_raw');
-        $user = $raw['message']['from'];
+        
+        if (isset($raw['callback_query'])) {
+            $raw = $raw['callback_query'];
+            $user = $raw['from'];
+        }
+        else {
+            $user = $raw['message']['from'];
+        }
 
         return [
             'user_id'    => $lead_id,
