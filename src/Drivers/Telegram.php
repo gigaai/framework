@@ -31,6 +31,11 @@ class Telegram
     private $token = null;
 
     /**
+     * Current Chat Id
+     */
+    private $chat_id = null;
+
+    /**
      * Set the endpoint to sending the request
      * 
      * @return void
@@ -152,38 +157,25 @@ class Telegram
                 if ($message['attachment']['type'] === $facebook_template) {
                     $telegram[$telegram_template] = $message['attachment']['payload']['url'];
                     $action = 'send' . ucfirst($telegram_template);
+
+                    return $this->callMethod($action, $telegram);
                 }
             }
             
-            // Sending Button
-            // Facebook Button will be converted to InlineKeyboard
+            // Sending Button, Generic, List
             if ($message['attachment']['type'] === 'template' && 
-                isset($message['attachment']['payload']) &&
-                $message['attachment']['payload']['template_type'] === 'button'
-            ) {
-                $telegram['text'] = $message['attachment']['payload']['text'];
-                $telegram['reply_markup'] = [
-                    'inline_keyboard' => []
-                ];
+                isset($message['attachment']['payload'])):
 
-                foreach ($message['attachment']['payload']['buttons'] as $button) {
-                    $telegram_button = [
-                        'text' => $button['title']
-                    ];
-
-                    if (isset($button['type']) && $button['type'] === 'web_url') {
-                        $telegram_button['url'] = $button['url'];
-                    }
-
-                    if (isset($button['type']) && $button['type'] === 'postback') {
-                        $telegram_button['callback_data'] = $button['payload'];
-                    }
-
-                    $telegram['reply_markup']['inline_keyboard'][] = [
-                        $telegram_button
-                    ];
+                // Facebook Button will be converted to InlineKeyboard
+                if ($message['attachment']['payload']['template_type'] === 'button') {
+                    return $this->sendButtons($message['attachment']['payload']);
                 }
-            }
+
+                // Facebook Generic will be converted to Image + Text + Button
+                if ($message['attachment']['payload']['template_type'] === 'generic') {
+                    return $this->sendGeneric($message['attachment']['payload']);
+                }
+            endif;
         }
 
         // Facebook Quick Replies will be converted to ReplyKeyboardMarkup
@@ -218,14 +210,90 @@ class Telegram
             $telegram['reply_markup'] = json_encode($telegram['reply_markup']);
         }
 
-        // List and Carousel will be converted to Image + InlineButton
-        
-
-
-        // Receipt will be converted to MarkdownText
-
         // Facebook Quick Replies will convert to InlineKeyboard
         giga_remote_post($this->resource . $action, $telegram);
+    }
+
+    private function getChatId()
+    {
+        return Conversation::get('lead_id');
+    }
+
+    /**
+     * Call Telegram method via HTTP
+     *
+     * @see https://core.telegram.org/bots/api#available-methods
+     */
+    private function callMethod($method, $params)
+    {
+        $params['chat_id'] = Conversation::get('lead_id');
+        return giga_remote_post($this->resource . $method, $params);
+    }
+
+    private function sendButtons($payload)
+    {
+        $buttons = $this->convertToInlineKeyboard($payload['buttons']);
+        $buttons['text'] = $payload['text'];
+
+        return $this->callMethod('sendMessage', $buttons);
+    }
+
+    private function convertToInlineKeyboard($buttons)
+    {
+        $keyboard = [
+            'reply_markup' => [
+                'inline_keyboard' => []
+            ]
+        ];
+        
+        foreach ($buttons as $button) :
+            $telegram_button = [
+                'text' => $button['title']
+            ];
+
+            if (isset($button['type']) && $button['type'] === 'web_url') {
+                $telegram_button['url'] = $button['url'];
+            }
+
+            if (isset($button['type']) && $button['type'] === 'postback') {
+                $telegram_button['callback_data'] = $button['payload'];
+            }
+
+            $keyboard['reply_markup']['inline_keyboard'][] = [
+                $telegram_button
+            ];
+        endforeach;
+
+        $keyboard['reply_markup'] = json_encode($keyboard['reply_markup']);
+
+        return $keyboard;
+    }
+
+    /**
+     * Convert Generic to Photo with Caption + Buttons
+     *
+     * @param Array $payload
+     * @return Json
+     */
+    private function sendGeneric($payload)
+    {
+        foreach ($payload['elements'] as $element) {
+            $generic = [];
+
+            if (isset($element['image_url'])) {
+                $generic['photo'] = $element['image_url'];
+                $generic['caption'] = $element['title'];
+                $keyboard = $this->convertToInlineKeyboard($element['buttons']);
+                $generic['reply_markup'] = $keyboard['reply_markup'];
+                
+                $this->callMethod('sendPhoto', $generic);
+            } else {
+                $this->sendButtons([
+                    'text' => $element['title'],
+                    'buttons' => $generic['buttons']
+                ]);
+            }
+        }
     }
 
     /**

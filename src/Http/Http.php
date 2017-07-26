@@ -40,7 +40,6 @@ class Http
         }
        
         Logger::put($result, 'response');
-        
         return $result;
     }
     
