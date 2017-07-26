@@ -5,6 +5,15 @@ namespace GigaAI\Drivers;
 use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
 
+/**
+ * Telegram Driver
+ * 
+ * Because the framework is working with Facebook the best. You'll need to
+ * convert Telegram request to Facebook request to let the framework parsing 
+ * and returning the data and then, convert back to Telegram format.
+ * 
+ * @since 2.4
+ */
 class Telegram
 {    
     /**
@@ -21,6 +30,11 @@ class Telegram
      */
     private $token = null;
 
+    /**
+     * Set the endpoint to sending the request
+     * 
+     * @return void
+     */
     public function __construct()
     {
         $token = Config::get('messenger.telegram_token');
@@ -28,7 +42,7 @@ class Telegram
         $this->resource = "https://api.telegram.org/bot{$token}/";
     }
     /**
-     * Expected format to be sent from Telegram
+     * Expected format to be sent from Telegram. This lets the framework detect your driver.
      *
      * @param Array $request
      * 
@@ -41,7 +55,10 @@ class Telegram
     }
 
     /**
-     * Convert Telegram request to Facebook request
+     * Convert Telegram to Facebook request
+     * 
+     * @see https://core.telegram.org/bots/api
+     * @see https://developers.facebook.com/docs/messenger-platform/webhook-reference#format
      */
     public function formatIncomingRequest($telegram)
     {
@@ -195,12 +212,18 @@ class Telegram
             }
         }
 
+        // We have to json encode the reply_markup
         if (isset($telegram['reply_markup'])) {
             $telegram['reply_markup'] = json_encode($telegram['reply_markup']);
         }
 
-        // Facebook Quick Replies will convert to InlineKeyboard
+        // List and Carousel will be converted to Image + InlineButton
+        
 
+
+        // Receipt will be converted to MarkdownText
+
+        // Facebook Quick Replies will convert to InlineKeyboard
         giga_remote_post($this->resource . $action, $telegram);
     }
 
