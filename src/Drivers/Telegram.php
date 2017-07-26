@@ -63,7 +63,6 @@ class Telegram
     public function formatIncomingRequest($telegram)
     {
         if ( ! empty($telegram) && is_array($telegram)) {
-            
             $sender_id = null;
             $time = null;
 
@@ -71,9 +70,11 @@ class Telegram
                 $message    = $telegram['callback_query'];
                 $sender_id  = $telegram['callback_query']['from']['id'];
                 $time       = $telegram['callback_query']['message']['date'];
-            } else {
+            } else if (isset($telegram['message'])) {
                 $sender_id = $telegram['message']['from']['id'];
                 $time = $telegram['message']['date'];
+            } else {
+                return $telegram;
             }
 
             $facebook = [
@@ -112,7 +113,7 @@ class Telegram
             return $facebook;
         }
 
-        return null;
+        return $telegram;
     }
 
     /**

@@ -57,7 +57,7 @@ class Request
         $this->driver->run(self::$received);
         
         // Logger::put($stream, 'incoming');
-
+        
         self::$token = Config::get('page_access_token', self::$token);
         
         $this->verifyTokenFromFacebook();
@@ -137,7 +137,6 @@ class Request
     private function subscribeFacebook()
     {
         $received = $this->getReceivedData('subscribe');
-        
         if ($received != null) {
             dd($this->sendSubscribeRequestToTelegram());
         }
@@ -153,9 +152,9 @@ class Request
     private function sendSubscribeRequestToTelegram()
     {
         $end_point = 'https://api.telegram.org/bot418818588:AAHUT_KvzAIOPRRRMT_Lo6ChblvbqU1i9zc/setWebhook';
-        
+
         return $this->send($end_point, [
-            'url' => 'https://4fcc11c1.ngrok.io/api/messenger'
+            'url' => 'https://95e1ad90.ngrok.io/api/messenger'
         ]);
     }
     
