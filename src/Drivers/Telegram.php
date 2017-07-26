@@ -14,7 +14,7 @@ use GigaAI\Core\Config;
  * 
  * @since 2.4
  */
-class Telegram
+class Telegram implements DriverInterface
 {    
     /**
      * Telegram Endpoint
@@ -206,7 +206,7 @@ class Telegram
         }
 
         // Facebook Quick Replies will convert to InlineKeyboard
-        giga_remote_post($this->resource . $action, $telegram);
+        return giga_remote_post($this->resource . $action, $telegram);
     }
 
     /**
@@ -217,6 +217,7 @@ class Telegram
     private function callMethod($method, $params)
     {
         $params['chat_id'] = Conversation::get('lead_id');
+
         return giga_remote_post($this->resource . $method, $params);
     }
 
@@ -271,16 +272,16 @@ class Telegram
             $generic = [];
 
             if (isset($element['image_url'])) {
-                $generic['photo'] = $element['image_url'];
+                $generic['photo']   = $element['image_url'];
                 $generic['caption'] = $element['title'];
-                $keyboard = $this->convertToInlineKeyboard($element['buttons']);
+                $keyboard           = $this->convertToInlineKeyboard($element['buttons']);
                 $generic['reply_markup'] = $keyboard['reply_markup'];
                 
                 $this->callMethod('sendPhoto', $generic);
             } else {
                 $this->sendButtons([
-                    'text' => $element['title'],
-                    'buttons' => $generic['buttons']
+                    'text'      => $element['title'],
+                    'buttons'   => $generic['buttons']
                 ]);
             }
         }
@@ -326,10 +327,5 @@ class Telegram
             'source'     => 'telegram:' . Conversation::get('page_id'),
             'locale'     => str_replace('-', '_', $user['language_code'])
         ];
-    }
-
-    public function getWebhookInfo()
-    {
-        return giga_remote_get($this->resource . 'getWebhookInfo');
     }
 }

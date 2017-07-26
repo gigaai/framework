@@ -37,11 +37,11 @@ class Driver
     {
         $this->driver = new Telegram;
         // Loop through all available drivers
-        foreach ($this->drivers as $driver) {
+        foreach ($this->drivers as $driver_class) {
 
             // If driver format matches understand the request, then create new instance
-            if ((new $driver)->expectedFormat($request)) {
-                $this->driver = new $driver;
+            if ((new $driver_class)->expectedFormat($request)) {
+                $this->driver = new $driver_class;
                 break;
             }
         }
@@ -81,15 +81,5 @@ class Driver
     public function sendMessage($body)
     {
         $request = $this->driver->sendMessage($body);
-    }
-
-    /**
-     * Get Webhook Info
-     * 
-     * @return array
-     */
-    public function getWebhookInfo()
-    {
-        return $this->driver->getWebhookInfo();
     }
 }

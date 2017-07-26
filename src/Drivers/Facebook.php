@@ -2,7 +2,7 @@
 
 namespace GigaAI\Drivers;
 
-class Facebook
+class Facebook implements DriverInterface
 {
     public $token = null;
 
@@ -42,15 +42,5 @@ class Facebook
         $data       = giga_remote_get($end_point);
         
         return json_decode($data, true);
-    }
-
-    /**
-     * Get Webhook Info
-     *
-     * @return void
-     */
-    public function getWebhookInfo()
-    {
-        //
     }
 }
