@@ -202,6 +202,8 @@ class MessengerBot
         }
         
         $this->conversation->set('received_input', $this->getReceivedInput());
+
+        $this->setAccessToken();
         
         // If auto stop is run and it return true. Terminate
         if (AutoStop::run($event)) {
@@ -211,8 +213,6 @@ class MessengerBot
         if (AutoStop::isStopped()) {
             return null;
         }
-        
-        $this->setAccessToken();
         
         // Save lead data if not exists.
         if ( ! isset($event['message']['is_echo'])) {
@@ -247,13 +247,11 @@ class MessengerBot
     public function setAccessToken()
     {
         $is_multipage = Config::get('multipage');
-        
+
         if ($is_multipage) {
             $access_token = Instance::get('page_access_token');
-            
+            $access_token = config('messenger.telegram_token');
             Config::set('page_access_token', $access_token);
-            
-            Request::$token = $access_token;
         }
     }
     

@@ -11,7 +11,7 @@ interface DriverInterface
      * 
      * @return bool
      */
-    public function exptectedFormat($request);
+    public function expectedFormat($request);
 
     /**
      * Convert incoming request to Facebook format

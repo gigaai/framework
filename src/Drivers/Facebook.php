@@ -6,6 +6,15 @@ class Facebook implements DriverInterface
 {
     public $token = null;
 
+    public $resource = null;
+
+    public function __construct()
+    {
+        $token          = get_access_token();
+
+        $this->resource = "https://graph.facebook.com/v2.6/{$token}";
+    }
+
     public function expectedFormat($request)
     {
         return isset($request->object);
@@ -18,7 +27,7 @@ class Facebook implements DriverInterface
 
     public function sendMessage($body)
     {
-        giga_remote_post($this->resource . 'me/messages?access_token=' . $this->token, $body);
+        return giga_remote_post($this->resource . 'me/messages?access_token=' . $this->token, $body);
     }
 
     public function sendTyping()

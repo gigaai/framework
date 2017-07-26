@@ -16,31 +16,13 @@ use GigaAI\Core\Config;
  */
 class Telegram implements DriverInterface
 {    
-    /**
-     * Telegram Endpoint
-     * 
-     * @var String
-     */
-    private $resource = null;
-
-    /**
-     * Access Token
-     * 
-     * @var String
-     */
-    private $token = null;
-
-    /**
-     * Set the endpoint to sending the request
-     * 
-     * @return void
-     */
-    public function __construct()
+    private function getResource($append = '')
     {
-        $token = Config::get('messenger.telegram_token');
-
-        $this->resource = "https://api.telegram.org/bot{$token}/";
+        $token = Config::get('page_access_token');
+        
+        return "https://api.telegram.org/bot{$token}/{$append}";
     }
+
     /**
      * Expected format to be sent from Telegram. This lets the framework detect your driver.
      *
@@ -206,7 +188,7 @@ class Telegram implements DriverInterface
         }
 
         // Facebook Quick Replies will convert to InlineKeyboard
-        return giga_remote_post($this->resource . $action, $telegram);
+        return giga_remote_post($this->getResource($action), $telegram);
     }
 
     /**
@@ -218,7 +200,7 @@ class Telegram implements DriverInterface
     {
         $params['chat_id'] = Conversation::get('lead_id');
 
-        return giga_remote_post($this->resource . $method, $params);
+        return giga_remote_post($this->getResource($method), $params);
     }
 
     private function sendButtons($payload)
@@ -299,7 +281,7 @@ class Telegram implements DriverInterface
             'action'    => 'typing'
         ];
 
-        giga_remote_post($this->resource . 'sendChatAction', $body);
+        giga_remote_post($this->getResource('sendChatAction'), $body);
     }
 
     /**

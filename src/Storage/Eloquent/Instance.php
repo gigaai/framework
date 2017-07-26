@@ -35,6 +35,10 @@ class Instance extends \Illuminate\Database\Eloquent\Model
         if (is_null($page_id)) {
             $page_id = Conversation::get('page_id');
         }
+
+        if (isset($_GET['page_id'])) {
+            $page_id = trim($_GET['page_id']);
+        }
         
         if (is_null($page_id)) {
             return Config::get($key, $default);
