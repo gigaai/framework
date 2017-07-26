@@ -31,11 +31,6 @@ class Telegram
     private $token = null;
 
     /**
-     * Current Chat Id
-     */
-    private $chat_id = null;
-
-    /**
      * Set the endpoint to sending the request
      * 
      * @return void
@@ -214,11 +209,6 @@ class Telegram
         giga_remote_post($this->resource . $action, $telegram);
     }
 
-    private function getChatId()
-    {
-        return Conversation::get('lead_id');
-    }
-
     /**
      * Call Telegram method via HTTP
      *
@@ -342,6 +332,4 @@ class Telegram
     {
         return giga_remote_get($this->resource . 'getWebhookInfo');
     }
-
-    // Todo: When getUserInfo, read data from Telegram instead of Facebook
 }
