@@ -2,34 +2,72 @@
 
 namespace GigaAI\Drivers;
 
+/**
+ * Facebook Driver
+ */
 class Facebook implements DriverInterface
 {
-    public $token = null;
-
-    public $resource = null;
-
-    public function __construct()
+    /**
+     * Get Facebook REST resouce
+     *
+     * @return String Resource URL
+     */
+    private function getResource()
     {
-        $token          = get_access_token();
-
-        $this->resource = "https://graph.facebook.com/v2.6/{$token}";
+        return "https://graph.facebook.com/v2.6/";
     }
 
+    /**
+     * Get Access Token
+     *
+     * @return String FB Page Access Token
+     */
+    private function getAccessToken()
+    {
+        return Config::get('page_access_token');
+    }
+
+    /**
+     * Expected current message is belongs to FB or not. This helps Driver detect it.
+     *
+     * @param Array $request
+     * 
+     * @return void
+     */
     public function expectedFormat($request)
     {
-        return isset($request->object);
+        return isset($request['object']);
     }
 
+    /**
+     * Format incoming request to FB format. Because the incoming request is already has FB format so we don't need to do anything here.
+     *
+     * @param Array $request
+     * 
+     * @return $request
+     */
     public function formatIncomingRequest($request)
     {
         return $request;
     }
 
+    /**
+     * Send the message back to FB
+     *
+     * @param Array $body Facebook Message
+     * 
+     * @return Json
+     */
     public function sendMessage($body)
     {
-        return giga_remote_post($this->resource . 'me/messages?access_token=' . $this->token, $body);
+        return giga_remote_post($this->getResource() . 'me/messages?access_token=' . $this->getAccessToken(), $body);
     }
 
+    /**
+     * Send Typing Indicator
+     *
+     * @return Json
+     */
     public function sendTyping()
     {
         $lead_id = Conversation::get('lead_id');
@@ -41,12 +79,19 @@ class Facebook implements DriverInterface
             'sender_action' => 'typing_on'
         ];
 
-        giga_remote_post($this->resource . "me/messages?access_token=" . self::$token, $body);
+        return giga_remote_post($this->getResource() . "me/messages?access_token=" . $this->getAccessToken(), $body);
     }
 
+    /**
+     * Get user data
+     *
+     * @param String $lead_id
+     * 
+     * @return Array
+     */
     public function getUser($lead_id)
     {
-        $end_point  = $this->resource . "{$user_id}?access_token=" . self::$token;
+        $end_point  = $this->getResource() . "{$lead_id}?access_token=" . $this->getAccessToken();
         
         $data       = giga_remote_get($end_point);
         
