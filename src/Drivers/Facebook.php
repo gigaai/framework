@@ -97,4 +97,16 @@ class Facebook implements DriverInterface
         
         return json_decode($data, true);
     }
+
+    /**
+     * Send subscribe request to FB
+     *
+     * @return Json response
+     */
+    public function sendSubscribeRequest($attributes)
+    {
+        $token = isset($attributes['page_access_token']) ? $attributes['page_access_token'] : $this->getAccessToken();
+
+        return giga_remote_post($this->getResource() . "me/subscribed_apps?access_token=" . $token);
+    }
 }

@@ -15,11 +15,11 @@ use GigaAI\Core\Config;
  * @since 2.4
  */
 class Telegram implements DriverInterface
-{    
+{
     private function getResource($append = '')
     {
         $token = Config::get('page_access_token');
-        
+
         return "https://api.telegram.org/bot{$token}/{$append}";
     }
 
@@ -291,7 +291,7 @@ class Telegram implements DriverInterface
      */
     public function getUser($lead_id)
     {
-        // Because the requested data contains the user so we don't need to make any request
+        // Because the received data already contains user info so we don't need to make any request
         $raw = Conversation::get('request_raw');
         
         if (isset($raw['callback_query'])) {
@@ -309,5 +309,17 @@ class Telegram implements DriverInterface
             'source'     => 'telegram:' . Conversation::get('page_id'),
             'locale'     => str_replace('-', '_', $user['language_code'])
         ];
+    }
+
+    /**
+     * Set Webhook for Telegram
+     *
+     * @return void
+     */
+    public function sendSubscribeRequest($attributes)
+    {
+        return giga_remote_post($this->getResouce('setWebhook'), [
+            'url' => $attributes['webhook_url']
+        ]);
     }
 }

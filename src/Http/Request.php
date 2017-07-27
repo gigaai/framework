@@ -28,13 +28,6 @@ class Request
     public static $received;
     
     /**
-     * Facebook Messenger Bot endpoint
-     *
-     * @var string
-     */
-    const PLATFORM_RESOURCE = 'https://graph.facebook.com/v2.6/';
-    
-    /**
      * Page access token
      *
      * @var string
@@ -47,8 +40,8 @@ class Request
     private function load()
     {
         // Get the received data from request
-        $stream = json_decode(file_get_contents('php://input'), true);
-        self::$received = (!empty ($stream)) ? $stream : $_REQUEST;
+        $stream         = json_decode(file_get_contents('php://input'), true);
+        self::$received = ( ! empty ($stream)) ? $stream : $_REQUEST;
 
         Conversation::set('request_raw', self::$received);
 
@@ -56,7 +49,7 @@ class Request
         $this->driver = Driver::getInstance();
         $this->driver->run(self::$received);
         
-        // Logger::put($stream, 'incoming');
+        Logger::put($stream, 'incoming');
         
         self::$token = Config::get('page_access_token', self::$token);
         
@@ -134,28 +127,13 @@ class Request
      *
      * @return void
      */
-    private function subscribeFacebook()
+    private function subscribe($attributes = [])
     {
         $received = $this->getReceivedData('subscribe');
-        if ($received != null) {
-            dd($this->sendSubscribeRequestToTelegram());
-        }
-    }
-    
-    private function sendSubscribeRequest()
-    {
-        $end_point = self::PLATFORM_RESOURCE . "me/subscribed_apps?access_token=" . self::$token;
         
-        return $this->send($end_point);
-    }
-
-    private function sendSubscribeRequestToTelegram()
-    {
-        $end_point = 'https://api.telegram.org/bot418818588:AAHUT_KvzAIOPRRRMT_Lo6ChblvbqU1i9zc/setWebhook';
-
-        return $this->send($end_point, [
-            'url' => 'https://95e1ad90.ngrok.io/api/messenger'
-        ]);
+        if ($received != null) {
+            return $this->driver->sendSubscribeRequest($attributes);
+        }
     }
     
     /**
@@ -181,8 +159,7 @@ class Request
             'message' => $message
         ];
 
-        $this->driver->sendMessage($body);
-        // Request::send(self::PLATFORM_RESOURCE . "me/messages?access_token=" . self::$token, $body);
+        return $this->driver->sendMessage($body);
     }
 
     /**
@@ -199,12 +176,11 @@ class Request
      * Send multiple messages
      *
      * @param $messages
-     * @param null $lead_id
+     * @param mixed $lead_id
      */
     private function sendMessages($messages, $lead_id = null)
     {
-        foreach ($messages as $message)
-        {
+        foreach ($messages as $message) {
             $this->sendMessage($message, $lead_id);
         }
     }
@@ -248,7 +224,6 @@ class Request
         
         return compact('type', 'pattern');
     }
-    
     
     /**
      * Override Singleton trait
