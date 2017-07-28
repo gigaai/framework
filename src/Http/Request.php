@@ -115,6 +115,11 @@ class Request
             return $this->driver->sendSubscribeRequest($attributes);
         }
     }
+
+    private function sendSubscribeRequest($attributes)
+    {
+        return $this->driver->sendSubscribeRequest($attributes);
+    }
     
     /**
      * Send a single message

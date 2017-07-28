@@ -3,6 +3,8 @@
 namespace GigaAI\Drivers;
 
 use GigaAI\Http\Request;
+use GigaAI\Core\Config;
+use GigaAI\Conversation\Conversation;
 
 /**
  * Facebook Driver

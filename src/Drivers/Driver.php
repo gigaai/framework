@@ -35,10 +35,11 @@ class Driver
      */
     public function detect($request)
     {
-        $this->driver = new Telegram;
+        // Facebook driver by default
+        $this->driver = new Facebook;
+
         // Loop through all available drivers
         foreach ($this->drivers as $driver_class) {
-
             // If driver format matches understand the request, then create new instance
             if ((new $driver_class)->expectedFormat($request)) {
                 $this->driver = new $driver_class;
@@ -81,5 +82,10 @@ class Driver
     public function sendMessage($body)
     {
         $request = $this->driver->sendMessage($body);
+    }
+
+    public function sendSubscribeRequest($attributes)
+    {
+        return $this->driver->sendSubscribeRequest($attributes);
     }
 }

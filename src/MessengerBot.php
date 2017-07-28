@@ -250,7 +250,6 @@ class MessengerBot
 
         if ($is_multipage) {
             $access_token = Instance::get('page_access_token');
-            $access_token = config('messenger.telegram_token');
             Config::set('page_access_token', $access_token);
         }
     }
