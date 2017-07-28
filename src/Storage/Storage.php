@@ -138,8 +138,6 @@ class Storage
             ];
         }
 
-        
-        
         if (is_array($user) && isset($user['user_id'])) {
             return $this->insertOrUpdateUser($user);
         }

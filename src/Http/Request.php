@@ -53,9 +53,7 @@ class Request
         
         self::$token = Config::get('page_access_token', self::$token);
         
-        $this->verifyTokenFromFacebook();
-        
-        $this->subscribeFacebook();
+        $this->subscribe();
     }
     
     /**
@@ -102,24 +100,6 @@ class Request
     private function getUserProfile($user_id)
     {
         return $this->driver->getUser($user_id);
-    }
-    
-    /**
-     * Verify token from Facebook
-     *
-     * @return void
-     */
-    private function verifyTokenFromFacebook()
-    {
-        $received = $this->getReceivedData();
-        
-        if (is_array($received) && isset($received['hub_verify_token'])
-            && strtolower($received['hub_verify_token']) == 'gigaai'
-        ) {
-            echo $received['hub_challenge'];
-            
-            exit;
-        }
     }
     
     /**

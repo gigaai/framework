@@ -2,11 +2,35 @@
 
 namespace GigaAI\Drivers;
 
+use GigaAI\Http\Request;
+
 /**
  * Facebook Driver
  */
 class Facebook implements DriverInterface
 {
+    public function __construct()
+    {
+        $this->verifyToken();
+    }
+
+    /**
+     * Verify token from Facebook
+     *
+     * @return void
+     */
+    private function verifyToken()
+    {
+        $received = Request::getReceivedData();
+        
+        if (is_array($received) && isset($received['hub_verify_token'])
+            && strtolower($received['hub_verify_token']) == 'gigaai'
+        ) {
+            echo $received['hub_challenge'];
+            
+            exit;
+        }
+    }
     /**
      * Get Facebook REST resouce
      *
