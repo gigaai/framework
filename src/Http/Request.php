@@ -7,6 +7,7 @@ use GigaAI\Core\Config;
 use GigaAI\Core\Logger;
 use GigaAI\Core\Parser;
 use GigaAI\Shared\Singleton;
+use GigaAI\Shortcodes\Shortcode;
 use GigaAI\Storage\Storage;
 use GigaAI\Shared\EasyCall;
 use GigaAI\Drivers\Driver;
@@ -19,21 +20,21 @@ use GigaAI\Drivers\Driver;
 class Request
 {
     use Singleton, EasyCall;
-    
+
     /**
      * Received request data
      *
      * @var mixed
      */
     public static $received;
-    
+
     /**
      * Page access token
      *
      * @var string
      */
     public static $token;
-    
+
     /**
      * Setup data and run command based on received data
      */
@@ -48,60 +49,64 @@ class Request
         // Load driver to parse request
         $this->driver = Driver::getInstance();
         $this->driver->run(self::$received);
-        
+
         Logger::put($stream, 'incoming');
-        
+
         self::$token = Config::get('page_access_token', self::$token);
-        
+
         $this->subscribe();
     }
-    
+
     /**
      * Get received request
      *
      * @param null $key
+     *
      * @return mixed
      */
     private function getReceivedData($key = null)
     {
         $received = self::$received;
-        
+
         if ($key !== null) {
-            if (is_array($received) && isset($received[$key]))
+            if (is_array($received) && isset($received[$key])) {
                 return $received[$key];
-            
-            if (isset($received->$key))
+            }
+
+            if (isset($received->$key)) {
                 return $received->$key;
-            
+            }
+
             return null;
         }
-        
-        return is_object($received) ? (array) $received : $received;
+
+        return is_object($received) ? (array)$received : $received;
     }
-    
+
     /**
      * Send request
      *
      * @param String $end_point
-     * @param array $body
+     * @param array  $body
      * @param string $method
      */
     private function send($end_point, $body = [], $method = 'post')
     {
         return call_user_func_array('giga_remote_' . $method, [$end_point, $body]);
     }
-    
+
     /**
      * Get User Profile
      *
      * @param String $user_id
+     *
      * @return String Json
      */
     private function getUserProfile($user_id)
     {
         return $this->driver->getUser($user_id);
     }
-    
+
     /**
      * Subscribe Facebook
      *
@@ -110,7 +115,7 @@ class Request
     private function subscribe($attributes = [])
     {
         $received = $this->getReceivedData('subscribe');
-        
+
         if ($received != null) {
             return $this->driver->sendSubscribeRequest($attributes);
         }
@@ -120,7 +125,7 @@ class Request
     {
         return $this->driver->sendSubscribeRequest($attributes);
     }
-    
+
     /**
      * Send a single message
      *
@@ -132,16 +137,16 @@ class Request
         if (is_null($lead_id)) {
             $lead_id = Conversation::get('lead_id');
         }
-        
-        $message                = Parser::parseShortcodes($message, Storage::get($lead_id));
-        
-        $message['metadata']    = 'SENT_BY_GIGA_AI';
-        
+
+        $message = Parser::parseShortcodes($message, Storage::get($lead_id));
+
+        $message['metadata'] = 'SENT_BY_GIGA_AI';
+
         $body = [
             'recipient' => [
-                'id' => $lead_id
+                'id' => $lead_id,
             ],
-            'message' => $message
+            'message'   => $message,
         ];
 
         return $this->driver->sendMessage($body);
@@ -156,11 +161,11 @@ class Request
     {
         $this->driver->sendTyping();
     }
-    
+
     /**
      * Send multiple messages
      *
-     * @param $messages
+     * @param       $messages
      * @param mixed $lead_id
      */
     private function sendMessages($messages, $lead_id = null)
@@ -169,47 +174,49 @@ class Request
             $this->sendMessage($message, $lead_id);
         }
     }
-    
+
     /**
      * Get Message Type and Pattern of an Event
      *
      * @param $event
+     *
      * @return array
      */
     private function getTypeAndPattern($event)
     {
-        $type       = 'text';
-        $pattern    = '';
-        
+        $type    = 'text';
+        $pattern = '';
+
         // For Text Message
-        if (isset($event['message']) && isset($event['message']['text']))
-            $pattern    = $event['message']['text'];
-        
+        if (isset($event['message']) && isset($event['message']['text'])) {
+            $pattern = $event['message']['text'];
+        }
+
         // For Attachment Message
         if (isset($event['message']) && isset($event['message']['attachments'])) {
             $type = 'attachment';
-            
-            if (isset($event['message']['attachments'][0]['type']))
+
+            if (isset($event['message']['attachments'][0]['type'])) {
                 $pattern = $event['message']['attachments'][0]['type'];
+            }
         }
-        
+
         // For Payload Message
         if (isset($event['postback']['payload'])) {
-            $type       = 'payload';
-            $pattern    = $event['postback']['payload'];
+            $type    = 'payload';
+            $pattern = $event['postback']['payload'];
         }
-        
+
         // For Quick Replies
         if (isset($event['message']) && isset($event['message']['quick_reply']) &&
-            ! empty($event['message']['quick_reply']['payload']))
-        {
-            $type       = 'payload';
-            $pattern    = $event['message']['quick_reply']['payload'];
+            ! empty($event['message']['quick_reply']['payload'])) {
+            $type    = 'payload';
+            $pattern = $event['message']['quick_reply']['payload'];
         }
-        
+
         return compact('type', 'pattern');
     }
-    
+
     /**
      * Override Singleton trait
      *
@@ -221,7 +228,7 @@ class Request
             self::$instance = new static();
             self::$instance->load();
         }
-        
+
         return self::$instance;
     }
 }

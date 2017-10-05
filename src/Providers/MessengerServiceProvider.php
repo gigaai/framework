@@ -11,6 +11,11 @@ use Thunder\Shortcode\Parser\RegularParser;
 use Thunder\Shortcode\Processor\Processor;
 use Thunder\Shortcode\Shortcode\ShortcodeInterface;
 
+/**
+ * Register a Service Provider in Laravel application
+ *
+ * @package GigaAI\Providers
+ */
 class MessengerServiceProvider extends ServiceProvider
 {
     /**
