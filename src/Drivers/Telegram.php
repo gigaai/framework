@@ -318,7 +318,7 @@ class Telegram implements DriverInterface
      */
     public function sendSubscribeRequest($attributes)
     {
-        return giga_remote_post($this->getResouce('setWebhook'), [
+        return giga_remote_post($this->getResource('setWebhook'), [
             'url' => $attributes['webhook_url']
         ]);
     }

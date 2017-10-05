@@ -116,7 +116,7 @@ class Request
         }
     }
 
-    private function sendSubscribeRequest($attributes)
+    private function sendSubscribeRequest($attributes = [])
     {
         return $this->driver->sendSubscribeRequest($attributes);
     }
