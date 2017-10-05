@@ -8,32 +8,30 @@ class Parser
 {
     public static function parseShortcodes($response, $dictionary = [])
     {
-        if (empty($dictionary) || ! is_array($dictionary))
+        if (empty($dictionary) || ! is_array($dictionary)) {
             return $response;
+        }
 
-        foreach ($dictionary as $shortcode => $value)
-        {
+        foreach ($dictionary as $shortcode => $value) {
             unset($dictionary[$shortcode]);
 
             $dictionary["[$shortcode]"] = $value;
         }
 
-        // Replace in Text
-        if ( ! empty($response['text'])) {
+        foreach (['text', 'attachment.text'] as $node) {
+            if ( ! empty(array_get($response, $node))) {
+                $text = array_get($response, $node);
+                $text = strtr($text, $dictionary);
+                array_set($response, $node, $text);
 
-            // Parse legacy shortcodes
-            $response['text'] = strtr($response['text'], $dictionary);
-
-            // Parse shortcode with new library
-            $response['text'] = Shortcode::process($response['text']);
+                if (is_string($text)) {
+                    array_set($response, $node, Shortcode::process($text));
+                } else {
+                    $response = $text;
+                }
+            }
         }
 
-        // Replace in Button
-        if (! empty($response['attachment']['text'])) {
-            $response['attachment']['text'] = strtr($response['text'], $dictionary);
-
-            $response['attachment']['text'] = Shortcode::process($response['text'], $dictionary);
-        }
         // Replace in Generic
         return $response;
     }
