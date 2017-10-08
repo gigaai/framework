@@ -134,12 +134,11 @@ class Request
      */
     private function sendMessage($message, $lead_id = null)
     {
+        $message = Shortcode::parse($message);
+
         if (is_null($lead_id)) {
             $lead_id = Conversation::get('lead_id');
         }
-
-        // Todo: Only parse shortcode when it has shortcode
-        $message = Parser::parseShortcodes($message, Storage::get($lead_id));
 
         $message['metadata'] = 'SENT_BY_GIGA_AI';
 

@@ -2,7 +2,7 @@
 
 namespace GigaAI\Message;
 
-use GigaAI\Core\Parser;
+use GigaAI\Shortcodes\Shortcode;
 
 class Text extends Message
 {
@@ -13,8 +13,8 @@ class Text extends Message
 
     public function normalize()
     {
-        $text = Parser::parseShortcodes($this->body);
-
-        return compact('text');
+        return [
+            'text' => $this->body
+        ];
     }
 }

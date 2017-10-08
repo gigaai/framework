@@ -45,8 +45,8 @@ class Shortcode
             foreach ($shortcodes as $shortcode) {
                 $handlers->add($shortcode->getName(), function (ShortcodeInterface $s) {
                     $shortcode_name = str_snake($s->getName());
-                    $params = $s->getParameters();
-                    $content = $s->getContent();
+                    $params         = $s->getParameters();
+                    $content        = $s->getContent();
                     if (function_exists("giga_shortcode_{$shortcode_name}")) {
                         return call_user_func_array("giga_shortcode_{$shortcode_name}", [$params, $content]);
                     }
@@ -68,5 +68,14 @@ class Shortcode
         }
 
         return $content;
+    }
+
+    public static function parse($answer)
+    {
+        foreach ($answer as $key => $value) {
+            $answer[$key] = is_string($value) ? self::process($value) : self::parse($value);
+        }
+
+        return $answer;
     }
 }
