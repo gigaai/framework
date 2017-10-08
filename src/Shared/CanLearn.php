@@ -35,25 +35,31 @@ trait CanLearn
     /**
      * Alias of says() method
      *
-     * @param $messages
+     * @param mixed $messages Message to send
+     * @param array $attributes Message attributes
+     * @param $lead_id Lead ID to send, by default current lead
+     *
      * @return $this
      */
-    public function say($messages, $attributes = [])
+    public function say($messages, $attributes = [], $lead_id = null)
     {
-        return $this->says($messages, $attributes);
+        return $this->says($messages, $attributes, $lead_id);
     }
 
     /**
      * Send message to user.
      *
-     * @param $messages
+     * @param mixed $messages Message to send
+     * @param array $attributes Message attributes
+     * @param $lead_id Lead ID to send, by default current lead
+     *
      * @return $this
      */
-    public function says($messages, $attributes = [])
+    public function says($messages, $attributes = [], $lead_id = null)
     {
         $messages = $this->model->parseWithoutSave($messages, $attributes);
 
-        $this->request->sendMessages($messages);
+        $this->request->sendMessages($messages, $lead_id);
 
         return $this;
     }
