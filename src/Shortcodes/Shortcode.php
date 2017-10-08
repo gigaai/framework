@@ -22,6 +22,7 @@ class Shortcode
         'random-text'  => RandomText::class,
         'lead'         => Lead::class,
         'post-generic' => PostGeneric::class,
+        'input'        => Input::class,
     ];
 
     /**
