@@ -157,8 +157,8 @@ function giga_sanitize_button($array)
     return $array;
 }
 
-if ( ! function_exists('camel_to_snake')) {
-    function camel_to_snake($camel)
+if ( ! function_exists('camel_to_slug')) {
+    function camel_to_slug($camel)
     {
         return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $camel));
     }

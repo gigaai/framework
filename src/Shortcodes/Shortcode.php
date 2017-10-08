@@ -14,27 +14,22 @@ use Thunder\Shortcode\Shortcode\ShortcodeInterface;
 class Shortcode
 {
     private static $shortcodes = [
-        RandomText::class,
-        Lead::class,
-        PostGeneric::class,
+        'random-text'  => RandomText::class,
+        'lead'         => Lead::class,
+        'post-generic' => PostGeneric::class,
     ];
 
     public static function process($content)
     {
         $handlers = new HandlerContainer();
 
-        foreach (self::$shortcodes as $shortcode) {
+        foreach (self::$shortcodes as $shortcode_name => $class) {
+            $handlers->add($shortcode_name, function (ShortcodeInterface $s) use ($class) {
+                $shortcode             = new $class;
+                $shortcode->attributes = array_merge($shortcode->attributes, $s->getParameters());
+                $shortcode->content    = $s->getContent();
 
-            $reflection = new \ReflectionClass($shortcode);
-
-            $shortcode_name = camel_to_snake($reflection->getShortName());
-
-            $handlers->add($shortcode_name, function (ShortcodeInterface $s) use ($shortcode) {
-                $newShortcode             = new $shortcode;
-                $newShortcode->attributes = array_merge($newShortcode->attributes, $s->getParameters());
-                $newShortcode->content    = $s->getContent();
-
-                return $newShortcode->output();
+                return $shortcode->output();
             });
         }
 
@@ -42,11 +37,20 @@ class Shortcode
 
         $events->addListener(Events::FILTER_SHORTCODES, function (FilterShortcodesEvent $event) use ($handlers) {
             $shortcodes = $event->getShortcodes();
+            
             foreach ($shortcodes as $shortcode) {
-                $handlers->add($shortcode->getName(), function (ShortcodeInterface $s) {
+
+                $shortcode_name = $shortcode->getName();
+
+                if (array_key_exists($shortcode_name, self::$shortcodes)) {
+                    continue;
+                }
+
+                $handlers->add($shortcode_name, function (ShortcodeInterface $s) use ($shortcode_name) {
                     $shortcode_name = str_snake($s->getName());
                     $params         = $s->getParameters();
                     $content        = $s->getContent();
+
                     if (function_exists("giga_shortcode_{$shortcode_name}")) {
                         return call_user_func_array("giga_shortcode_{$shortcode_name}", [$params, $content]);
                     }

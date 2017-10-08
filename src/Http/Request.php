@@ -5,6 +5,7 @@ namespace GigaAI\Http;
 use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
 use GigaAI\Core\Logger;
+use GigaAI\Core\Model;
 use GigaAI\Core\Parser;
 use GigaAI\Shared\Singleton;
 use GigaAI\Shortcodes\Shortcode;
@@ -135,6 +136,13 @@ class Request
     private function sendMessage($message, $lead_id = null)
     {
         $message = Shortcode::parse($message);
+
+        // Text as Raw Message
+        if (isset($message['text']) && is_array($message['text'])) {
+            $model   = new Model;
+            $raw     = $model->parseWithoutSave($message['text']);
+            $message = $raw[0];
+        }
 
         if (is_null($lead_id)) {
             $lead_id = Conversation::get('lead_id');
