@@ -115,7 +115,7 @@ class Storage
         }
 
         // Parse event to array
-        $lead['user_id']   = isset($lead['user_id']) ? $lead['user_id'] : $lead_id;
+        $lead['user_id']   = isset($lead['id']) ? $lead['id'] : $lead_id;
         $lead['subscribe'] = 1;
         $lead['source']    = isset($lead['source']) ? $lead['source'] : Conversation::get('page_id');
 
@@ -161,6 +161,9 @@ class Storage
                 unset($user[$key]);
             }
         }
+
+        unset($meta['id']);
+
         try {
             $lead = Lead::updateOrCreate([
                 'user_id' => $user['user_id'],
