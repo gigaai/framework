@@ -132,6 +132,8 @@ class Request
      *
      * @param $message
      * @param $lead_id
+     *
+     * @return mixed
      */
     private function sendMessage($message, $lead_id = null)
     {
@@ -142,6 +144,24 @@ class Request
             $model   = new Model;
             $raw     = $model->parseWithoutSave($message['text']);
             $message = $raw[0];
+        }
+
+        // Text as Typing Indicator
+        if (isset($message['text']) && is_string($message['text'])) {
+
+            $is_typing = substr($message['text'], 0, 3);
+
+            if ($is_typing === '...') {
+                $delay = (float) ltrim($message['text'], ' .');
+
+                $delay = $delay == 0 ? 3 : $delay;
+
+                $this->driver->sendTyping();
+
+                sleep($delay);
+
+                return true;
+            }
         }
 
         if (is_null($lead_id)) {
