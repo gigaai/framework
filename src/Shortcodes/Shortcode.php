@@ -13,12 +13,26 @@ use Thunder\Shortcode\Shortcode\ShortcodeInterface;
 
 class Shortcode
 {
+    /**
+     * Built in shortcodes
+     *
+     * @var array
+     */
     private static $shortcodes = [
         'random-text'  => RandomText::class,
         'lead'         => Lead::class,
         'post-generic' => PostGeneric::class,
     ];
 
+    /**
+     * Process the shortcode.
+     *
+     * Similar to do_shortcode()
+     *
+     * @param $content
+     *
+     * @return array|mixed|object|string
+     */
     public static function process($content)
     {
         $handlers = new HandlerContainer();
@@ -37,7 +51,7 @@ class Shortcode
 
         $events->addListener(Events::FILTER_SHORTCODES, function (FilterShortcodesEvent $event) use ($handlers) {
             $shortcodes = $event->getShortcodes();
-            
+
             foreach ($shortcodes as $shortcode) {
 
                 $shortcode_name = $shortcode->getName();
@@ -74,6 +88,13 @@ class Shortcode
         return $content;
     }
 
+    /**
+     * Recursive parse shortcode from array
+     *
+     * @param $answer
+     *
+     * @return mixed
+     */
     public static function parse($answer)
     {
         foreach ($answer as $key => $value) {
