@@ -35,4 +35,9 @@ class Parser
         // Replace in Generic
         return $response;
     }
+
+    public static function processShortcodes($string)
+    {
+
+    }
 }

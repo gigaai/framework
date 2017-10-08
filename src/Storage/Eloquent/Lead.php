@@ -1,6 +1,7 @@
 <?php
 
 namespace GigaAI\Storage\Eloquent;
+use GigaAI\Conversation\Conversation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lead extends \Illuminate\Database\Eloquent\Model

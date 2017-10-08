@@ -220,6 +220,10 @@ class Storage
      */
     private function get($user_id = '', $key = '', $default = '')
     {
+        if (empty($user_id) || is_null($user_id)) {
+            $user_id = Conversation::get('lead_id');
+        }
+
         $user = $this->getUser($user_id);
 
         if (is_null($user)) {
