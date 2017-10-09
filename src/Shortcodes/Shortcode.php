@@ -48,35 +48,19 @@ class Shortcode
             });
         }
 
-        $events = new EventContainer();
+        $handlers->setDefault(function (ShortcodeInterface $s) {
+            $shortcode_name = str_snake($s->getName());
+            $params         = $s->getParameters();
+            $content        = $s->getContent();
 
-        $events->addListener(Events::FILTER_SHORTCODES, function (FilterShortcodesEvent $event) use ($handlers) {
-            $shortcodes = $event->getShortcodes();
-
-            foreach ($shortcodes as $shortcode) {
-
-                $shortcode_name = $shortcode->getName();
-
-                if (array_key_exists($shortcode_name, self::$shortcodes)) {
-                    continue;
-                }
-
-                $handlers->add($shortcode_name, function (ShortcodeInterface $s) use ($shortcode_name) {
-                    $shortcode_name = str_snake($s->getName());
-                    $params         = $s->getParameters();
-                    $content        = $s->getContent();
-
-                    if (function_exists("giga_shortcode_{$shortcode_name}")) {
-                        return call_user_func_array("giga_shortcode_{$shortcode_name}", [$params, $content]);
-                    }
-
-                    return Storage::get(null, $shortcode_name);
-                });
+            if (function_exists("giga_shortcode_{$shortcode_name}")) {
+                return call_user_func_array("giga_shortcode_{$shortcode_name}", [$params, $content]);
             }
+            
+            return Storage::get(null, $shortcode_name);
         });
 
         $processor = new Processor(new RegularParser(), $handlers);
-        $processor = $processor->withEventContainer($events);
 
         $content = $processor->process($content);
 
