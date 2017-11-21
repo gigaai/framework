@@ -56,7 +56,7 @@ class Shortcode
             if (function_exists("giga_shortcode_{$shortcode_name}")) {
                 return call_user_func_array("giga_shortcode_{$shortcode_name}", [$params, $content]);
             }
-            
+
             return Storage::get(null, $shortcode_name);
         });
 
@@ -82,6 +82,10 @@ class Shortcode
      */
     public static function parse($answer)
     {
+        if ( ! is_array($answer)) {
+            return;
+        }
+
         foreach ($answer as $key => $value) {
             $answer[$key] = is_string($value) ? self::process($value) : self::parse($value);
         }
