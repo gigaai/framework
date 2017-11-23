@@ -39,7 +39,6 @@ class Instance extends \Illuminate\Database\Eloquent\Model
         if (is_null($page_id)) {
             $page_id = Conversation::get('page_id');
         }
-
         if (isset($_GET['page_id'])) {
             $page_id = trim($_GET['page_id']);
         }
@@ -48,7 +47,11 @@ class Instance extends \Illuminate\Database\Eloquent\Model
             return Config::get($key, $default);
         }
 
-        $instance = self::find($page_id);
+        $instance = self::wherePageId($page_id)->first();
+
+        if (isset($instance->$key)) {
+            return $instance->$key;
+        }
 
         if (isset($instance->meta[$key])) {
             return $instance->meta[$key];

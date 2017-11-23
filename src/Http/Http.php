@@ -38,7 +38,7 @@ class Http
         if (false !== $result) {
             $result = json_decode($result);
         }
-       
+
         Logger::put($result, 'response');
         return $result;
     }
