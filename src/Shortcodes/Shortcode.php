@@ -49,7 +49,7 @@ class Shortcode
         }
 
         $handlers->setDefault(function (ShortcodeInterface $s) {
-            $shortcode_name = str_snake($s->getName());
+            $shortcode_name = snake_case($s->getName());
             $params         = $s->getParameters();
             $content        = $s->getContent();
 

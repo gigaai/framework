@@ -225,7 +225,7 @@ class Request
         // For Attachment Message
         if (isset($event['message']) && isset($event['message']['attachments'])) {
             $type = 'attachment';
-            
+
             if (isset($event['message']['attachments'][0]['type'])) {
                 $pattern = $event['message']['attachments'][0]['type'];
             }
