@@ -24,7 +24,7 @@ class MessengerProfile
      */
     private static function getResourceUrl()
     {
-        $token = Config::get('page_access_token');
+        $token = Config::get('access_token');
         
         return 'https://graph.facebook.com/v2.6/me/messenger_profile?access_token=' . $token;
     }

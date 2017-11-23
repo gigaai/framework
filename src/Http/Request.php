@@ -53,7 +53,7 @@ class Request
 
         Logger::put($stream, 'incoming');
 
-        self::$token = Config::get('page_access_token', self::$token);
+        self::$token = Config::get('access_token', self::$token);
 
         $this->subscribe();
     }
@@ -90,6 +90,8 @@ class Request
      * @param String $end_point
      * @param array  $body
      * @param string $method
+     *
+     * @return mixed
      */
     private function send($end_point, $body = [], $method = 'post')
     {
@@ -152,7 +154,7 @@ class Request
             $is_typing = substr($message['text'], 0, 3);
 
             if ($is_typing === '...') {
-                $delay = (float) ltrim($message['text'], ' .');
+                $delay = (float)ltrim($message['text'], ' .');
 
                 $delay = $delay == 0 ? 3 : $delay;
 
@@ -223,7 +225,7 @@ class Request
         // For Attachment Message
         if (isset($event['message']) && isset($event['message']['attachments'])) {
             $type = 'attachment';
-
+            
             if (isset($event['message']['attachments'][0]['type'])) {
                 $pattern = $event['message']['attachments'][0]['type'];
             }

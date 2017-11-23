@@ -1,4 +1,5 @@
 <?php
+
 namespace GigaAI\Subscription;
 
 use Carbon\Carbon;
@@ -103,7 +104,7 @@ class Subscription
 
         // Create the notification
         if (is_null($this->current_message) || ! $this->current_message) {
-            $model = new Model;
+            $model                   = new Model;
             $subscription['content'] = $model->parseWithoutSave($subscription['content']);
 
             $this->current_message = Message::firstOrCreate($subscription);
@@ -161,7 +162,7 @@ class Subscription
         $to = $subscription->to_channel;
 
         if (empty($to)) {
-            $to = $subscription->to_lead;
+            $to   = $subscription->to_lead;
             $call = 'sendMessageToLeads';
         }
 
@@ -243,11 +244,11 @@ class Subscription
         $is_multipage = Config::get('multipage');
 
         $tokens = [];
-        $leads = [];
+        $leads  = [];
         if ($is_multipage) {
             $instances = Instance::all();
             foreach ($instances as $instance) {
-                $tokens[$instance->id] = $instance->meta['page_access_token'];
+                $tokens[$instance->id] = $instance->meta['access_token'];
             }
 
             // Should user this instead of ->pluck() to compatibility with both Laravel 5.0 and 5.4
@@ -257,7 +258,7 @@ class Subscription
 
             if ($is_multipage) {
                 $instance_id = $leads[$lead_id];
-                Config::set('page_access_token', $tokens[$instance_id]);
+                Config::set('access_token', $tokens[$instance_id]);
             }
             Request::sendMessages($message->content, $lead_id);
 

@@ -24,15 +24,16 @@ class Facebook implements DriverInterface
     private function verifyToken()
     {
         $received = Request::getReceivedData();
-        
+
         if (is_array($received) && isset($received['hub_verify_token'])
             && strtolower($received['hub_verify_token']) == 'gigaai'
         ) {
             echo $received['hub_challenge'];
-            
+
             exit;
         }
     }
+
     /**
      * Get Facebook REST resouce
      *
@@ -50,15 +51,15 @@ class Facebook implements DriverInterface
      */
     private function getAccessToken()
     {
-        return Config::get('page_access_token');
+        return Config::get('access_token');
     }
 
     /**
      * Expected current message is belongs to FB or not. This helps Driver detect it.
      *
      * @param Array $request
-     * 
-     * @return void
+     *
+     * @return bool
      */
     public function expectedFormat($request)
     {
@@ -68,9 +69,9 @@ class Facebook implements DriverInterface
     /**
      * Format incoming request to FB format. Because the incoming request is already has FB format so we don't need to do anything here.
      *
-     * @param Array $request
-     * 
-     * @return $request
+     * @param array $request
+     *
+     * @return array $request
      */
     public function formatIncomingRequest($request)
     {
@@ -81,7 +82,7 @@ class Facebook implements DriverInterface
      * Send the message back to FB
      *
      * @param Array $body Facebook Message
-     * 
+     *
      * @return Json
      */
     public function sendMessage($body)
@@ -99,10 +100,10 @@ class Facebook implements DriverInterface
         $lead_id = Conversation::get('lead_id');
 
         $body = [
-            'recipient' => [
-                'id' => $lead_id
+            'recipient'     => [
+                'id' => $lead_id,
             ],
-            'sender_action' => 'typing_on'
+            'sender_action' => 'typing_on',
         ];
 
         return giga_remote_post($this->getResource() . "me/messages?access_token=" . $this->getAccessToken(), $body);
@@ -112,26 +113,26 @@ class Facebook implements DriverInterface
      * Get user data
      *
      * @param String $lead_id
-     * 
+     *
      * @return Array
      */
     public function getUser($lead_id)
     {
-        $end_point  = $this->getResource() . "{$lead_id}?access_token=" . $this->getAccessToken();
-        
-        $data       = giga_remote_get($end_point);
-        
+        $end_point = $this->getResource() . "{$lead_id}?access_token=" . $this->getAccessToken();
+
+        $data = giga_remote_get($end_point);
+
         return json_decode($data, true);
     }
 
     /**
      * Send subscribe request to FB
      *
-     * @return Json response
+     * @return json response
      */
     public function sendSubscribeRequest($attributes)
     {
-        $token = isset($attributes['page_access_token']) ? $attributes['page_access_token'] : $this->getAccessToken();
+        $token = isset($attributes['access_token']) ? $attributes['access_token'] : $this->getAccessToken();
 
         return giga_remote_post($this->getResource() . "me/subscribed_apps?access_token=" . $token);
     }

@@ -60,6 +60,36 @@ class Storage
         $this->db->setAsGlobal();
 
         $this->db->bootEloquent();
+
+        $this->isSupportedMySQLVersion();
+    }
+
+    private function isSupportedMySQLVersion()
+    {
+        $supports = [
+            'mysql' => '5.7.0',
+            'maria' => '10.2',
+        ];
+
+        $type = 'mysql';
+
+        $query = Capsule::select(
+            Capsule::raw('SELECT version() as version')
+        );
+
+        $mysql_version = $query[0]->version;
+
+        preg_match("/^[0-9\.]+/", $mysql_version, $match);
+
+        $version = $match[0];
+
+        if (strpos($mysql_version, 'Maria') !== false) {
+            $type = 'maria';
+        }
+
+        $supported = (version_compare($version, $supports[$type]) >= 0);
+
+        return $supported;
     }
 
     private function createConfigFromWordPress()

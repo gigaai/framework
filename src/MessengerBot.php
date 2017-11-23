@@ -250,8 +250,8 @@ class MessengerBot
         $is_multipage = Config::get('multipage');
 
         if ($is_multipage) {
-            $access_token = Instance::get('page_access_token');
-            Config::set('page_access_token', $access_token);
+            $access_token = Instance::get('access_token');
+            Config::set('access_token', $access_token);
         }
     }
 
