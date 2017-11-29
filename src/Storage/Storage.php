@@ -219,7 +219,7 @@ class Storage
     {
         $user = $this->getUser($user_id);
 
-        return $user || ! empty($user[$key]);
+        return $user || ! empty($user->$key);
     }
 
     /**
@@ -236,7 +236,7 @@ class Storage
         ])->first();
 
         if ( ! is_null($user)) {
-            return $user->toArray();
+            return $user;
         }
 
         return null;

@@ -109,7 +109,9 @@ class Shortcode
             $variable = ltrim($variable, '#');
             $value    = Conversation::get('nlp')->entity($variable)->value();
 
-            $content = str_replace('#' . $variable, $value, $content);
+            if ($value !== null) {
+                $content = str_replace('#' . $variable, $value, $content);
+            }
         }
 
         return $content;
