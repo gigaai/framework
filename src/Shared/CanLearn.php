@@ -170,6 +170,6 @@ trait CanLearn
 
     public function nlp($entity = null)
     {
-        return $this->nlp->entity($entity);
+        return $this->nlp->filter($entity);
     }
 }

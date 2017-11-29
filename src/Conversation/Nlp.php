@@ -13,7 +13,7 @@ class Nlp
 {
     protected $entities;
 
-    protected $entity;
+    protected $filtered;
 
     /**
      * We'll use `nlp` key in the request to parse
@@ -29,39 +29,55 @@ class Nlp
     }
 
     /**
-     * Search entity by their position or name
-     *
-     * @param null $name
+     * Retrieve all entities
      *
      * @return $this|Nlp
      */
-    public function entities($name = null)
+    public function entities()
     {
-        if ($name === ':first' || $name === ':highest' || $name === null) {
-            return $this->first();
-        }
-
-        if ($name === ':last' || $name === ':lowest') {
-            return $this->last();
-        }
-
-        $this->entity = $this->entities->first(function ($entity, $key) use ($name) {
-            return $key === $name;
-        });
-
         return $this;
     }
 
     /**
-     * Alias method of entities()
+     * Get entities by their name or position
      *
-     * @param null $name
+     * @param null $filter
      *
      * @return Nlp
      */
-    public function entity($name = null)
+    public function filter($filter)
     {
-        return $this->entities($name);
+        preg_match_all("/(#\w+)/", $filter, $entityNames);
+        preg_match_all("/(:\w+)/", $filter, $positions);
+
+        $entityName = is_array($entityNames[0]) && isset($entityNames[0][0]) ? ltrim($entityNames[0][0],
+            '#') : null;
+
+        $position = is_array($positions[0]) && isset($positions[0][0]) ? $positions[0][0] : null;
+
+        $i = 0;
+
+        $filtered = [];
+
+        foreach ($this->entities as $name => $entity) {
+            if ($i === 0 && ($entityName === $name || $entityName === null) && ($position === ':first' || $position === ':highest' || $position === null)) {
+                $filtered[] = $entity;
+            }
+
+            if ($position === ':any' && ($entityName === $name || $entityName === null)) {
+                $filtered[] = $entity;
+            }
+
+            if ($i + 1 === $this->entities->count() && ($entityName === $name || $entityName === null) && ($position === ':last' || $position === ':lowest')) {
+                $filtered[] = $entity;
+            }
+
+            $i++;
+        }
+
+        $this->filtered = $filtered;
+
+        return $this;
     }
 
     /**
@@ -71,7 +87,7 @@ class Nlp
      */
     public function first()
     {
-        $this->entity = $this->entities->first();
+        $this->filtered = $this->filtered[0];
 
         return $this;
     }
@@ -93,7 +109,7 @@ class Nlp
      */
     public function last()
     {
-        $this->entity = $this->entities->last();
+        $this->filtered = $this->filtered[count($this->filtered) - 1];
 
         return $this;
     }
@@ -106,6 +122,11 @@ class Nlp
         return $this->last();
     }
 
+    public function exists()
+    {
+        return $this->filtered !== null && ! empty($this->filtered);
+    }
+
     /**
      * Get a fields value
      *
@@ -115,7 +136,16 @@ class Nlp
      */
     public function get($field)
     {
-        return isset($this->entity[0][$field]) ? $this->entity[0][$field] : null;
+        if ( ! is_null($this->filtered)) {
+            return isset($this->filtered[0][$field]) ? $this->filtered[0][$field] : null;
+        }
+
+        // Todo: Get values of entities
+    }
+
+    public function getNames()
+    {
+        return $this->entities->keys()->toArray();
     }
 
     public function __call($name, $arguments)
@@ -129,6 +159,6 @@ class Nlp
 
     public function toArray()
     {
-        return $this->entity[0];
+        return $this->filtered;
     }
 }

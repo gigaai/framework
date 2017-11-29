@@ -2,6 +2,8 @@
 
 namespace GigaAI\Storage\Eloquent;
 
+use GigaAI\Conversation\Conversation;
+
 class Node extends \Illuminate\Database\Eloquent\Model
 {
     public $table = 'bot_nodes';
@@ -39,10 +41,28 @@ class Node extends \Illuminate\Database\Eloquent\Model
         $columns = ['type', 'pattern', 'answers', 'wait', 'source'];
 
         // Where Like First
-        $nodes = Node::whereRaw($where . $where_type . $where_like, $placeholder)->get($columns);
+        $nodes = self::whereRaw($where . $where_type . $where_like, $placeholder)->get($columns);
         // If Not Found. Then Where Rlike
         if ($nodes->count() === 0) {
-            $nodes = Node::whereRaw($where . $where_type . $where_rlike, $placeholder)->get($columns);
+            $nodes = self::whereRaw($where . $where_type . $where_rlike, $placeholder)->get($columns);
+        }
+
+        // If still not found, then try NLP and find
+        if ($nodes->count() === 0) {
+            $entities = Conversation::get('nlp')->getNames();
+
+            if ( ! empty($entities)) {
+                $entities = '#' . ltrim(implode('|#', $entities), '|');
+
+                $nodes = self::whereRaw('pattern RLIKE :pattern', [
+                    ':pattern' => $entities,
+                ])->get($columns);
+
+                // Enable nodes filter. Available types: first, last, any. Default: first
+                $nodes = $nodes->filter(function ($node) {
+                    return Conversation::get('nlp')->filter($node->pattern)->exists();
+                });
+            }
         }
 
         return $nodes;

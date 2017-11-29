@@ -104,13 +104,17 @@ class Shortcode
 
         // Replace NLP variables
         preg_match_all("/(#\w+)/", $content, $variables);
-        $variables = $variables[0];
-        foreach ($variables as $variable) {
-            $variable = ltrim($variable, '#');
-            $value    = Conversation::get('nlp')->entity($variable)->value();
 
-            if ($value !== null) {
-                $content = str_replace('#' . $variable, $value, $content);
+        if (is_array($variables[0]) && ! empty($variables[0])) {
+            $variables = $variables[0];
+
+            foreach ($variables as $variable) {
+                $variable = ltrim($variable, '#');
+                $value    = Conversation::get('nlp')->filter($variable)->value();
+
+                if ($value !== null) {
+                    $content = str_replace('#' . $variable, $value, $content);
+                }
             }
         }
 
