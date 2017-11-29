@@ -255,6 +255,8 @@ class MessengerBot
     {
         if (isset($message['nlp']) && is_array($message['nlp'])) {
             $this->nlp = new Nlp($message['nlp']);
+
+            Conversation::set('nlp', $this->nlp);
         }
     }
 

@@ -2,6 +2,7 @@
 
 namespace GigaAI\Shortcodes;
 
+use GigaAI\Conversation\Conversation;
 use GigaAI\Storage\Storage;
 use Thunder\Shortcode\Event\FilterShortcodesEvent;
 use Thunder\Shortcode\EventContainer\EventContainer;
@@ -36,6 +37,8 @@ class Shortcode
      */
     public static function process($content)
     {
+        $content = self::parseVariables($content);
+
         $handlers = new HandlerContainer();
 
         foreach (self::$shortcodes as $shortcode_name => $class) {
@@ -51,8 +54,8 @@ class Shortcode
         $handlers->setDefault(function (ShortcodeInterface $s) {
             $shortcode_name = snake_case($s->getName());
 
-            $params         = $s->getParameters();
-            $content        = $s->getContent();
+            $params  = $s->getParameters();
+            $content = $s->getContent();
 
             if (function_exists("giga_shortcode_{$shortcode_name}")) {
                 return call_user_func_array("giga_shortcode_{$shortcode_name}", [$params, $content]);
@@ -92,5 +95,23 @@ class Shortcode
         }
 
         return $answer;
+    }
+
+    private static function parseVariables($content)
+    {
+        // Replace user input variable
+        $content = str_replace('$input', Conversation::get('received_input'), $content);
+
+        // Replace NLP variables
+        preg_match_all("/(#\w+)/", $content, $variables);
+        $variables = $variables[0];
+        foreach ($variables as $variable) {
+            $variable = ltrim($variable, '#');
+            $value    = Conversation::get('nlp')->entity($variable)->value();
+
+            $content = str_replace('#' . $variable, $value, $content);
+        }
+
+        return $content;
     }
 }
