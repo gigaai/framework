@@ -6,6 +6,7 @@ use GigaAI\Conversation\AutoStop;
 use GigaAI\Core\AccountLinking;
 use GigaAI\Core\DynamicParser;
 use GigaAI\Shared\CanLearn;
+use GigaAI\Shortcodes\Shortcode;
 use GigaAI\Storage\Eloquent\Instance;
 use GigaAI\Storage\Storage;
 use GigaAI\Http\Request;
@@ -15,7 +16,7 @@ use GigaAI\Core\Config;
 use SuperClosure\Serializer;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Subscription\Subscription;
-use GigaAI\Drivers\Driver;
+use GigaAI\Conversation\Nlp;
 
 class MessengerBot
 {
@@ -90,6 +91,9 @@ class MessengerBot
      * @var Serializer
      */
     private $serializer;
+
+
+    public $nlp;
 
     /**
      * Load the required resources
@@ -187,6 +191,9 @@ class MessengerBot
 
         if (isset($event['message'])) {
             $this->message = $event['message'];
+
+            // Enabling NLP
+            $this->initNlp($event['message']);
         }
 
         if (isset($event['postback'])) {
@@ -217,7 +224,8 @@ class MessengerBot
 
         // Save lead data if not exists.
         if ( ! isset($event['message']['is_echo'])) {
-            $this->storage->pull();
+            $lead = $this->storage->pull();
+            $this->conversation->set('lead', $lead);
         }
         // Message was sent by page, we don't need to response.
         if (isset($event['message']) && isset($event['message']['is_echo']) && $event['message']['is_echo'] == true) {
@@ -243,17 +251,21 @@ class MessengerBot
         $this->response($nodes);
     }
 
+    private function initNlp($message)
+    {
+        if (isset($message['nlp']) && is_array($message['nlp'])) {
+            $this->nlp = new Nlp($message['nlp']);
+        }
+    }
+
     /**
      * Load page access token from database and set
      */
     public function setAccessToken()
     {
-        $is_multipage = Config::get('multipage');
+        $access_token = Instance::get('access_token');
 
-        if ($is_multipage) {
-            $access_token = Instance::get('access_token');
-            Config::set('access_token', $access_token);
-        }
+        Config::set('access_token', $access_token);
     }
 
     /**

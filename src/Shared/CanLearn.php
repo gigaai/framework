@@ -133,11 +133,21 @@ trait CanLearn
         return ! $this->understand($pattern);
     }
 
+    /**
+     * Check current message is text
+     *
+     * @return bool
+     */
     public function isText()
     {
         return ( ! empty($this->message));
     }
 
+    /**
+     * Check current message is postback
+     *
+     * @return bool
+     */
     public function isPostback()
     {
         return ( ! empty($this->postback));
@@ -157,5 +167,9 @@ trait CanLearn
 
         return $this;
     }
-}
 
+    public function nlp($entity = null)
+    {
+        return $this->nlp->entity($entity);
+    }
+}

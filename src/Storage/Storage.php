@@ -135,7 +135,7 @@ class Storage
         $lead = self::getUser($lead_id);
 
         if ( ! empty($lead) || ! is_null($lead)) {
-            return;
+            return $lead;
         }
 
         $lead = Request::getUserProfile($lead_id);
@@ -150,7 +150,7 @@ class Storage
         $lead['source']    = isset($lead['source']) ? $lead['source'] : Conversation::get('page_id');
 
         // Then call set method
-        self::set($lead);
+        return self::set($lead);
     }
 
     private function set($user, $key = '', $value = '')

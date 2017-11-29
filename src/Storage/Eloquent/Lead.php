@@ -2,12 +2,11 @@
 
 namespace GigaAI\Storage\Eloquent;
 
-use GigaAI\Conversation\Conversation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lead extends \Illuminate\Database\Eloquent\Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasMeta;
 
     public $table = 'bot_leads';
 
@@ -37,11 +36,11 @@ class Lead extends \Illuminate\Database\Eloquent\Model
     ];
 
     protected $casts = [
-        'meta' => 'json'
+        'meta' => 'json',
     ];
 
     protected $dates = [
-        'last_activity'
+        'last_activity',
     ];
 
     public function getFullName()
@@ -84,5 +83,20 @@ class Lead extends \Illuminate\Database\Eloquent\Model
         }
 
         return $query;
+    }
+
+    public function data($field, $value = null)
+    {
+        if (is_null($value)) {
+            return in_array($field, $this->getFillable()) ? $this->$field : $this->meta[$field];
+        }
+
+        if (in_array($field, $this->getFillable())) {
+            $this->$field = $value;
+
+            return $this->save();
+        } else {
+            return $this->setMeta($field, $value);
+        }
     }
 }

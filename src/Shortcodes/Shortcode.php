@@ -50,6 +50,7 @@ class Shortcode
 
         $handlers->setDefault(function (ShortcodeInterface $s) {
             $shortcode_name = snake_case($s->getName());
+
             $params         = $s->getParameters();
             $content        = $s->getContent();
 

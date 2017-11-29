@@ -4,27 +4,29 @@ namespace GigaAI\Shortcodes;
 
 use GigaAI\Conversation\Conversation;
 use GigaAI\Storage\Storage;
+use GigaAI\Storage\Eloquent\Lead as LeadModel;
 
 class Lead
 {
-    public $attributes = [
-        'field' => null,
-        'id'    => null,
-        'email' => null,
-        'phone' => null,
-    ];
+    public $attributes = [];
 
     public $content = null;
 
     public function output()
     {
-        $lead_id = Conversation::get('lead_id');
+        $lead = Conversation::get('lead');
 
         if (isset($this->attributes['id'])) {
-            $lead_id = $this->attributes['id'];
+            $id   = $this->attributes['id'];
+            $lead = LeadModel::whereUserId($id)->first();
         }
 
-        $field = $this->attributes['field'];
-        return Storage::get($lead_id, $field);
+        foreach ($this->attributes as $key => $value) {
+            if ($key === 'id') {
+                continue;
+            }
+
+            return $lead->data($key, $value);
+        }
     }
 }
