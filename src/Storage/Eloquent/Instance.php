@@ -17,6 +17,7 @@ class Instance extends \Illuminate\Database\Eloquent\Model
         'app_secret',
         'page_id',
         'access_token',
+        'photo',
         'meta',
         'status',
     ];
