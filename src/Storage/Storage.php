@@ -41,11 +41,13 @@ class Storage
         $config = Config::get('mysql');
 
         $connection = [
-            'driver'   => 'mysql',
-            'host'     => $config['host'],
-            'database' => $config['database'],
-            'username' => $config['username'],
-            'password' => $config['password'],
+            'driver'    => 'mysql',
+            'host'      => $config['host'],
+            'database'  => $config['database'],
+            'username'  => $config['username'],
+            'password'  => $config['password'],
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
         ];
 
         foreach (['charset', 'collation', 'prefix'] as $optional) {
