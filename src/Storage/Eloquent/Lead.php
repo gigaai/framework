@@ -99,4 +99,14 @@ class Lead extends \Illuminate\Database\Eloquent\Model
             return $this->setMeta($field, $value);
         }
     }
+
+    /**
+     * Laravel linked user
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function linkedUser()
+    {
+        return $this->hasOne('App\User', 'id', 'linked_account');
+    }
 }
