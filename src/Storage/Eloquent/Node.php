@@ -8,7 +8,27 @@ class Node extends \Illuminate\Database\Eloquent\Model
 {
     public $table = 'bot_nodes';
 
-    protected $fillable = ['pattern', 'answers', 'wait', 'source', 'type', 'notification_type', 'status', 'tags'];
+    protected $fillable = [
+        'source',
+        'creator_id',
+        'pattern',
+        'answers',
+        'wait',
+        'type',
+        'notification_type',
+        'status',
+        'tags',
+        'meta',
+    ];
+
+    protected $casts = [
+        'meta' => 'json',
+    ];
+
+    public function creator()
+    {
+        return $this->belongsTo('App\User', 'creator_id', 'id');
+    }
 
     /**
      * Get node by node type and pattern
