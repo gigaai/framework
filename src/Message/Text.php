@@ -2,8 +2,6 @@
 
 namespace GigaAI\Message;
 
-use GigaAI\Shortcodes\Shortcode;
-
 class Text extends Message
 {
     public function expectedFormat()
@@ -14,7 +12,10 @@ class Text extends Message
     public function normalize()
     {
         return [
-            'text' => $this->body
+            'type'    => 'text',
+            'content' => [
+                'text' => $this->body,
+            ],
         ];
     }
 }

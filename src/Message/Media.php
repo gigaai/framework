@@ -23,13 +23,16 @@ class Media extends Message
         }
 
         return [
-            'attachment' => [
-                'type'    => 'template',
-                'payload' => [
-                    'template_type' => 'media',
-                    'elements'      => [
-                        'media_type' => $media_type,
-                        'url'        => $this->body,
+            'type'    => $media_type,
+            'content' => [
+                'attachment' => [
+                    'type'    => 'template',
+                    'payload' => [
+                        'template_type' => 'media',
+                        'elements'      => [
+                            'media_type' => $media_type,
+                            'url'        => $this->body,
+                        ],
                     ],
                 ],
             ],
