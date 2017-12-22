@@ -23,6 +23,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
 
     protected $casts = [
         'meta' => 'json',
+        'tags' => 'json',
     ];
 
     public function creator()
@@ -163,4 +164,5 @@ class Node extends \Illuminate\Database\Eloquent\Model
     {
         return json_decode($value, true);
     }
+
 }

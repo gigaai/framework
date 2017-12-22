@@ -323,7 +323,7 @@ class MessengerBot
                     }
                 }
 
-                $this->request->sendMessage($answer);
+                $this->request->sendMessage($answer['content']);
             }
         }
     }
