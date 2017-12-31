@@ -13,11 +13,13 @@ class Generic extends Message
 
     public function normalize()
     {
+        $elements = isset($this->body['elements']) ? $this->body['elements'] : $this->body;
+
         $content = [
             'attachment' => [
                 'type'    => 'template',
                 'payload' => [
-                    'elements'      => $this->body,
+                    'elements'      => $elements,
                     'template_type' => 'generic',
                 ],
             ],

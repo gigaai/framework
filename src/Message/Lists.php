@@ -19,10 +19,6 @@ class Lists extends Message
         } else {
             $this->body['template_type'] = 'list';
 
-            if (!isset($this->body['top_element_style'])) {
-                $this->body['top_element_style'] = 'large';
-            }
-
             $content = [
                 'attachment' => [
                     'type'    => 'template',
@@ -31,7 +27,11 @@ class Lists extends Message
             ];
         }
 
-        $content['attachment']['payload']['elements'] = $this->sanitizeElements($content['attachment']['payload']['elements']);
+        $content['attachment']['payload']['elements']          = $this->sanitizeElements($content['attachment']['payload']['elements']);
+
+        if (!isset($content['attachment']['payload']['top_element_style'])) {
+            $content['attachment']['payload']['top_element_style'] = 'large';
+        }
 
         return [
             'type'    => 'list',
