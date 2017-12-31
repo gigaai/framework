@@ -92,7 +92,6 @@ class MessengerBot
      */
     private $serializer;
 
-
     public $nlp;
 
     /**
@@ -103,7 +102,7 @@ class MessengerBot
     public function __construct($config = null)
     {
         // Framework Version
-        if ( ! defined('GIGAAI_VERSION')) {
+        if (!defined('GIGAAI_VERSION')) {
             define('GIGAAI_VERSION', '2.4');
         }
 
@@ -115,7 +114,7 @@ class MessengerBot
         // Setup the configuration data
         $this->config = Config::getInstance();
 
-        if ( ! empty($config)) {
+        if (!empty($config)) {
             $this->config->set($config);
         }
 
@@ -142,19 +141,18 @@ class MessengerBot
     {
         $received = $this->request->getReceivedData();
 
-        if ( ! $received || empty($received['object']) || $received['object'] != 'page') {
+        if (!$received || empty($received['object']) || $received['object'] != 'page') {
             return;
         }
 
         $this->received = $received;
 
-        if ( ! isset($received['entry'])) {
+        if (!isset($received['entry'])) {
             return;
         }
 
         foreach ($received['entry'] as $entry) {
-
-            if ( ! isset($entry['messaging'])) {
+            if (!isset($entry['messaging'])) {
                 return;
             }
 
@@ -185,7 +183,7 @@ class MessengerBot
         }
 
         // Handle message and postback
-        if ( ! isset($event['message']) && ! isset($event['postback'])) {
+        if (!isset($event['message']) && !isset($event['postback'])) {
             return null;
         }
 
@@ -223,7 +221,7 @@ class MessengerBot
         }
 
         // Save lead data if not exists.
-        if ( ! isset($event['message']['is_echo'])) {
+        if (!isset($event['message']['is_echo'])) {
             $lead = $this->storage->pull();
             $this->conversation->set('lead', $lead);
         }
@@ -282,9 +280,8 @@ class MessengerBot
         }
 
         foreach ($nodes as $node) {
-
             // Set intended action if this node has
-            if ( ! empty($node->wait)) {
+            if (!empty($node->wait)) {
                 $this->storage->set($lead_id, '_wait', $node->wait);
             }
 
@@ -318,7 +315,7 @@ class MessengerBot
 
             $sources = array_map('trim', explode(',', $node->source));
 
-            if ( ! in_array(Conversation::get('page_id'), $sources)) {
+            if (!in_array(Conversation::get('page_id'), $sources)) {
                 unset($nodes[$index]);
             }
         }
@@ -338,15 +335,14 @@ class MessengerBot
         // We set previous_waiting to back to support $bot->keep() method
         $this->conversation->set('previous_intended_action', $waiting);
 
-        if ( ! empty($waiting)) {
-
+        if (!empty($waiting)) {
             $this->storage->set($this->getLeadId(), '_wait', false);
 
             // Get Nodes for intended actions.
             if (is_numeric($waiting)) {
                 $nodes = Node::find($waiting);
 
-                if ( ! empty($nodes)) {
+                if (!empty($nodes)) {
                     $nodes = [$nodes];
                 }
             } else {
@@ -374,11 +370,11 @@ class MessengerBot
 
         $location = new \stdClass();
 
-        if ( ! empty($attachments) && isset($attachments[0]['type']) && $attachments[0]['type'] === 'location') {
+        if (!empty($attachments) && isset($attachments[0]['type']) && $attachments[0]['type'] === 'location') {
             $location = $attachments[0]['payload']->coordinates;
         }
 
-        if ( ! empty($output)) {
+        if (!empty($output)) {
             return $location->$output;
         }
 
@@ -399,7 +395,6 @@ class MessengerBot
         return null;
     }
 
-
     public function getReceivedText()
     {
         if ($this->isUserMessage()) {
@@ -411,7 +406,7 @@ class MessengerBot
 
     public function getReceivedInput()
     {
-        if ( ! $this->isUserMessage()) {
+        if (!$this->isUserMessage()) {
             return;
         }
 
@@ -433,7 +428,7 @@ class MessengerBot
      */
     private function isUserMessage()
     {
-        if ( ! empty($this->message) && isset($this->message['metadata'])) {
+        if (!empty($this->message) && isset($this->message['metadata'])) {
             return $this->message['metadata'] != 'SENT_BY_GIGA_AI';
         }
 

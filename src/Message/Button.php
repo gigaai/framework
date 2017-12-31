@@ -13,17 +13,23 @@ class Button extends Message
 
     public function normalize()
     {
-        $this->body['template_type'] = 'button';
-        $this->body['buttons']       = $this->sanitizeButtons($this->body['buttons']);
+        if (isset($this->body['attachment'])) {
+            $content = $this->body;
+        } else {
+            $this->body['template_type'] = 'button';
+            $this->body['buttons']       = $this->sanitizeButtons($this->body['buttons']);
 
-        return [
-            'type'    => 'button',
-            'content' => [
+            $content = [
                 'attachment' => [
                     'type'    => 'template',
                     'payload' => $this->body,
                 ],
-            ],
+            ];
+        }
+
+        return [
+            'type'    => 'button',
+            'content' => $content
         ];
     }
 }

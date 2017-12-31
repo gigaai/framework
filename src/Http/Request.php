@@ -43,7 +43,7 @@ class Request
     {
         // Get the received data from request
         $stream         = json_decode(file_get_contents('php://input'), true);
-        self::$received = ( ! empty ($stream)) ? $stream : $_REQUEST;
+        self::$received = (!empty($stream)) ? $stream : $_REQUEST;
 
         Conversation::set('request_raw', self::$received);
 
@@ -150,7 +150,6 @@ class Request
 
         // Text as Typing Indicator
         if (isset($content['text']) && is_string($content['text'])) {
-
             $is_typing = substr($content['text'], 0, 3);
 
             if ($is_typing === '...') {
@@ -178,10 +177,6 @@ class Request
             ],
             'message'   => $content,
         ];
-
-        if ($message['type'] !== 'text') {
-            sd($body);
-        }
 
         return $this->driver->sendMessage($body);
     }
@@ -243,7 +238,7 @@ class Request
 
         // For Quick Replies
         if (isset($event['message']) && isset($event['message']['quick_reply']) &&
-            ! empty($event['message']['quick_reply']['payload'])) {
+            !empty($event['message']['quick_reply']['payload'])) {
             $type    = 'payload';
             $pattern = $event['message']['quick_reply']['payload'];
         }
