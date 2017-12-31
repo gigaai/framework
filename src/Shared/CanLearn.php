@@ -123,9 +123,14 @@ trait CanLearn
         $this->run();
     }
 
+    public function parse($answers, $attributes = [])
+    {
+        return $this->model->parse($answers, $attributes);
+    }
+
     public function understand($pattern)
     {
-
+        //
     }
 
     public function doesntUnderstand($pattern)

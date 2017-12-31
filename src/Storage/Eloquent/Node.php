@@ -164,5 +164,4 @@ class Node extends \Illuminate\Database\Eloquent\Model
     {
         return json_decode($value, true);
     }
-
 }

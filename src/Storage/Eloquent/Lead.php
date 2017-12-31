@@ -109,4 +109,9 @@ class Lead extends \Illuminate\Database\Eloquent\Model
     {
         return $this->hasOne('App\User', 'id', 'linked_account');
     }
+
+    public function channels()
+    {
+        return $this->morphToMany('App\Group', 'groupable');
+    }
 }

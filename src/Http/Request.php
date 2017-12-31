@@ -139,22 +139,22 @@ class Request
      */
     private function sendMessage($message, $lead_id = null)
     {
-        $message = Shortcode::parse($message);
+        $content = Shortcode::parse($message['content']);
 
         // Text as Raw Message
-        if (isset($message['text']) && is_array($message['text'])) {
+        if (isset($content['text']) && is_array($content['text'])) {
             $model   = new Model;
-            $raw     = $model->parseWithoutSave($message['text']);
-            $message = $raw[0];
+            $raw     = $model->parseWithoutSave($content['text']);
+            $content = $raw[0];
         }
 
         // Text as Typing Indicator
-        if (isset($message['text']) && is_string($message['text'])) {
+        if (isset($content['text']) && is_string($content['text'])) {
 
-            $is_typing = substr($message['text'], 0, 3);
+            $is_typing = substr($content['text'], 0, 3);
 
             if ($is_typing === '...') {
-                $delay = (float)ltrim($message['text'], ' .');
+                $delay = (float)ltrim($content['text'], ' .');
 
                 $delay = $delay == 0 ? 3 : $delay;
 
@@ -170,14 +170,18 @@ class Request
             $lead_id = Conversation::get('lead_id');
         }
 
-        $message['metadata'] = 'SENT_BY_GIGA_AI';
+        $content['metadata'] = 'SENT_BY_GIGA_AI';
 
         $body = [
             'recipient' => [
                 'id' => $lead_id,
             ],
-            'message'   => $message,
+            'message'   => $content,
         ];
+
+        if ($message['type'] !== 'text') {
+            sd($body);
+        }
 
         return $this->driver->sendMessage($body);
     }

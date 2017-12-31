@@ -283,48 +283,14 @@ class MessengerBot
 
         foreach ($nodes as $node) {
 
-            /** New wait */
+            // Set intended action if this node has
             if ( ! empty($node->wait)) {
                 $this->storage->set($lead_id, '_wait', $node->wait);
             }
 
-            // Backward compatibility
-            if (array_key_exists('type', $node->answers)) {
-                $node->answers = [$node->answers];
-            }
+            $answers = $this->parse($node->answers);
 
-            foreach ($node->answers as $answer) {
-                /** Process dynamic content */
-                if (isset($answer['type'])) {
-
-                    // Backward compatibility
-                    if (isset($answer['callback'])) {
-                        $answer['content'] = $answer['callback'];
-                    }
-
-                    if (is_string($answer['content']) && giga_match('%SerializableClosure%', $answer['content'])) {
-                        $answer['content'] = $this->serializer->unserialize($answer['content']);
-                    }
-
-                    $return = DynamicParser::parse($answer);
-
-                    // If the callback return, we'll send that message to user.
-                    if ($return != null || ! empty($return)) {
-                        $answer = $this->model->parseWithoutSave($return);
-
-                        // Answer == 0 means that answers is already parsed and it's a single message.
-                        if ($answer != false) {
-                            $this->request->sendMessages($answer);
-                        } else {
-                            $this->request->sendMessage($return);
-                        }
-
-                        continue;
-                    }
-                }
-
-                $this->request->sendMessage($answer['content']);
-            }
+            $this->request->sendMessages($answers);
         }
     }
 

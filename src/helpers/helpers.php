@@ -163,3 +163,13 @@ if ( ! function_exists('camel_to_slug')) {
         return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $camel));
     }
 }
+
+function command_parser_callback($content)
+{
+    if (isset($content['command'])) {
+        $command = $content['command'];
+        $args    = $content['args'];
+
+        GigaAI\Core\Command::run($command, $args);
+    }
+}

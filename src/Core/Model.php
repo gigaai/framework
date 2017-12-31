@@ -2,6 +2,16 @@
 
 namespace GigaAI\Core;
 
+use GigaAI\Message\Button;
+use GigaAI\Message\Generic;
+use GigaAI\Message\Lists;
+use GigaAI\Message\Media;
+use GigaAI\Message\Receipt;
+use GigaAI\Message\Text;
+use GigaAI\Message\Image;
+use GigaAI\Message\Audio;
+use GigaAI\Message\Video;
+use GigaAI\Message\File;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Storage;
 use SuperClosure\Serializer;
@@ -23,6 +33,24 @@ class Model
      */
     public $nodes;
 
+    /**
+     * ! Do not change the priority of these keys
+     *
+     * @var array
+     */
+    protected $typeClasses = [
+        'image'   => Image::class,
+        'video'   => Video::class,
+        'audio'   => Audio::class,
+        'file'    => File::class,
+        'media'   => Media::class,
+        'text'    => Text::class,
+        'generic' => Generic::class,
+        'button'  => Button::class,
+        'list'    => Lists::class,
+        'receipt' => Receipt::class,
+    ];
+
     public function __construct()
     {
         // Load serializer to serialize callback
@@ -32,8 +60,8 @@ class Model
     /**
      * Add Node to the Database
      *
-     * @param $pattern
-     * @param null $answers
+     * @param       $pattern
+     * @param null  $answers
      * @param array $attributes
      *
      * @return $this|null
@@ -47,11 +75,10 @@ class Model
             return null;
         }
 
-        $type_pattern = $this->getNodeTypeAndPattern($pattern);
+        $type_pattern         = $this->getNodeTypeAndPattern($pattern);
         list($type, $pattern) = $type_pattern;
 
-        if ( ! is_string($pattern) && is_callable($pattern)) {
-
+        if (!is_string($pattern) && is_callable($pattern)) {
             $this->persistNode(
                 [['type' => 'callback', 'content' => $answers]],
                 $type,
@@ -67,7 +94,7 @@ class Model
         }
 
         $answers = (array)$answers;
-        $answers = $this->parseAnswers($answers);
+        $answers = $this->parse($answers);
 
         // Persist to DB
         $this->persistNode($answers, $type, $pattern, $attributes);
@@ -79,6 +106,7 @@ class Model
      * Get Node type and Pattern
      *
      * @param $pattern
+     *
      * @return array
      */
     private function getNodeTypeAndPattern($pattern)
@@ -89,13 +117,13 @@ class Model
         foreach (['payload', 'default', 'attachment'] as $type) {
             if (strpos($pattern, $type . ':') !== false) {
                 $node_type = $type;
-                $pattern = ltrim($pattern, $node_type . ':');
+                $pattern   = ltrim($pattern, $node_type . ':');
             }
         }
 
         if (!empty($pattern) && $pattern[0] == '@') {
             $node_type = 'intended';
-            $pattern = ltrim($pattern, '@');
+            $pattern   = ltrim($pattern, '@');
         }
 
         return [$node_type, $pattern];
@@ -116,9 +144,9 @@ class Model
     /**
      * Add answer to node
      *
-     * @param Mixed $answers Message
+     * @param Mixed  $answers Message
      * @param String $node_type Node Type
-     * @param null $pattern Question
+     * @param null   $pattern Question
      *
      * @return Node
      */
@@ -140,12 +168,14 @@ class Model
      * Check if answer is parsable
      *
      * @param $answer
+     *
      * @return bool
      */
     public function isParsable($answer)
     {
-        if (is_array($answer) && (array_key_exists('attachment', $answer) || array_key_exists('type', $answer)))
+        if (is_array($answer) && isset($answer['attachment'])) {
             return false;
+        }
 
         return true;
     }
@@ -155,6 +185,7 @@ class Model
      *
      * @param string $type
      * @param string $pattern
+     *
      * @return \GigaAI\Storage\Eloquent\Node[]
      */
     public function getNodes($type = '', $pattern = '')
@@ -165,7 +196,7 @@ class Model
     /**
      * Parse the answers to correct FB Format.
      */
-    public function parseAnswers($answers)
+    public function parse($answers)
     {
         // Iterate through answers and parse it if possible
         // Also, move quick replies to the last answer
@@ -173,40 +204,54 @@ class Model
 
         $previous_index = 0;
 
-        if ($this->isSingleAnswer($answers)) {
+        if ($this->isSingularResponse($answers)) {
             $answers = [$answers];
         }
 
         foreach ($answers as $index => $answer) {
-
             // If the answer is a Closure
-            if ( ! is_string( $answer ) && is_callable($answer)) {
+            if (!is_string($answer) && is_callable($answer)) {
                 $answer = [
-                    'type' => 'callback',
-                    'content' => $answer
+                    'type'    => 'callback',
+                    'content' => $answer,
                 ];
+            }
+
+            if (isset($answer['content']) && isset($answer['quick_replies'])) {
+                $answer['content'] = (array)$answer['content'];
+
+                $answer['content']['quick_replies'] = $answer['quick_replies'];
+                unset($answer['quick_replies']);
             }
 
             // Parse answer when possible.
             // Iterate through supported message type and return if answer is supported
             if ($this->isParsable($answer) && $index !== 'quick_replies') {
+                if (isset($answer['type'])) {
+                    $parser       = $this->typeClasses[$answer['type']];
 
-                // Supported message types
-                $message_types = ['Media', 'Text', 'Generic', 'Button', 'Lists', 'Receipt'];
+                    $parsedAnswer = $parser::load($answer['content']);
 
-                foreach ($message_types as $type) {
-                    // If not supported, it will return false, otherwise, return parsed data
-                    $parsed_answer = call_user_func_array(["\\GigaAI\\Message\\$type", 'load'], [$answer]);
+                    if ($parsedAnswer !== false) {
+                        $answer = $parsedAnswer;
+                    }
+                } else {
+                    foreach ($this->typeClasses as $type => $parser) {
+                        // If not supported, it will return false, otherwise, return parsed data
+                        $parsedAnswer = $parser::load($answer);
 
-                    if ($parsed_answer !== false) {
-                        $answer = $parsed_answer;
+                        if ($parsedAnswer !== false) {
+                            $answer = $parsedAnswer;
+
+                            break;
+                        }
                     }
                 }
             }
 
             if ($index === 'quick_replies') {
-                $parsed[$previous_index] = (array)$parsed[$previous_index];
-                $parsed[$previous_index]['quick_replies'] = $answer;
+                $parsed[$previous_index]                             = (array)$parsed[$previous_index];
+                $parsed[$previous_index]['content']['quick_replies'] = $answer;
             }
 
             $parsed[$index] = $answer;
@@ -214,34 +259,28 @@ class Model
         }
 
         unset($parsed['quick_replies']);
-        return $parsed;
-    }
 
-    /**
-     * Parse [an] answers without save
-     *
-     * @param $answers
-     * @return mixed
-     */
-    public function parseWithoutSave($answers)
-    {
-        return $this->parseAnswers($answers);
+        return $parsed;
     }
 
     /**
      * Check if answers input is single answer
      *
      * @param $answer
+     *
      * @return bool
      */
-    private function isSingleAnswer($answer)
+    private function isSingularResponse($answer)
     {
         return (
             is_string($answer) ||
             is_callable($answer) ||
             array_key_exists('buttons', $answer) ||
             array_key_exists('elements', $answer) || // For Generic or Receipt
-            (is_array($answer[0]) && array_key_exists('title', $answer[0])) || // For Generic
+            (is_array($answer) && isset($answer[0]) && is_array($answer[0]) && array_key_exists(
+                'title',
+                    $answer[0]
+            )) || // For Generic
             array_key_exists('text', $answer) || // For Button
             array_key_exists('type', $answer)
         );
@@ -254,17 +293,20 @@ class Model
      */
     public function addIntendedAction($action)
     {
-        if (empty($this->current_node->type) || $this->current_node->type == 'welcome')
+        if (empty($this->current_node->type) || $this->current_node->type == 'welcome') {
             return;
+        }
 
         // If it's ->then() intended action. We'll save next action as id
         if (is_callable($action)) {
             $related = $this->current_node;
 
-            $then_node = $this->persistNode([[
-                'type' => 'callback',
-                'content' => $action
-            ]], 'intended', 'IA#' . $related->id);
+            $then_node = $this->persistNode([
+                [
+                    'type'    => 'callback',
+                    'content' => $action,
+                ],
+            ], 'intended', 'IA#' . $related->id);
 
             $related->wait = $then_node->id;
 
@@ -283,8 +325,9 @@ class Model
      */
     public function taggedAs($tag)
     {
-        if (empty($this->current_node))
+        if (empty($this->current_node)) {
             return;
+        }
 
         $this->current_node->tags = $tag;
         $this->current_node->save();

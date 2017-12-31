@@ -27,7 +27,7 @@ class MessengerServiceProvider extends ServiceProvider
     {
         
     }
-    
+
     /**
      * Register the application services.
      *
@@ -37,15 +37,9 @@ class MessengerServiceProvider extends ServiceProvider
     {
         $command_parser = [
             'type' => 'command',
-            'callback' => function ($content) {
-                if (isset($content['command'])) {
-                    $command = $content['command'];
-                    $args = $content['args'];
-                    \GigaAI\Core\Command::run($command, $args);
-                }
-            }
+            'callback' => 'command_parser_callback'
         ];
-    
+
         \GigaAI\Core\DynamicParser::support($command_parser);
         
         $this->app->singleton(\GigaAI\MessengerBot::class, function ($app) {
