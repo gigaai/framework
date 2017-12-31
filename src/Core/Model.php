@@ -15,6 +15,7 @@ use GigaAI\Message\File;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Storage;
 use SuperClosure\Serializer;
+use GigaAI\Message\Raw;
 
 class Model
 {
@@ -49,6 +50,7 @@ class Model
         'button'  => Button::class,
         'list'    => Lists::class,
         'receipt' => Receipt::class,
+        'raw'     => Raw::class
     ];
 
     public function __construct()
@@ -224,13 +226,20 @@ class Model
                 unset($answer['quick_replies']);
             }
 
+            // Cast attachment key to other messages
+            if (($index === 'attachment' || isset($answer['attachment']))) {
+                $answer = $this->parseAttachmentMessage($index, $answer);
+            }
+
             // Parse answer when possible.
             // Iterate through supported message type and return if answer is supported
             if ($this->isParsable($answer) && $index !== 'quick_replies') {
                 if (isset($answer['type'])) {
                     $parser       = $this->typeClasses[$answer['type']];
 
-                    $parsedAnswer = $parser::load($answer['content']);
+                    $parsedAnswer = $parser::load($answer['content'], [
+                        'skip_detection' => true
+                    ]);
 
                     if ($parsedAnswer !== false) {
                         $answer = $parsedAnswer;
@@ -263,6 +272,26 @@ class Model
         return $parsed;
     }
 
+    private function parseAttachmentMessage($index, $answer)
+    {
+        $templateType = null;
+
+        if (isset($answer['type'])) {
+            $templateType = $answer['type'];
+        }
+
+        $attachment = $index === 'attachment' ? $answer : $answer['attachment'];
+
+        if (isset($attachment['payload']) && isset($attachment['payload']['template_type'])) {
+            $templateType = $attachment['payload']['template_type'];
+        }
+
+        return [
+            'type'    => $templateType,
+            'content' => $answer
+        ];
+    }
+
     /**
      * Check if answers input is single answer
      *
@@ -281,8 +310,9 @@ class Model
                 'title',
                     $answer[0]
             )) || // For Generic
-            array_key_exists('text', $answer) || // For Button
-            array_key_exists('type', $answer)
+            isset($answer['text']) || // For Button
+            isset($answer['type']) || // For type => content =>
+            isset($answer['attachment']) // For attachment
         );
     }
 

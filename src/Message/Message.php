@@ -32,71 +32,59 @@ abstract class Message
      *
      * @return mixed
      */
-    public static function load($body)
+    public static function load($body, $flags = [])
     {
         $instance = new static($body);
 
-        if (!$instance->expectedFormat()) {
-            return false;
+        if (!isset($flags['skip_detection']) || !$flags['skip_detection']) {
+            if (!$instance->expectedFormat()) {
+                return false;
+            }
         }
 
         return $instance->normalize();
     }
 
-    public function detectMediaType($url)
+    public function sanitizeButtons($buttons)
     {
-        if (giga_match('%(.jpg|.png|.bmp|.gif|.jpeg|.tiff|.gif)%', $url) || str_contains($url, 'image:')) {
-            return 'image';
-        }
+        $buttonProperties = [
+            'web_url'        => ['url', 'title', 'webview_height_ratio', 'messenger_extensions', 'fallback_url'],
+            'postback'       => ['title', 'payload'],
+            'element_share'  => ['share_contents'],
+            'account_unlink' => [],
+            'account_link'   => ['url'],
+            'game_play'      => ['title', 'payload', 'game_metadata'],
+            'phone_number'   => ['title', 'payload'],
+            'payment'        => ['title', 'payload', 'payment_summary', 'price_list'],
+        ];
 
-        if (giga_match('%(.avi|.flv|.mp4|.mkv|.3gp|.webm|.vob|.mov|.rm|.rmvb)%', $url) || str_contains($url, 'video:')) {
-            return 'video';
-        }
-
-        if (giga_match('%(.mp3|.wma|.midi|.au)%', $url) || str_contains($url, 'audio:')) {
-            return 'audio';
-        }
-
-        if (str_contains($url, 'file:')) {
-            return 'file';
-        }
-
-        return null;
-    }
-
-    public function expectedIs($type)
-    {
-        if (is_array($this->body) && isset($this->body['type']) && $this->body['type'] === $type) {
-            return true;
-        }
-
-        if (is_string($this->body)) {
-            $fileExtension = $this->detectMediaType($this->body);
-
-            return $fileExtension === null || $fileExtension === $type;
-        }
-
-        return false;
-    }
-
-    public function getMediaUrl($mediaType)
-    {
-        $url = $this->body;
-
-        if (is_array($this->body)) {
-            if (isset($this->body['content']) && is_string($this->body['content'])) {
-                $url = $this->body['content'];
+        return collect($buttons)->map(function ($button) use ($buttonProperties) {
+            if (isset($button['title'])) {
+                $button['title'] = substr($button['title'], 0, 20);
             }
 
-            if (isset($this->body['content']['url'])) {
-                $url = $this->body['content']['url'];
+            $properties = array_merge(['type'], $buttonProperties[$button['type']]);
+
+            return array_only($button, $properties);
+        })->toArray();
+    }
+
+    public function sanitizeElements($elements)
+    {
+        return collect($elements, function ($element) {
+            $element['title'] = substr($element['title'], 0, 80);
+
+            if (isset($element['subtitle'])) {
+                $element['subtitle'] = substr($element['subtitle'], 0, 80);
             }
-        }
 
-        if (str_contains($url, $mediaType . ':')) {
-            $url = ltrim($url, $mediaType . ':');
-        }
+            if (isset($element['image_url']) && !filter_var($element['image_url'], FILTER_VALIDATE_URL)) {
+                unset($element['image_url']);
+            }
 
-        return $url;
+            if (isset($element['buttons'])) {
+                $element['buttons'] = $this->sanitizeButtons($element['buttons']);
+            }
+        })->toArray();
     }
 }

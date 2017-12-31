@@ -14,14 +14,14 @@ class Media extends Message
         }
 
         if (is_array($this->body)) {
-            if (isset($this->body[0]) &&
+            if (isset($this->body[0]) && is_string($this->body[0]) &&
                 (filter_var($this->body[0], FILTER_VALIDATE_URL) ||
                  str_contains($this->body[0], ['image:', 'audio:', 'video:', 'file:']))
             ) {
                 return true;
             }
 
-            if (isset($this->body['url']) &&
+            if (isset($this->body['url']) && is_string($this->body['url']) &&
                 (filter_var($this->body['url'], FILTER_VALIDATE_URL) ||
                  str_contains($this->body['url'], ['image:', 'audio:', 'video:', 'file:']))
             ) {
