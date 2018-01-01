@@ -278,15 +278,15 @@ class MessengerBot
         if (is_null($lead_id)) {
             $lead_id = $this->conversation->get('lead_id');
         }
-
+        
         foreach ($nodes as $node) {
             // Set intended action if this node has
             if (!empty($node->wait)) {
                 $this->storage->set($lead_id, '_wait', $node->wait);
             }
-
+            
             $answers = $this->parse($node->answers);
-
+            
             $this->request->sendMessages($answers);
         }
     }

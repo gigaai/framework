@@ -11,6 +11,7 @@ use GigaAI\Message\Text;
 use GigaAI\Message\Image;
 use GigaAI\Message\Audio;
 use GigaAI\Message\Video;
+use GigaAI\Message\Callback;
 use GigaAI\Message\File;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Storage;
@@ -40,17 +41,18 @@ class Model
      * @var array
      */
     protected $typeClasses = [
-        'image'   => Image::class,
-        'video'   => Video::class,
-        'audio'   => Audio::class,
-        'file'    => File::class,
-        'media'   => Media::class,
-        'text'    => Text::class,
-        'generic' => Generic::class,
-        'button'  => Button::class,
-        'list'    => Lists::class,
-        'receipt' => Receipt::class,
-        'raw'     => Raw::class
+        'image'    => Image::class,
+        'video'    => Video::class,
+        'audio'    => Audio::class,
+        'file'     => File::class,
+        'media'    => Media::class,
+        'text'     => Text::class,
+        'generic'  => Generic::class,
+        'button'   => Button::class,
+        'list'     => Lists::class,
+        'receipt'  => Receipt::class,
+        'raw'      => Raw::class,
+        'callback' => Callback::class
     ];
 
     public function __construct()
@@ -240,7 +242,7 @@ class Model
                     $parsedAnswer = $parser::load($answer['content'], [
                         'skip_detection' => true
                     ]);
-
+                    
                     if ($parsedAnswer !== false) {
                         $answer = $parsedAnswer;
                     }
@@ -268,10 +270,16 @@ class Model
         }
 
         unset($parsed['quick_replies']);
-
+        
         return $parsed;
     }
 
+    /**
+     * If message starts with `attachment` parameter. We'll keep everything inside that param and
+     * only check message type.
+     * 
+     * @return array
+     */
     private function parseAttachmentMessage($index, $answer)
     {
         $templateType = null;

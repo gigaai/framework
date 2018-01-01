@@ -28,7 +28,8 @@ class Lists extends Message
         }
 
         $content['attachment']['payload']['elements']          = $this->sanitizeElements($content['attachment']['payload']['elements']);
-
+        $content['attachment']['payload']['buttons']           = $this->sanitizeButtons($content['attachment']['payload']['buttons']);
+        
         if (!isset($content['attachment']['payload']['top_element_style'])) {
             $content['attachment']['payload']['top_element_style'] = 'large';
         }

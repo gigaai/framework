@@ -177,4 +177,12 @@ trait CanLearn
     {
         return $this->nlp->filter($entity);
     }
+
+    /**
+     * Simulate the user input and response
+     */
+    public function simulate($input)
+    {
+        // Todo: Add simulate method to make app more easy to test
+    }
 }

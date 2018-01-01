@@ -121,17 +121,11 @@ class Attachment extends Message
     {
         $url = $this->body;
 
-        if (is_array($this->body)) {
-            if (isset($this->body['url']) && is_string($this->body['url'])) {
-                $url = $this->body['url'];
-            }
+        if (is_array($this->body) && isset($this->body['url']) && is_string($this->body['url'])) {
+            $url = $this->body['url'];
         }
 
-        foreach ($this->availableTypes as $type) {
-            if (starts_with($url, $type . ':')) {
-                $url = ltrim($url, $type . ':');
-            }
-        }
+        $url = ltrim($url, $mediaType . ':');
 
         return $url;
     }

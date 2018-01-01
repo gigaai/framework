@@ -90,6 +90,24 @@ class Facebook implements DriverInterface
         return giga_remote_post($this->getResource() . 'me/messages?access_token=' . $this->getAccessToken(), $body);
     }
 
+    public function sendMessages($messages)
+    {
+        $batch = [];
+        
+        foreach ($messages as $message) {
+            $batch[] = [
+                'method' => 'POST',
+                'relative_url' => 'me/messages',
+                'body' => http_build_query($message)
+            ];
+        }
+        
+        $batch = json_encode($batch);
+
+        return giga_remote_post(
+            $this->getResource() . '?access_token=' . $this->getAccessToken(), compact('batch')
+        );
+    }
     /**
      * Send Typing Indicator
      *

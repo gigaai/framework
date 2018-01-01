@@ -84,6 +84,11 @@ class Driver
         $request = $this->driver->sendMessage($body);
     }
 
+    public function sendMessages($batch)
+    {
+        $request = $this->driver->sendMessages($batch);
+    }
+
     public function sendSubscribeRequest($attributes)
     {
         return $this->driver->sendSubscribeRequest($attributes);

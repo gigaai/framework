@@ -12,6 +12,8 @@ use GigaAI\Shortcodes\Shortcode;
 use GigaAI\Storage\Storage;
 use GigaAI\Shared\EasyCall;
 use GigaAI\Drivers\Driver;
+use GigaAI\Core\DynamicParser;
+use SuperClosure\Serializer;
 
 /**
  * Class Request
@@ -39,11 +41,15 @@ class Request
     /**
      * Setup data and run command based on received data
      */
-    private function load()
+    private function load($simulate = [])
     {
         // Get the received data from request
         $stream         = json_decode(file_get_contents('php://input'), true);
         self::$received = (!empty($stream)) ? $stream : $_REQUEST;
+
+        if ( ! empty($simulate)) {
+            self::$received = $simulate;
+        }
 
         Conversation::set('request_raw', self::$received);
 
@@ -129,21 +135,35 @@ class Request
         return $this->driver->sendSubscribeRequest($attributes);
     }
 
-    /**
-     * Send a single message
-     *
-     * @param $message
-     * @param $lead_id
-     *
-     * @return mixed
-     */
-    private function sendMessage($message, $lead_id = null)
+    private function prepareMessage($message, $lead_id = null)
     {
+        $model   = new Model;
+
+        if ($message['type'] === 'callback') {
+            $serializer = new Serializer;
+
+            if (is_string($message['content']) && giga_match('%SerializableClosure%', $message['content'])) {
+                $message['content'] = $serializer->unserialize($message['content']);
+            }
+
+            $return = DynamicParser::parse($answer);
+
+            // If the callback return, we'll send that message to user.
+            if ($return != null || !empty($return)) {
+                $answers = $model->parseWithoutSave($return);
+                // Answer == 0 means that answers is already parsed and it's a single message.
+                if ($answers != false) {
+                    return $this->sendMessages($answers);
+                } else {
+                    $message = $answers;
+                }
+            }
+        }
+
         $content = Shortcode::parse($message['content']);
 
         // Text as Raw Message
         if (isset($content['text']) && is_array($content['text'])) {
-            $model   = new Model;
             $raw     = $model->parseWithoutSave($content['text']);
             $content = $raw[0];
         }
@@ -171,16 +191,13 @@ class Request
 
         $content['metadata'] = 'SENT_BY_GIGA_AI';
 
-        $body = [
+        return [
             'recipient' => [
                 'id' => $lead_id,
             ],
             'message'   => $content,
         ];
-
-        return $this->driver->sendMessage($body);
     }
-
     /**
      * Send typing indicator to Facebook
      *
@@ -199,9 +216,13 @@ class Request
      */
     private function sendMessages($messages, $lead_id = null)
     {
+        $batch = [];
+
         foreach ($messages as $message) {
-            $this->sendMessage($message, $lead_id);
+            $batch[] = $this->prepareMessage($message, $lead_id);
         }
+
+        $this->driver->sendMessages($batch);
     }
 
     /**
