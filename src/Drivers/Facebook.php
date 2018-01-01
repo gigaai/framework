@@ -41,7 +41,7 @@ class Facebook implements DriverInterface
      */
     private function getResource()
     {
-        return "https://graph.facebook.com/v2.6/";
+        return 'https://graph.facebook.com/v2.6/';
     }
 
     /**
@@ -93,21 +93,30 @@ class Facebook implements DriverInterface
     public function sendMessages($messages)
     {
         $batch = [];
-        
-        foreach ($messages as $message) {
+
+        foreach ($messages as $index => $message) {
+            $previousAction = '';
+
+            if ($index > 0) {
+                $previousAction = '?order={result=index' . ($index - 1) . ':$.code}';
+            }
+
             $batch[] = [
-                'method' => 'POST',
-                'relative_url' => 'me/messages',
-                'body' => http_build_query($message)
+                'method'       => 'POST',
+                'name'         => 'index' . $index,
+                'relative_url' => 'me/messages' . $previousAction,
+                'body'         => http_build_query($message)
             ];
         }
-        
+
         $batch = json_encode($batch);
 
         return giga_remote_post(
-            $this->getResource() . '?access_token=' . $this->getAccessToken(), compact('batch')
+            $this->getResource() . '?access_token=' . $this->getAccessToken(),
+            compact('batch')
         );
     }
+
     /**
      * Send Typing Indicator
      *
@@ -124,7 +133,7 @@ class Facebook implements DriverInterface
             'sender_action' => 'typing_on',
         ];
 
-        return giga_remote_post($this->getResource() . "me/messages?access_token=" . $this->getAccessToken(), $body);
+        return giga_remote_post($this->getResource() . 'me/messages?access_token=' . $this->getAccessToken(), $body);
     }
 
     /**
@@ -152,6 +161,6 @@ class Facebook implements DriverInterface
     {
         $token = isset($attributes['access_token']) ? $attributes['access_token'] : $this->getAccessToken();
 
-        return giga_remote_post($this->getResource() . "me/subscribed_apps?access_token=" . $token);
+        return giga_remote_post($this->getResource() . 'me/subscribed_apps?access_token=' . $token);
     }
 }

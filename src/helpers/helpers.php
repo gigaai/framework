@@ -115,48 +115,6 @@ function giga_array_replace($key, $replace, $array)
     return $array;
 }
 
-/**
- * Sanitize buttons from Button, List, Generic, Receipt template
- *
- * @param $array
- *
- * @return mixed
- */
-function giga_sanitize_button($array)
-{
-    foreach ($array as $key => &$value) {
-        if ($key === 'buttons') {
-            $value = array_map(function ($button) {
-
-                if (in_array($button['type'], ['web_url', 'account_link', 'account_unlink', 'element_share'])) {
-                    unset($button['payload']);
-                }
-
-                if (in_array($button['type'], ['postback', 'phone_number', 'account_unlink', 'element_share'])) {
-                    unset($button['url']);
-                    unset($button['messenger_extensions']);
-                    unset($button['webview_height_ratio']);
-                    unset($button['fallback_url']);
-                }
-
-                if (in_array($button['type'], ['account_link', 'account_unlink', 'element_share'])) {
-                    unset($button['title']);
-                }
-
-                if ($button['type'] === 'account_link' && ! isset($button['url'])) {
-                    $button['url'] = \GigaAI\Core\Config::get('account_linking_url', '');
-                }
-
-                return $button;
-            }, $value);
-        } elseif (is_array($value) && ! empty($value)) {
-            $value = giga_sanitize_button($value);
-        }
-    }
-
-    return $array;
-}
-
 if ( ! function_exists('camel_to_slug')) {
     function camel_to_slug($camel)
     {

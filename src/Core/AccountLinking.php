@@ -20,13 +20,10 @@ class AccountLinking
             
             $user_id = ltrim($authorization_code, 'user_id:');
             
-            self::linkWithExistingUser($event->sender->id, $user_id);
+            return self::linkWithExistingUser($event->sender->id, $user_id);
         } // Unlink, Logout user
-        else {
-            self::unlinkWithExistingUser($event->sender->id);
-        }
         
-        return true;
+        return self::unlinkWithExistingUser($event->sender->id);
     }
     
     /**
@@ -37,7 +34,7 @@ class AccountLinking
      */
     private static function linkWithExistingUser($lead_id, $user_id)
     {
-        Storage::set($lead_id, 'linked_account', $user_id);
+        return Storage::set($lead_id, 'linked_account', $user_id);
     }
     
     /**
@@ -47,6 +44,6 @@ class AccountLinking
      */
     private static function unlinkWithExistingUser($lead_id)
     {
-        Storage::set($lead_id, 'linked_account', '');
+        return Storage::set($lead_id, 'linked_account', '');
     }
 }
