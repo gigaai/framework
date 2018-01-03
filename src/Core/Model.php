@@ -17,6 +17,7 @@ use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Storage\Storage;
 use SuperClosure\Serializer;
 use GigaAI\Message\Raw;
+use GigaAI\Message\Command;
 
 class Model
 {
@@ -52,7 +53,8 @@ class Model
         'list'     => Lists::class,
         'receipt'  => Receipt::class,
         'raw'      => Raw::class,
-        'callback' => Callback::class
+        'callback' => Callback::class,
+        'command'  => Command::class
     ];
 
     public function __construct()
@@ -242,7 +244,7 @@ class Model
                     $parsedAnswer = $parser::load($answer['content'], [
                         'skip_detection' => true
                     ]);
-                    
+
                     if ($parsedAnswer !== false) {
                         $answer = $parsedAnswer;
                     }
@@ -270,14 +272,14 @@ class Model
         }
 
         unset($parsed['quick_replies']);
-        
+
         return $parsed;
     }
 
     /**
      * If message starts with `attachment` parameter. We'll keep everything inside that param and
      * only check message type.
-     * 
+     *
      * @return array
      */
     private function parseAttachmentMessage($index, $answer)

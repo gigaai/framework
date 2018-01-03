@@ -115,7 +115,7 @@ class Storage
 
     private function createConfigFromLaravel()
     {
-        if ( ! function_exists('app')) {
+        if (!function_exists('app')) {
             return;
         }
 
@@ -136,7 +136,7 @@ class Storage
 
         $lead = self::getUser($lead_id);
 
-        if ( ! empty($lead) || ! is_null($lead)) {
+        if (!empty($lead) || !is_null($lead)) {
             return $lead;
         }
 
@@ -157,7 +157,7 @@ class Storage
 
     private function set($user, $key = '', $value = '')
     {
-        if ( ! is_array($user)) {
+        if (!is_array($user)) {
             if (is_array($key)) {
                 $key['user_id'] = $user;
 
@@ -187,7 +187,7 @@ class Storage
         $meta = [];
 
         foreach ($user as $key => $value) {
-            if ( ! in_array($key, (new Lead)->getFillable())) {
+            if (!in_array($key, (new Lead)->getFillable())) {
                 $meta[$key] = $value;
 
                 unset($user[$key]);
@@ -204,9 +204,12 @@ class Storage
             echo '<pre>';
             dd($pe);
         }
-        if ( ! empty($meta)) {
+
+        if (!empty($meta)) {
             $this->updateLeadMeta($lead->user_id, $meta);
         }
+
+        return $lead;
     }
 
     /**
@@ -221,7 +224,7 @@ class Storage
     {
         $user = $this->getUser($user_id);
 
-        return $user || ! empty($user->$key);
+        return $user || !empty($user->$key);
     }
 
     /**
@@ -237,7 +240,7 @@ class Storage
             'user_id' => $user_id,
         ])->first();
 
-        if ( ! is_null($user)) {
+        if (!is_null($user)) {
             return $user;
         }
 
@@ -265,14 +268,12 @@ class Storage
             return null;
         }
 
-        if ( ! empty($key)) {
-
+        if (!empty($key)) {
             if (isset($user[$key])) {
-
                 return $user[$key];
             }
 
-            if ( ! in_array($key, (new Lead)->getFillable())) {
+            if (!in_array($key, (new Lead)->getFillable())) {
                 return $this->getUserMeta($user_id, $key, $default);
             }
 
@@ -297,12 +298,12 @@ class Storage
             'user_id' => $user_id,
         ];
 
-        if ( ! empty($key)) {
+        if (!empty($key)) {
             $where['meta_key'] = $key;
 
             $meta = $this->db->table('bot_leads_meta')->where($where)->first();
 
-            if ( ! is_null($meta)) {
+            if (!is_null($meta)) {
                 return $meta->meta_value;
             }
 
@@ -330,7 +331,7 @@ class Storage
     {
         $meta = [];
 
-        if (is_string($key) && ! empty($value)) {
+        if (is_string($key) && !empty($value)) {
             $meta[$key] = $value;
         } else {
             $meta = $key;
@@ -339,7 +340,7 @@ class Storage
         // Is Lead Exists
         $exists = Lead::where('user_id', $lead_id)->exists();
 
-        if ( ! $exists) {
+        if (!$exists) {
             return;
         }
 
@@ -404,7 +405,7 @@ class Storage
 
             // Allows people set attributes
             foreach ($attributes as $key => $value) {
-                if ( ! in_array($key, ['type', 'pattern', 'answers'])) {
+                if (!in_array($key, ['type', 'pattern', 'answers'])) {
                     $node->$key = $value;
                 }
             }

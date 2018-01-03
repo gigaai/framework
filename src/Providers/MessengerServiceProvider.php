@@ -5,7 +5,6 @@ namespace GigaAI\Providers;
 use GigaAI\Core\Command;
 use GigaAI\Core\Config;
 use Illuminate\Support\ServiceProvider;
-
 use Thunder\Shortcode\HandlerContainer\HandlerContainer;
 use Thunder\Shortcode\Parser\RegularParser;
 use Thunder\Shortcode\Processor\Processor;
@@ -25,7 +24,6 @@ class MessengerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        
     }
 
     /**
@@ -36,18 +34,31 @@ class MessengerServiceProvider extends ServiceProvider
     public function register()
     {
         $command_parser = [
-            'type' => 'command',
+            'type'     => 'command',
             'callback' => 'command_parser_callback'
         ];
 
         \GigaAI\Core\DynamicParser::support($command_parser);
-        
+
+        // $command_parser = [
+        //     'type'     => 'command',
+        //     'callback' => function ($content) {
+        //         if (isset($content['command'])) {
+        //             $command = $content['command'];
+        //             $args    = $content['args'];
+        //             GigaAI\Command::run($command, $args);
+        //         }
+        //     },
+        // ];
+
+        // GigaAI\Core\DynamicParser::support($command_parser);
+
         $this->app->singleton(\GigaAI\MessengerBot::class, function ($app) {
             // Create new bot instance with multipage enabled
             $bot = new \GigaAI\MessengerBot([
                 'multipage' => true,
             ]);
-            
+
             return $bot;
         });
     }

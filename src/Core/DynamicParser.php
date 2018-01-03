@@ -13,7 +13,7 @@ class DynamicParser
 
     private function support($type = [])
     {
-        if (empty($type['type']) || ! is_callable($type['callback'])) {
+        if (empty($type['type']) || !is_callable($type['callback'])) {
             throw new \Exception('Your parser is wrong format!');
         }
 
@@ -22,11 +22,11 @@ class DynamicParser
 
     private function parse($answer = [])
     {
-        if ( ! array_key_exists('type', $answer) || ! array_key_exists('content', $answer)) {
+        if (!array_key_exists('type', $answer) || !array_key_exists('content', $answer)) {
             throw new \Exception('Invalid num of required fields!');
         }
 
-        if ( ! array_key_exists($answer['type'], $this->supports) || ! is_callable($this->supports[$answer['type']])) {
+        if (!array_key_exists($answer['type'], $this->supports) || !is_callable($this->supports[$answer['type']])) {
             throw new \Exception('Parser input is not valid');
         }
 

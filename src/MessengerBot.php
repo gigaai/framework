@@ -17,6 +17,7 @@ use SuperClosure\Serializer;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Subscription\Subscription;
 use GigaAI\Conversation\Nlp;
+use GigaAI\Storage\Eloquent\Lead;
 
 class MessengerBot
 {
@@ -223,8 +224,12 @@ class MessengerBot
         // Save lead data if not exists.
         if (!isset($event['message']['is_echo'])) {
             $lead = $this->storage->pull();
-            $this->conversation->set('lead', $lead);
+        } else {
+            $lead = Lead::where('user_id', $this->getLeadId())->first();
         }
+
+        $this->conversation->set('lead', $lead);
+
         // Message was sent by page, we don't need to response.
         if (isset($event['message']) && isset($event['message']['is_echo']) && $event['message']['is_echo'] == true) {
             return null;
@@ -232,8 +237,8 @@ class MessengerBot
 
         DynamicParser::support([
             'type'     => 'callback',
-            'callback' => function ($content) {
-                return @call_user_func_array($content, [$this, $this->getLeadId(), $this->getReceivedInput()]);
+            'callback' => function ($content) use ($lead) {
+                return @call_user_func_array($content, [$this, $lead, $this->getReceivedInput()]);
             },
         ]);
 
@@ -278,15 +283,15 @@ class MessengerBot
         if (is_null($lead_id)) {
             $lead_id = $this->conversation->get('lead_id');
         }
-        
+
         foreach ($nodes as $node) {
             // Set intended action if this node has
             if (!empty($node->wait)) {
                 $this->storage->set($lead_id, '_wait', $node->wait);
             }
-            
+
             $answers = $this->parse($node->answers);
-            
+
             $this->request->sendMessages($answers);
         }
     }
@@ -330,13 +335,17 @@ class MessengerBot
      */
     private function responseIntendedAction()
     {
-        $waiting = $this->storage->get($this->getLeadId(), '_wait');
+        $lead = $this->conversation->get('lead');
+
+        $waiting = $lead->_wait;
 
         // We set previous_waiting to back to support $bot->keep() method
         $this->conversation->set('previous_intended_action', $waiting);
 
         if (!empty($waiting)) {
-            $this->storage->set($this->getLeadId(), '_wait', false);
+            $lead->update([
+                '_wait' => false
+            ]);
 
             // Get Nodes for intended actions.
             if (is_numeric($waiting)) {

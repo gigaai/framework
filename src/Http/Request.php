@@ -47,7 +47,7 @@ class Request
         $stream         = json_decode(file_get_contents('php://input'), true);
         self::$received = (!empty($stream)) ? $stream : $_REQUEST;
 
-        if ( ! empty($simulate)) {
+        if (!empty($simulate)) {
             self::$received = $simulate;
         }
 
@@ -139,25 +139,23 @@ class Request
     {
         $model   = new Model;
 
-        if ($message['type'] === 'callback') {
+        if ($message['type'] === 'callback' || $message['type'] === 'command') {
             $serializer = new Serializer;
 
             if (is_string($message['content']) && giga_match('%SerializableClosure%', $message['content'])) {
                 $message['content'] = $serializer->unserialize($message['content']);
             }
 
-            $return = DynamicParser::parse($answer);
+            $return = DynamicParser::parse($message);
 
             // If the callback return, we'll send that message to user.
             if ($return != null || !empty($return)) {
-                $answers = $model->parseWithoutSave($return);
-                // Answer == 0 means that answers is already parsed and it's a single message.
-                if ($answers != false) {
-                    return $this->sendMessages($answers);
-                } else {
-                    $message = $answers;
-                }
+                $answers = $model->parse($return);
+
+                $this->sendMessages($answers);
             }
+
+            return null;
         }
 
         $content = Shortcode::parse($message['content']);
@@ -198,6 +196,7 @@ class Request
             'message'   => $content,
         ];
     }
+
     /**
      * Send typing indicator to Facebook
      *
@@ -221,6 +220,8 @@ class Request
         foreach ($messages as $message) {
             $batch[] = $this->prepareMessage($message, $lead_id);
         }
+
+        $batch = array_values(array_filter($batch));
 
         $this->driver->sendMessages($batch);
     }

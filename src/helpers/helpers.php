@@ -1,6 +1,6 @@
 <?php
 
-function giga_remote_post($url, $args = array())
+function giga_remote_post($url, $args = [])
 {
     return GigaAI\Http\Http::post($url, $args);
 }
@@ -10,7 +10,7 @@ function giga_remote_get($url)
     return GigaAI\Http\Http::get($url);
 }
 
-function giga_remote_delete($url, $args = array())
+function giga_remote_delete($url, $args = [])
 {
     return GigaAI\Http\Http::delete($url, $args);
 }
@@ -50,7 +50,7 @@ function giga_wp_exists()
     return defined('DB_NAME');
 }
 
-if ( ! function_exists('sd')) {
+if (!function_exists('sd')) {
     function sd($object)
     {
         echo '<pre>';
@@ -59,7 +59,7 @@ if ( ! function_exists('sd')) {
     }
 }
 
-if ( ! function_exists('cl')) {
+if (!function_exists('cl')) {
     function cl($content)
     {
         file_put_contents(GigaAI\Core\Config::get('cache_path') . 'log.txt', print_r($content, true));
@@ -78,7 +78,6 @@ function giga_array_filter(array $array)
     $output = [];
 
     foreach ($array as $key => $value) {
-
         if (is_null($value) || empty($value)) {
             continue;
         }
@@ -107,7 +106,7 @@ function giga_array_replace($key, $replace, $array)
     foreach ($array as $array_key => &$value) {
         if ($key === $array_key) {
             $value = $replace;
-        } elseif (is_array($value) && ! empty($value)) {
+        } elseif (is_array($value) && !empty($value)) {
             $value = giga_array_replace($key, $replace, $value);
         }
     }
@@ -115,7 +114,7 @@ function giga_array_replace($key, $replace, $array)
     return $array;
 }
 
-if ( ! function_exists('camel_to_slug')) {
+if (!function_exists('camel_to_slug')) {
     function camel_to_slug($camel)
     {
         return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $camel));
@@ -127,7 +126,6 @@ function command_parser_callback($content)
     if (isset($content['command'])) {
         $command = $content['command'];
         $args    = $content['args'];
-
         GigaAI\Core\Command::run($command, $args);
     }
 }

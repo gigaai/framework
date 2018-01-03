@@ -24,7 +24,6 @@ class Subscription
      */
     public $current_message;
 
-
     private function setSubscriptionChannel($user_ids, $channels, $type = 'add')
     {
         if (is_array($user_ids)) {
@@ -49,10 +48,10 @@ class Subscription
         }
 
         // Convert channels to array
-        $channels = ! is_array($channels) ? array_map('trim', explode(',', $channels)) : $channels;
+        $channels = !is_array($channels) ? array_map('trim', explode(',', $channels)) : $channels;
 
         // Convert lead->subscribe to array
-        $lead_channels = ( ! empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
+        $lead_channels = (!empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
 
         if ($type === 'add') {
             // Merge channels and lead->subscribe then convert to csv
@@ -98,12 +97,12 @@ class Subscription
         }
 
         // If this notification has already been created. Just find the notification
-        if ( ! empty($subscription['unique_id'])) {
+        if (!empty($subscription['unique_id'])) {
             $this->find($subscription['unique_id']);
         }
 
         // Create the notification
-        if (is_null($this->current_message) || ! $this->current_message) {
+        if (is_null($this->current_message) || !$this->current_message) {
             $model                   = new Model;
             $subscription['content'] = $model->parseWithoutSave($subscription['content']);
 
@@ -151,7 +150,7 @@ class Subscription
      */
     private function send()
     {
-        if ( ! $this->current_message || is_null($this->current_message)) {
+        if (!$this->current_message || is_null($this->current_message)) {
             throw new \Exception('No notification found!');
         }
 
@@ -208,19 +207,17 @@ class Subscription
         $subscribers = [];
 
         foreach ($leads as $lead) {
-
             $lead_channels = array_map('trim', explode(',', $lead->subscribe));
 
             // Array should in another array
-            if ($all && ! array_diff($channels, $lead_channels)) {
-
+            if ($all && !array_diff($channels, $lead_channels)) {
                 $subscribers[] = $lead->user_id;
 
                 continue;
             }
 
             // One element of array in another array
-            if ( ! $all && array_intersect($channels, $lead_channels)) {
+            if (!$all && array_intersect($channels, $lead_channels)) {
                 $subscribers[] = $lead->user_id;
             }
         }
@@ -255,14 +252,13 @@ class Subscription
             $leads = Lead::whereIn('user_id', $lead_ids)->pluck('source', 'user_id')->toArray();
         }
         foreach ($lead_ids as $lead_id) {
-
             if ($is_multipage) {
                 $instance_id = $leads[$lead_id];
                 Config::set('access_token', $tokens[$instance_id]);
             }
             Request::sendMessages($message->content, $lead_id);
 
-            if ( ! empty($message->wait)) {
+            if (!empty($message->wait)) {
                 Storage::set($lead_id, '_wait', $message->wait);
             }
         }
@@ -295,21 +291,6 @@ class Subscription
      */
     private function getAllChannels()
     {
-        $channels = Lead::pluck('subscribe')->toArray();
-
-        $channels = array_map(function ($channel) {
-            return explode(',', $channel);
-        }, $channels);
-
-        $channels = array_flatten($channels);
-
-        // Make sure 1 exists
-        $channels = array_merge($channels, ['1']);
-
-        $channels = array_filter(array_unique($channels));
-
-        sort($channels);
-
-        return $channels;
+        return App\Group::type('channel')->pluck('name', 'id')->toArray();
     }
 }
