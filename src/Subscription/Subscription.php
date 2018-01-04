@@ -24,45 +24,34 @@ class Subscription
      */
     public $current_message;
 
-    private function setSubscriptionChannel($user_ids, $channels, $type = 'add')
-    {
-        if (is_array($user_ids)) {
-            if (is_null($channels)) {
-                foreach ($user_ids as $user_id => $channels) {
-                    $this->setSubscriptionChannel($user_id, $channels, $type);
-                }
-            } else {
-                foreach ($user_ids as $user_id) {
-                    $this->setSubscriptionChannel($user_id, $channels, $type);
-                }
-            }
+    // private function setSubscriptionChannel($user_ids, $channels, $type = 'add')
+    // {
+    //     if (is_array($user_ids)) {
+    //         if (is_null($channels)) {
+    //             foreach ($user_ids as $user_id => $channels) {
+    //                 $this->setSubscriptionChannel($user_id, $channels, $type);
+    //             }
+    //         } else {
+    //             foreach ($user_ids as $user_id) {
+    //                 $this->setSubscriptionChannel($user_id, $channels, $type);
+    //             }
+    //         }
 
-            return;
-        }
+    //         return;
+    //     }
 
-        // Merge lead channels with new channels
-        $lead = Lead::where('user_id', $user_ids)->first();
+    //     // Merge lead channels with new channels
+    //     $lead = Lead::where('user_id', $user_ids)->first();
 
-        if (is_null($lead)) {
-            return;
-        }
+    //     if (is_null($lead)) {
+    //         return;
+    //     }
 
-        // Convert channels to array
-        $channels = !is_array($channels) ? array_map('trim', explode(',', $channels)) : $channels;
+    //     $lead->channels->sync($channels);
 
-        // Convert lead->subscribe to array
-        $lead_channels = (!empty($lead->subscribe)) ? array_map('trim', explode(',', $lead->subscribe)) : [];
-
-        if ($type === 'add') {
-            // Merge channels and lead->subscribe then convert to csv
-            $lead->subscribe = implode(',', array_unique(array_merge($lead_channels, $channels)));
-        } else {
-            $lead->subscribe = implode(',', array_unique(array_diff($lead_channels, $channels)));
-        }
-
-        // Update the lead
-        $lead->save();
-    }
+    //     // Update the lead
+    //     $lead->save();
+    // }
 
     /**
      * Add subscribers to channels
@@ -284,13 +273,5 @@ class Subscription
         $subscribers = $this->getSubscribers($channels);
 
         $this->sendMessageToLeads($message, $subscribers);
-    }
-
-    /**
-     * Get all channels
-     */
-    private function getAllChannels()
-    {
-        return App\Group::type('channel')->pluck('name', 'id')->toArray();
     }
 }

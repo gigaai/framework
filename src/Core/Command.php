@@ -19,10 +19,14 @@ class Command
         $channels = array_filter($channels);
         $channels = array_unique(array_keys($channels));
 
-        $lead_id = Conversation::get('lead_id');
+        $lead = Conversation::get('lead');
 
-        if (!empty($lead_id)) {
-            Subscription::setSubscriptionChannel($lead_id, $channels, $type);
+        if (!empty($lead)) {
+            if ($type === 'add') {
+                return $lead->channels()->attach($channels);
+            }
+
+            return $lead->channels()->detach($channels);
         }
     }
 
