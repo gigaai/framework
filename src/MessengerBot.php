@@ -314,11 +314,11 @@ class MessengerBot
 
         // Remove all nodes which are owned by other pages
         foreach ($nodes as $index => $node) {
-            if (empty($node->source)) {
+            if (empty($node->sources)) {
                 continue;
             }
 
-            $sources = array_map('trim', explode(',', $node->source));
+            $sources = array_map('trim', explode(',', $node->sources));
 
             if (!in_array(Conversation::get('page_id'), $sources)) {
                 unset($nodes[$index]);

@@ -40,19 +40,6 @@ class MessengerServiceProvider extends ServiceProvider
 
         \GigaAI\Core\DynamicParser::support($command_parser);
 
-        // $command_parser = [
-        //     'type'     => 'command',
-        //     'callback' => function ($content) {
-        //         if (isset($content['command'])) {
-        //             $command = $content['command'];
-        //             $args    = $content['args'];
-        //             GigaAI\Command::run($command, $args);
-        //         }
-        //     },
-        // ];
-
-        // GigaAI\Core\DynamicParser::support($command_parser);
-
         $this->app->singleton(\GigaAI\MessengerBot::class, function ($app) {
             // Create new bot instance with multipage enabled
             $bot = new \GigaAI\MessengerBot([

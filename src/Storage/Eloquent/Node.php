@@ -9,7 +9,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
     public $table = 'bot_nodes';
 
     protected $fillable = [
-        'source',
+        'sources',
         'creator_id',
         'pattern',
         'answers',
@@ -24,6 +24,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
     protected $casts = [
         'meta' => 'json',
         'tags' => 'json',
+        'sources' => 'json'
     ];
 
     public function creator()
@@ -59,7 +60,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
             $where_rlike             = " AND :pattern RLIKE CONCAT('^',pattern,'$')";
         }
 
-        $columns = ['type', 'pattern', 'answers', 'wait', 'source'];
+        $columns = ['type', 'pattern', 'answers', 'wait', 'sources'];
 
         // Where Like First
         $nodes = self::whereRaw($where . $where_type . $where_like, $placeholder)->get($columns);

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lead extends \Illuminate\Database\Eloquent\Model
 {
-    use SoftDeletes, HasMeta;
+    use SoftDeletes;
 
     public $table = 'bot_leads';
 
@@ -23,8 +23,8 @@ class Lead extends \Illuminate\Database\Eloquent\Model
         'phone',
         'country',
         'location',
+        'birthday',
         '_wait',
-        '_quick_save',
         'linked_account',
         'subscribe',
         'is_payment_enabled',
