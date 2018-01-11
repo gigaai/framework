@@ -160,6 +160,10 @@ class Request
 
         $content = Shortcode::parse($message['content']);
 
+        if (empty($content)) {
+            return null;
+        }
+
         // Text as Raw Message
         if (isset($content['text']) && is_array($content['text'])) {
             $raw     = $model->parseWithoutSave($content['text']);
@@ -218,7 +222,11 @@ class Request
         $batch = [];
 
         foreach ($messages as $message) {
-            $batch[] = $this->prepareMessage($message, $lead_id);
+            $message = $this->prepareMessage($message, $lead_id);
+            
+            if ( ! empty($message)) {
+                $batch[] = $message;
+            }
         }
 
         $batch = array_values(array_filter($batch));

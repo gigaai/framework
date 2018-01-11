@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lead extends \Illuminate\Database\Eloquent\Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasMeta;
 
     public $table = 'bot_leads';
 
@@ -107,16 +107,18 @@ class Lead extends \Illuminate\Database\Eloquent\Model
         if (in_array($field, $this->getFillable())) {
             $this->$field = $value;
 
-            return $this->save();
+            $this->save();
         } else {
-            return $this->setMeta($field, $value);
+            $this->setMeta($field, $value);
         }
+
+        return null;
     }
 
     /**
      * Laravel linked user
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return App\User
      */
     public function linkedUser()
     {
