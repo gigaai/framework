@@ -3,10 +3,11 @@
 namespace GigaAI\Storage\Eloquent;
 
 use GigaAI\Subscription\Subscription;
+use Illuminate\Database\Eloquent\Model;
 
-class Message extends \Illuminate\Database\Eloquent\Model
+class Broadcast extends Model
 {
-    public $table = 'bot_messages';
+    public $table = 'bot_broadcasts';
     
     protected $fillable = ['instance_id', 'to_lead', 'to_channel', 'content', 'description',
         'status', 'notification_type', 'send_limit', 'sent_count', 'routines', 'unique_id',
@@ -21,6 +22,11 @@ class Message extends \Illuminate\Database\Eloquent\Model
         'sent_at',
     ];
     
+    protected $casts = [
+        'to_lead'       => 'json',
+        'to_channel'    => 'json'
+    ];
+
     public function getSendLimitAttribute($value)
     {
         return ( ! empty($value)) ? $value : 0;
@@ -87,8 +93,8 @@ class Message extends \Illuminate\Database\Eloquent\Model
      */
     public function leadsCount()
     {
-        if (isset($this->to_lead)) {
-            return substr_count($this->to_lead, ',');
+        if (isset($this->to_lead) && is_array($this->to_lead)) {
+            return count($this->to_lead);
         }
         
         return count(Subscription::getSubscribers($this->to_channel));

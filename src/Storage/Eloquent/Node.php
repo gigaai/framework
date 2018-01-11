@@ -3,8 +3,9 @@
 namespace GigaAI\Storage\Eloquent;
 
 use GigaAI\Conversation\Conversation;
+use Illuminate\Database\Eloquent\Model;
 
-class Node extends \Illuminate\Database\Eloquent\Model
+class Node extends Model
 {
     public $table = 'bot_nodes';
 
@@ -22,8 +23,8 @@ class Node extends \Illuminate\Database\Eloquent\Model
     ];
 
     protected $casts = [
-        'meta' => 'json',
-        'tags' => 'json',
+        'meta'    => 'json',
+        'tags'    => 'json',
         'sources' => 'json'
     ];
 
@@ -49,14 +50,14 @@ class Node extends \Illuminate\Database\Eloquent\Model
 
         $placeholder = [];
 
-        if ( ! empty($type)) {
+        if (!empty($type)) {
             $where_type           = ' AND type = :type';
             $placeholder[':type'] = $type;
         }
 
-        if ( ! empty($pattern)) {
+        if (!empty($pattern)) {
             $placeholder[':pattern'] = $pattern;
-            $where_like              = " AND :pattern LIKE pattern";
+            $where_like              = ' AND :pattern LIKE pattern';
             $where_rlike             = " AND :pattern RLIKE CONCAT('^',pattern,'$')";
         }
 
@@ -73,7 +74,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
         if ($nodes->count() === 0) {
             $entities = Conversation::get('nlp')->getNames();
 
-            if ( ! empty($entities)) {
+            if (!empty($entities)) {
                 $entities = '#' . ltrim(implode('|#', $entities), '|');
 
                 $nodes = self::whereRaw('pattern RLIKE :pattern', [
@@ -100,7 +101,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
      */
     public function scopeOfTag($query, $value)
     {
-        if ( ! empty($value)) {
+        if (!empty($value)) {
             return $query->where('tags', 'like', '%' . $value . '%');
         }
 
@@ -117,7 +118,7 @@ class Node extends \Illuminate\Database\Eloquent\Model
      */
     public function scopeSearch($query, $value)
     {
-        if ( ! empty($value)) {
+        if (!empty($value)) {
             return $query->where('pattern', 'like', '%' . $value . '%')
                          ->orWhere('answers', 'like', '%' . $value . '%');
         }

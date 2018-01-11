@@ -3,8 +3,9 @@
 namespace GigaAI\Storage\Eloquent;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model;
 
-class Lead extends \Illuminate\Database\Eloquent\Model
+class Lead extends Model
 {
     use SoftDeletes, HasMeta;
 

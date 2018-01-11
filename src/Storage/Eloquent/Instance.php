@@ -4,8 +4,9 @@ namespace GigaAI\Storage\Eloquent;
 
 use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
+use Illuminate\Database\Eloquent\Model;
 
-class Instance extends \Illuminate\Database\Eloquent\Model
+class Instance extends Model
 {
     public $table = 'bot_instances';
 

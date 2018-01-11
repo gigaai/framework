@@ -26,6 +26,7 @@ class Lead
                 continue;
             }
 
+            
             return $lead->data($key, $value);
         }
     }

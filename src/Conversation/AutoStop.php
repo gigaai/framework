@@ -16,24 +16,24 @@ class AutoStop
         
         if ($event->sender->id == Conversation::get('page_id')) {
             $administrator_text = null;
-            $lead_id = $event->recipient->id;
-        
+            
+            $lead = Conversation::get('lead');
+
             // Empty metadata means that it not sent by bot
             if (isset($event->message->text) && empty($event->message->metadata)) {
                 $administrator_text = $event->message->text;
             
-                $auto_stop = Storage::get($lead_id, 'auto_stop');
                 
                 // When Auto Stop is already on, and
-                if ($auto_stop == 1) {
+                if ($lead->auto_stop == 1) {
                     if ($administrator_text == $auto_stop_config['restart_when']) {
-                        Storage::set($lead_id, 'auto_stop', '');
+                        $lead->data('auto_stop', '');
                     }
                 }
                 else {
                     if ($administrator_text == $auto_stop_config['stop_when'] || $auto_stop_config['stop_when'] == '*') {
-                        Storage::set($lead_id, 'auto_stop', 1);
-                        
+                        $lead->data('auto_stop', 1);
+
                         return true;
                     }
                 }
@@ -50,8 +50,8 @@ class AutoStop
         if ( ! $auto_stop_config)
             return false;
         
-        $auto_stop = Storage::get(Conversation::get('lead_id'), 'auto_stop');
-        
-        return $auto_stop == 1;
+        $lead = Conversation::get('lead');
+
+        return $lead->auto_stop == 1;
     }
 }
