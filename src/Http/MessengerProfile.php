@@ -26,7 +26,7 @@ class MessengerProfile
     {
         $token = Config::get('access_token');
         
-        return 'https://graph.facebook.com/v2.6/me/messenger_profile?access_token=' . $token;
+        return 'https://graph.facebook.com/v2.11/me/messenger_profile?access_token=' . $token;
     }
     
     

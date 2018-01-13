@@ -41,7 +41,7 @@ class Facebook implements DriverInterface
      */
     private function getResource()
     {
-        return 'https://graph.facebook.com/v2.6/';
+        return 'https://graph.facebook.com/v2.11/';
     }
 
     /**

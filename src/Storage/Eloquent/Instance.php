@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Instance extends Model
 {
-    public $table = 'bot_instances';
+    public $table = 'giga_instances';
 
     protected $fillable = [
         'id',

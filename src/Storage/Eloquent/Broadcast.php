@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Broadcast extends Model
 {
-    public $table = 'bot_broadcasts';
+    public $table = 'giga_broadcasts';
     
-    protected $fillable = ['instance_id', 'to_lead', 'to_channel', 'content', 'description',
-        'status', 'notification_type', 'send_limit', 'sent_count', 'routines', 'unique_id',
-        'created_at', 'updated_at', 'start_at', 'end_at', 'sent_at', 'wait'
+    protected $fillable = ['instance_id', 'creator_id', 'name', 'content', 'description',
+        'receiver_type', 'receivers', 'wait', 'status', 'tags',
+        'notification_type', 'send_limit', 'sent_count', 'routines',
+        'created_at', 'updated_at', 'start_at', 'end_at', 'sent_at', 'meta'
     ];
     
     protected $dates = [
@@ -23,8 +24,7 @@ class Broadcast extends Model
     ];
     
     protected $casts = [
-        'to_lead'       => 'json',
-        'to_channel'    => 'json'
+        'receivers'    => 'json'
     ];
 
     public function getSendLimitAttribute($value)
@@ -98,5 +98,10 @@ class Broadcast extends Model
         }
         
         return count(Subscription::getSubscribers($this->to_channel));
+    }
+
+    public function page()
+    {
+        return $this->belongsTo(Instance::class, 'instance_id', 'id');
     }
 }

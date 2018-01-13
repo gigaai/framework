@@ -9,7 +9,7 @@ class Lead extends Model
 {
     use SoftDeletes, HasMeta;
 
-    public $table = 'bot_leads';
+    public $table = 'giga_leads';
 
     protected $fillable = [
         'source',
@@ -129,5 +129,10 @@ class Lead extends Model
     public function channels()
     {
         return $this->morphToMany('App\Group', 'groupable');
+    }
+
+    public function instance()
+    {
+        return $this->belongsTo(Instance::class, 'source', 'id');
     }
 }

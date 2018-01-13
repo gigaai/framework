@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Node extends Model
 {
-    public $table = 'bot_nodes';
+    public $table = 'giga_nodes';
 
     protected $fillable = [
         'sources',

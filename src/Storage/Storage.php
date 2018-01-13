@@ -284,43 +284,6 @@ class Storage
     }
 
     /**
-     * Get meta data of current user
-     *
-     * @param Int    $user_id
-     * @param string $key
-     * @param string $default
-     *
-     * @return Mixed
-     */
-    private function getUserMeta($user_id, $key = '', $default = '')
-    {
-        $where = [
-            'user_id' => $user_id,
-        ];
-
-        if (!empty($key)) {
-            $where['meta_key'] = $key;
-
-            $meta = $this->db->table('bot_leads_meta')->where($where)->first();
-
-            if (!is_null($meta)) {
-                return $meta->meta_value;
-            }
-
-            return $default;
-        } else {
-            $rows = $this->db->table('bot_leads_meta')->where($where)->get();
-            $meta = [];
-
-            foreach ($rows as $row) {
-                $meta[$row->meta_key] = $row->meta_value;
-            }
-
-            return $meta;
-        }
-    }
-
-    /**
      * Todo: Optimize this method
      *
      * @param       $lead_id
