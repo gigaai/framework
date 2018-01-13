@@ -2,10 +2,13 @@
 
 namespace GigaAI\Http;
 
-use GigaAI\Core\Logger;
-
 class Http
 {
+    public static function request($method, $url, $data)
+    {
+        return self::post($url, $data, $method);
+    }
+
     /**
      * Make a POST request to the end point
      *
@@ -18,7 +21,6 @@ class Http
     {
         $ch = curl_init();
 
-    
         if ( ! empty($data)) {
             $data = http_build_query($data);
         }
@@ -32,11 +34,13 @@ class Http
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);  //to suppress the curl output
 
         $result = curl_exec($ch);
-        
+
         curl_close($ch);
 
         if (false !== $result) {
             $result = json_decode($result);
+        } else {
+            throw new \Exception('Error during making request');
         }
 
         return $result;
@@ -50,20 +54,23 @@ class Http
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        $result = curl_exec($ch);
 
-        $data = curl_exec($ch);
         curl_close($ch);
 
-        Logger::put($url, 'outcoming');
-        Logger::put($data, 'response');
+        if (false !== $result) {
+            $result = json_decode($result);
+        } else {
+            throw new \Exception('Error during making request');
+        }
 
-        return $data;
+        return $result;
     }
 
     public static function delete($url, $data = [])
     {
         $data = self::post($url, $data, 'DELETE');
 
-        Logger::put($data, 'response');
+        return $data;
     }
 }

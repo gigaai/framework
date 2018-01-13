@@ -5,13 +5,46 @@ function giga_remote_post($url, $args = [])
     return GigaAI\Http\Http::post($url, $args);
 }
 
+function giga_facebook_url($url)
+{
+    $accessToken = \GigaAI\Core\Config::get('access_token');
+    $mark        = str_contains($url, '?') ? '&' : '?';
+
+    return strtr('https://graph.facebook.com/v2.11/<URL><MARK>access_token=<PAGE_ACCESS_TOKEN>', [
+        '<URL>'               => $url,
+        '<PAGE_ACCESS_TOKEN>' => $accessToken,
+        '<MARK>'              => $mark
+    ]);
+}
+
+function giga_facebook_post($url, $data, $success = null, $error = null)
+{
+    $url = giga_facebook_url($url);
+
+    return GigaAI\Http\Http::post($url, $data);
+}
+
 function giga_remote_get($url)
 {
     return GigaAI\Http\Http::get($url);
 }
 
+function giga_facebook_get($url)
+{
+    $url = giga_facebook_url($url);
+
+    return GigaAI\Http\Http::get($url);
+}
+
 function giga_remote_delete($url, $args = [])
 {
+    return GigaAI\Http\Http::delete($url, $args);
+}
+
+function giga_facebook_delete($url, $args = [])
+{
+    $url = giga_facebook_url($url);
+
     return GigaAI\Http\Http::delete($url, $args);
 }
 

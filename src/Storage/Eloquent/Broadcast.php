@@ -104,4 +104,9 @@ class Broadcast extends Model
     {
         return $this->belongsTo(Instance::class, 'instance_id', 'id');
     }
+
+    public function channel()
+    {
+        return $this->belongsTo('App\Group', 'receivers', 'id');
+    }
 }
