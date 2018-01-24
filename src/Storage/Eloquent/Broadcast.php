@@ -9,7 +9,8 @@ class Broadcast extends Model
 {
     public $table = 'giga_broadcasts';
     
-    protected $fillable = ['instance_id', 'creator_id', 'name', 'content', 'description',
+    protected $fillable = ['instance_id', 'creator_id', 'message_creative_id', 'parent_id',
+        'name', 'content', 'description',
         'receiver_type', 'receivers', 'wait', 'status', 'tags',
         'notification_type', 'send_limit', 'sent_count', 'routines',
         'created_at', 'updated_at', 'start_at', 'end_at', 'sent_at', 'meta'
@@ -41,6 +42,11 @@ class Broadcast extends Model
         }
     }
     
+    public function getReceiversAttribute($value)
+    {
+        return (is_null($value)) ? [] : json_decode($value, true);
+    }
+    
     /**
      * Auto json decode the content attribute
      *
@@ -50,21 +56,6 @@ class Broadcast extends Model
     public function getContentsAttribute($value)
     {
         return json_decode($value, true);
-    }
-    
-    /**
-     * Set To Channel Attribute
-     *
-     * @param String $value
-     * @return void
-     */
-    public function setToChannelAttribute($value)
-    {
-        if (is_array($value)) {
-            $this->attributes['to_channel'] = json_encode($value, JSON_UNESCAPED_UNICODE);
-        } else {
-            $this->attributes['to_channel'] = $value;
-        }
     }
     
     public function setUniqueIdAttribute($value)
