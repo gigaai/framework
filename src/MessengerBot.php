@@ -93,6 +93,11 @@ class MessengerBot
      */
     private $serializer;
 
+    /**
+     * NLP helpers
+     * 
+     * @var Nlp
+     */
     public $nlp;
 
     /**

@@ -13,8 +13,17 @@ trait HasMeta
         return $this->save();
     }
 
-    public function getMeta($key, $default)
+    public function getMeta($key, $default = null)
     {
         return isset($this->meta[$key]) ? $this->meta[$key] : $default;
+    }
+
+    public function meta($key, $value = null)
+    {
+        if (is_null($value)) {
+            return $this->getMeta($key);
+        }
+
+        return $this->setMeta($key, $value);
     }
 }

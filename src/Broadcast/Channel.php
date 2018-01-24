@@ -3,6 +3,11 @@ namespace GigaAI\Broadcast;
 
 class Channel
 {
+    /**
+     * Create new Facebook Label
+     * 
+     * @return Label ID
+     */
     public function create($name)
     {
         $response = giga_facebook_post('me/custom_labels', compact('name'));
@@ -18,6 +23,11 @@ class Channel
         
     }
 
+    /**
+     * Add lead to Facebook label
+     * 
+     * @return bool
+     */
     public function addLead($labelId, $leadId)
     {
         $response = giga_facebook_post($labelId . '/label', [
@@ -27,6 +37,11 @@ class Channel
         return isset($response->success);
     }
 
+    /**
+     * Remove lead from FB label
+     * 
+     * @return bool
+     */
     public function removeLead($labelId, $leadId)
     {
         $response = giga_facebook_delete($labelId . '/label', [
@@ -36,6 +51,11 @@ class Channel
         return isset($response->success);
     }
 
+    /**
+     * Get all labels of lead
+     * 
+     * @return mixed
+     */
     public function ofLead($leadId)
     {
         $response = giga_facebook_get($leadId . '/custom_labels');
@@ -54,6 +74,11 @@ class Channel
         return $channelIds;
     }
 
+    /**
+     * Get label detail
+     * 
+     * @return array
+     */
     public function detail($labelId)
     {
         $response = giga_facebook_get($labelId . '?fields=name');
@@ -61,6 +86,11 @@ class Channel
         return $response; // [name => , id =>]
     }
 
+    /**
+     * Get all label of a page
+     * 
+     * @return array
+     */
     public function all()
     {
         $response = giga_facebook_get('/me/custom_labels?fields=name');
@@ -73,6 +103,11 @@ class Channel
         return $channels; // [id => name]
     }
 
+    /**
+     * Delete label
+     * 
+     * @return bool
+     */
     public function delete($labelId)
     {
         $response = giga_facebook_delete($labelId);
