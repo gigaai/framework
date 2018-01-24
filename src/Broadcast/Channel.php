@@ -1,17 +1,18 @@
 <?php
+
 namespace GigaAI\Broadcast;
 
 class Channel
 {
     /**
      * Create new Facebook Label
-     * 
+     *
      * @return Label ID
      */
     public function create($name)
     {
         $response = giga_facebook_post('me/custom_labels', compact('name'));
-            
+
         if (isset($response->error)) {
             $message = isset($response->error->error_user_msg) ? $response->error->error_user_msg : $response->message;
             throw new \Exception($message);
@@ -20,12 +21,11 @@ class Channel
         if (isset($response->id)) {
             return $response->id;
         }
-        
     }
 
     /**
      * Add lead to Facebook label
-     * 
+     *
      * @return bool
      */
     public function addLead($labelId, $leadId)
@@ -37,9 +37,26 @@ class Channel
         return isset($response->success);
     }
 
+    public function addLeads($labelId, array $leadIds)
+    {
+        $batch = [];
+
+        foreach ($leadIds as $user) {
+            $batch[] = [
+                'method' => 'POST',
+                'relative_url' => $labelId . '/label',
+                'body' => http_build_query(compact('user'))
+            ];
+        }
+
+        $batch = json_encode($batch);
+        
+        return giga_facebook_post('', compact('batch'));
+    }
+
     /**
      * Remove lead from FB label
-     * 
+     *
      * @return bool
      */
     public function removeLead($labelId, $leadId)
@@ -47,25 +64,41 @@ class Channel
         $response = giga_facebook_delete($labelId . '/label', [
             'user' => $leadId
         ]);
-        
+
         return isset($response->success);
+    }
+
+    public function removeLeads($labelId, array $leadIds)
+    {
+        $batch = [];
+
+        foreach ($leadIds as $user) {
+            $batch[] = [
+                'method' => 'DELETE',
+                'relative_url' => $labelId . '/label?user=' . $user
+            ];
+        }
+
+        $batch = json_encode($batch);
+        
+        return giga_facebook_post('', compact('batch'));
     }
 
     /**
      * Get all labels of lead
-     * 
+     *
      * @return mixed
      */
     public function ofLead($leadId)
     {
         $response = giga_facebook_get($leadId . '/custom_labels');
-        
-        if ( ! isset($response->data) || ! is_array($response->data)) {
+
+        if (!isset($response->data) || !is_array($response->data)) {
             return false;
         }
 
         $channels = $response->data;
-      
+
         $channelIds = [];
         foreach ($channels as $channel) {
             $channelIds[] = $channel->id;
@@ -76,7 +109,7 @@ class Channel
 
     /**
      * Get label detail
-     * 
+     *
      * @return array
      */
     public function detail($labelId)
@@ -88,7 +121,7 @@ class Channel
 
     /**
      * Get all label of a page
-     * 
+     *
      * @return array
      */
     public function all()
@@ -105,7 +138,7 @@ class Channel
 
     /**
      * Delete label
-     * 
+     *
      * @return bool
      */
     public function delete($labelId)
@@ -113,5 +146,16 @@ class Channel
         $response = giga_facebook_delete($labelId);
 
         return isset($response->success);
+    }
+
+    public function empty()
+    {
+        $channels = $this->all();
+
+        foreach ($channels as $id => $name) {
+            $success = $this->delete($id);
+        }
+
+        return $success;
     }
 }
