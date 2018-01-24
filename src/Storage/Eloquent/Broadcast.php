@@ -96,8 +96,17 @@ class Broadcast extends Model
         return $this->belongsTo(Instance::class, 'instance_id', 'id');
     }
 
-    public function channel()
+    public function getReceivers()
     {
-        return $this->belongsTo('App\Group', 'receivers', 'id');
+        if ( is_array($this->receivers) && ! empty($this->receivers)) {
+            return \App\Group::whereIn('id', $this->receivers)->pluck('name', 'id');
+        }
+
+        return null;
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo('App\User', 'creator_id', 'id');
     }
 }
