@@ -15,7 +15,6 @@ use GigaAI\Core\Model;
 use GigaAI\Core\Config;
 use SuperClosure\Serializer;
 use GigaAI\Storage\Eloquent\Node;
-use GigaAI\Subscription\Subscription;
 use GigaAI\Conversation\Nlp;
 use GigaAI\Storage\Eloquent\Lead;
 
@@ -135,9 +134,6 @@ class MessengerBot
 
         // We need to serialize Closure for dynamic data and intended actions
         $this->serializer = new Serializer;
-
-        // Boot the subscription feature
-        $this->subscription = Subscription::getInstance();
     }
 
     /**

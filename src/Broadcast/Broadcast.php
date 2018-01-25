@@ -8,8 +8,18 @@ use GigaAI\Core\Config;
 use Carbon\Carbon;
 use GigaAI\Storage\Eloquent\Node;
 
+/**
+ * Handle broadcast with Facebook
+ * 
+ * @since 3.0
+ */
 class Broadcast
 {
+    /**
+     * Send Broadcast to Facebook and let they do the rest
+     * 
+     * @param Broadcast $broadcast
+     */
     public static function send(BroadcastModel $broadcast)
     {
         if ( ! empty($broadcast->start_at) && $broadcast->start_at >= Carbon::now()) {
@@ -48,6 +58,13 @@ class Broadcast
         }
     }
 
+    /**
+     * Because each message creative can only attach to 1 broadcast so we'll create message creative each time we send
+     * 
+     * @param Broadcast $broadcast
+     * 
+     * @return Mixed
+     */
     public static function createMessageCreative(BroadcastModel $broadcast)
     {
         $template             = Node::find($broadcast->content)->answers;

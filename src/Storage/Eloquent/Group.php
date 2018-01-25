@@ -17,6 +17,13 @@ class Group extends Model
         'meta'        => 'json'
     ];
 
+    /**
+     * Check if group has specified permission
+     * 
+     * @param String $permission
+     * 
+     * @return bool
+     */
     public function hasPermission($permission)
     {
         return (is_array($this->permissions) &&
@@ -29,11 +36,17 @@ class Group extends Model
                );
     }
 
+    /**
+     * Group - User relationship
+     */
     public function users()
     {
         return $this->morphedByMany('App\User', 'groupable');
     }
 
+    /**
+     * Group - Lead relationship
+     */
     public function leads()
     {
         return $this->morphedByMany(Lead::class, 'groupable');

@@ -112,6 +112,11 @@ class Broadcast extends Model
         return $this->belongsTo('App\User', 'creator_id', 'id');
     }
 
+    /**
+     * Get active broadcast
+     * 
+     * @return $query
+     */
     public function scopeStillActive($query)
     {
         $query->where(function ($query) {
@@ -127,6 +132,9 @@ class Broadcast extends Model
         return $query;
     }
 
+    /**
+     * Send Broadcast
+     */
     public function send()
     {
         $page = Instance::find($this->instance_id);

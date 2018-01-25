@@ -7,6 +7,7 @@ class Channel
     /**
      * Create new Facebook Label
      *
+     * @param String $name
      * @return Label ID
      */
     public function create($name)
@@ -37,6 +38,9 @@ class Channel
         return isset($response->success);
     }
 
+    /**
+     * Add many leads to Facebook Label
+     */
     public function addLeads($labelId, array $leadIds)
     {
         $batch = [];

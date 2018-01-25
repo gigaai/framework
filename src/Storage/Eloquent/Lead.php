@@ -99,23 +99,6 @@ class Lead extends Model
         return $query;
     }
 
-    public function data($field, $value = null)
-    {
-        if (is_null($value)) {
-            return in_array($field, $this->getFillable()) ? $this->$field : $this->meta[$field];
-        }
-
-        if (in_array($field, $this->getFillable())) {
-            $this->$field = $value;
-
-            $this->save();
-        } else {
-            $this->setMeta($field, $value);
-        }
-
-        return null;
-    }
-
     /**
      * Laravel linked user
      *

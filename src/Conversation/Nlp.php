@@ -50,10 +50,8 @@ class Nlp
         preg_match_all("/(#\w+)/", $filter, $entityNames);
         preg_match_all("/(:\w+)/", $filter, $positions);
 
-        $entityName = is_array($entityNames[0]) && isset($entityNames[0][0]) ? ltrim($entityNames[0][0],
-            '#') : null;
-
-        $position = is_array($positions[0]) && isset($positions[0][0]) ? $positions[0][0] : null;
+        $entityName = is_array($entityNames[0]) && isset($entityNames[0][0]) ? ltrim($entityNames[0][0], '#') : null;
+        $position   = is_array($positions[0]) && isset($positions[0][0]) ? $positions[0][0] : null;
 
         $i = 0;
 
@@ -124,7 +122,7 @@ class Nlp
 
     public function exists()
     {
-        return $this->filtered !== null && ! empty($this->filtered);
+        return $this->filtered !== null && !empty($this->filtered);
     }
 
     /**
@@ -136,7 +134,7 @@ class Nlp
      */
     public function get($field)
     {
-        if ( ! is_null($this->filtered)) {
+        if (!is_null($this->filtered)) {
             return isset($this->filtered[0][$field]) ? $this->filtered[0][$field] : null;
         }
 
