@@ -52,7 +52,6 @@ class Broadcast
                     'instance_id' => $broadcast->instance_id,
                     'parent_id'   => $broadcast->id,
                     'description' => $response->broadcast_id,
-                    'content'     => $response->broadcast_id,
                 ]);
             }
         }
@@ -97,6 +96,24 @@ class Broadcast
             return $response->message_creative_id;
         } else {
             throw new \Exception("Cannot create message creative!", 1);
+        }
+    }
+
+    public static function getMetrics(BroadcastModel $broadcast)
+    {
+        if ($broadcast->updated_at < Carbon::now()->subMinutes(5)) {
+            $metrics = giga_facebook_get($broadcast->description . '/insights/messages_sent');
+
+            if (isset($metrics->data)) {
+                $broadcast->content = $metrics->data;
+                $broadcast->save();
+
+                return $metrics->data;
+            } else {
+                throw new \Exception('Cannot get metrics!');
+            }
+        } else {
+            return $broadcast->content;
         }
     }
 }

@@ -74,11 +74,6 @@ class Broadcast extends Model
         return ( ! empty($value)) ? $value : $this->attributes['id'];
     }
     
-    public function getContentAttribute($value)
-    {
-        return json_decode($value, true);
-    }
-    
     /**
      * Get total leads of a channel
      *
@@ -123,7 +118,7 @@ class Broadcast extends Model
             return $query->where('start_at', '<=', Carbon::now())->orWhereNull('start_at');
         })
         ->where(function ($query) {
-                return $query->where('end_at', '>=', Carbon::now())->orWhereNull('end_at');
+            return $query->where('end_at', '>=', Carbon::now())->orWhereNull('end_at');
         })
         ->where(function ($query) {
             return $query->where('parent_id', 0)->orWhereNull('parent_id');
@@ -148,5 +143,10 @@ class Broadcast extends Model
         }
 
         BroadcastManager::send($this);
+    }
+
+    public function getMetrics()
+    {
+        return BroadcastManager::getMetrics($this);
     }
 }
