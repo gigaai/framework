@@ -4,6 +4,8 @@ namespace GigaAI\Storage\Eloquent;
 
 use GigaAI\Subscription\Subscription;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+use GigaAI\Broadcast\Broadcast as BroadcastManager;
 
 class Broadcast extends Model
 {
@@ -99,7 +101,7 @@ class Broadcast extends Model
     public function getReceivers()
     {
         if ( is_array($this->receivers) && ! empty($this->receivers)) {
-            return \App\Group::whereIn('id', $this->receivers)->pluck('name', 'id');
+            return Group::whereIn('id', $this->receivers)->pluck('name', 'id');
         }
 
         return null;
@@ -108,5 +110,35 @@ class Broadcast extends Model
     public function creator()
     {
         return $this->belongsTo('App\User', 'creator_id', 'id');
+    }
+
+    public function scopeStillActive($query)
+    {
+        $query->where(function ($query) {
+            return $query->where('start_at', '<=', Carbon::now())->orWhereNull('start_at');
+        })
+        ->where(function ($query) {
+                return $query->where('end_at', '>=', Carbon::now())->orWhereNull('end_at');
+        })
+        ->where(function ($query) {
+            return $query->where('parent_id', 0)->orWhereNull('parent_id');
+        });
+
+        return $query;
+    }
+
+    public function send()
+    {
+        $page = Instance::find($this->instance_id);
+        \GigaAI\Core\Config::set('access_token', $page->access_token);
+
+        $message_creative_id = BroadcastManager::createMessageCreative($this);
+
+        if (is_string($message_creative_id)) {
+            $this->message_creative_id = $message_creative_id;
+            $this->save();
+        }
+
+        BroadcastManager::send($this);
     }
 }

@@ -128,7 +128,7 @@ class Lead extends Model
 
     public function channels()
     {
-        return $this->morphToMany('App\Group', 'groupable');
+        return $this->morphToMany(Group::class, 'groupable');
     }
 
     public function instance()
