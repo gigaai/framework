@@ -52,6 +52,7 @@ class Broadcast
                     'instance_id' => $broadcast->instance_id,
                     'parent_id'   => $broadcast->id,
                     'description' => $response->broadcast_id,
+                    'content'     => $response->broadcast_id
                 ]);
             }
         }

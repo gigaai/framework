@@ -85,4 +85,28 @@ class Instance extends Model
 
         return $default;
     }
+
+    public function nodes()
+    {
+        return $this->hasMany(Node::class, 'sources', 'page_id');
+    }
+
+    public function leads()
+    {
+        return $this->hasMany(Lead::class, 'source', 'page_id');
+    }
+
+    public function broadcasts()
+    {
+        return $this->hasMany(Broadcast::class);
+    }
+
+    public function getPhotoAttribute($value)
+    {
+        if (!empty($value)) {
+            return 'data:image/png;base64,' . base64_encode($value);
+        }
+
+        return asset('/img/pages-flag.png');
+    }
 }
