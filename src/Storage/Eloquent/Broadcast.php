@@ -93,6 +93,11 @@ class Broadcast extends Model
         return $this->belongsTo(Instance::class, 'instance_id', 'id');
     }
 
+    public function instance()
+    {
+        return $this->page();
+    }
+
     public function getReceivers()
     {
         if ( is_array($this->receivers) && ! empty($this->receivers)) {

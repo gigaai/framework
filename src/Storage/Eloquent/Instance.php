@@ -101,6 +101,11 @@ class Instance extends Model
         return $this->hasMany(Broadcast::class);
     }
 
+    public function channels()
+    {
+        return $this->hasMany(Group::class);
+    }
+
     public function getPhotoAttribute($value)
     {
         if (!empty($value)) {

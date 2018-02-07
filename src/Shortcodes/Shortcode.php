@@ -25,7 +25,6 @@ class Shortcode
 
     /**
      * Process the shortcode.
-     *
      * Similar to do_shortcode()
      *
      * @param $content

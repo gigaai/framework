@@ -58,6 +58,11 @@ class Group extends Model
         //
     }
 
+    public function instance()
+    {
+        return $this->belongsTo(Instance::class, 'instance_id', 'id');
+    }
+
     public function getSlugAttribute($value)
     {
         if (empty($value)) {
