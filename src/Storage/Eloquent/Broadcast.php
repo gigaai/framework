@@ -73,7 +73,32 @@ class Broadcast extends Model
     {
         return ( ! empty($value)) ? $value : $this->attributes['id'];
     }
-    
+
+    /**
+     * Query Scope to get Broadcast only (without notifications)
+     */
+    public function scopeIsBroadcast($query)
+    {
+        return $query->where('parent_id', 0)->orWhere('parent_id', null);
+    }
+
+    /**
+     * Query scope search
+     *
+     * @param $query
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function scopeSearch($query, $value)
+    {
+        if (!empty($value)) {
+            return $query->where('description', 'like', '%' . $value . '%');
+        }
+
+        return $query;
+    }
+
     /**
      * Get total leads of a channel
      *

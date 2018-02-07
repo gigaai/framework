@@ -37,6 +37,24 @@ class Group extends Model
     }
 
     /**
+     * Query scope search
+     *
+     * @param $query
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function scopeSearch($query, $value)
+    {
+        if (!empty($value)) {
+            return $query->where('name', 'like', '%' . $value . '%')
+                ->orWhere('description', 'like', '%' . $value . '%');
+        }
+
+        return $query;
+    }
+
+    /**
      * Group - User relationship
      */
     public function users()
