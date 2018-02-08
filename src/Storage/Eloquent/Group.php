@@ -10,7 +10,10 @@ class Group extends Model
 {
     use HasCreator, HasMeta;
 
-    protected $fillable = ['name', 'creator_id', 'slug', 'description', 'type', 'parent_id', 'permissions', 'meta'];
+    protected $fillable = [
+        'name', 'creator_id', 'slug', 'description', 
+        'type', 'parent_id', 'permissions', 'meta'
+    ];
 
     protected $casts = [
         'permissions' => 'json',

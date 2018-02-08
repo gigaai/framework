@@ -13,6 +13,7 @@ use GigaAI\Http\Request;
 use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Model;
 use GigaAI\Core\Config;
+use GigaAI\Core\Resolver;
 use SuperClosure\Serializer;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Conversation\Nlp;
@@ -94,10 +95,17 @@ class MessengerBot
 
     /**
      * NLP helpers
-     * 
+     *
      * @var Nlp
      */
     public $nlp;
+
+    /**
+     * Resolver
+     *
+     * @since 3.0
+     */
+    protected $resolver;
 
     /**
      * Load the required resources
@@ -134,6 +142,9 @@ class MessengerBot
 
         // We need to serialize Closure for dynamic data and intended actions
         $this->serializer = new Serializer;
+
+        // Giga AI Resolver
+        $this->resolver = new Resolver;
     }
 
     /**
@@ -239,7 +250,11 @@ class MessengerBot
         DynamicParser::support([
             'type'     => 'callback',
             'callback' => function ($content) use ($lead) {
-                return @call_user_func_array($content, [$this, $lead, $this->getReceivedInput()]);
+                return $this->resolver->bind([
+                    'bot'   => $this,
+                    'lead'  => $lead,
+                    'input' => $this->getReceivedInput(),
+                ])->resolve($content);
             },
         ]);
 
@@ -255,6 +270,11 @@ class MessengerBot
         $this->response($nodes);
     }
 
+    /**
+     * Load NLP Data
+     * 
+     * @return void
+     */
     private function initNlp($message)
     {
         if (isset($message['nlp']) && is_array($message['nlp'])) {
@@ -265,6 +285,8 @@ class MessengerBot
 
     /**
      * Load page access token from database and set
+     * 
+     * @return void
      */
     public function setAccessToken()
     {

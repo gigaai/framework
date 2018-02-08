@@ -9,6 +9,7 @@ use Thunder\Shortcode\HandlerContainer\HandlerContainer;
 use Thunder\Shortcode\Parser\RegularParser;
 use Thunder\Shortcode\Processor\Processor;
 use Thunder\Shortcode\Shortcode\ShortcodeInterface;
+use GigaAI\MessengerBot;
 
 /**
  * Register a Service Provider in Laravel application
@@ -40,13 +41,9 @@ class MessengerServiceProvider extends ServiceProvider
 
         \GigaAI\Core\DynamicParser::support($command_parser);
 
-        $this->app->singleton(\GigaAI\MessengerBot::class, function ($app) {
+        $this->app->singleton(MessengerBot::class, function ($app) {
             // Create new bot instance with multipage enabled
-            $bot = new \GigaAI\MessengerBot([
-                'multipage' => true,
-            ]);
-
-            return $bot;
+            return new MessengerBot;
         });
     }
 }

@@ -109,6 +109,11 @@ class Lead extends Model
         return $this->hasOne('App\User', 'id', 'linked_account');
     }
 
+    public function user()
+    {
+        return $this->linkedUser()->first();
+    }
+    
     public function channels()
     {
         return $this->morphToMany(Group::class, 'groupable');

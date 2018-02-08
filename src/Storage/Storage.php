@@ -62,7 +62,7 @@ class Storage
         $this->db->setAsGlobal();
 
         $this->db->bootEloquent();
-
+        
         $this->isSupportedMySQLVersion();
     }
 
@@ -105,7 +105,7 @@ class Storage
                 'username'  => DB_USER,
                 'password'  => DB_PASSWORD,
                 'charset'   => DB_CHARSET,
-                'collation' => null,
+                'collation' => 'utf8mb4_unicode_ci',
                 'prefix'    => $wpdb->prefix,
             ];
 
@@ -124,7 +124,8 @@ class Storage
             'database'  => env('DB_DATABASE'),
             'username'  => env('DB_USERNAME'),
             'password'  => env('DB_PASSWORD'),
-            'collation' => null,
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
         ];
 
         Config::set('mysql', $mysql);
