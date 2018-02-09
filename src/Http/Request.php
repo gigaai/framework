@@ -158,19 +158,7 @@ class Request
             return null;
         }
 
-        $content = Shortcode::parse($message['content']);
-
-        if (empty($content)) {
-            return null;
-        }
-
-        // Text as Raw Message
-        if (isset($content['text']) && is_array($content['text'])) {
-            $raw     = $model->parseWithoutSave($content['text']);
-            $content = $raw[0];
-        }
-
-        // Text as Typing Indicator
+         // Text as Typing Indicator
         if (isset($content['text']) && is_string($content['text'])) {
             $is_typing = substr($content['text'], 0, 3);
 
@@ -183,10 +171,33 @@ class Request
 
                 sleep($delay);
 
-                return true;
+                return null;
             }
         }
 
+        if ($message['type'] === 'typing') {
+            $delay = isset($content['typing']) && is_numeric($content['typing']) ? $content['typing'] : 3;
+
+            $this->driver->sendTyping();
+
+            sleep($delay);
+
+            return null;
+        }
+
+        $content = Shortcode::parse($message['content']);
+
+        if (empty($content)) {
+            return null;
+        }
+
+        // Text as Raw Message
+        if (isset($content['text']) && is_array($content['text'])) {
+            $raw     = $model->parseWithoutSave($content['text']);
+            $content = $raw[0];
+        }
+        
+       
         if (is_null($lead_id)) {
             $lead_id = Conversation::get('lead_id');
         }
@@ -220,7 +231,7 @@ class Request
     private function sendMessages($messages, $lead_id = null)
     {
         $batch = [];
-
+        
         foreach ($messages as $message) {
             $message = $this->prepareMessage($message, $lead_id);
             
@@ -228,7 +239,7 @@ class Request
                 $batch[] = $message;
             }
         }
-
+        
         $batch = array_values(array_filter($batch));
 
         $this->driver->sendMessages($batch);

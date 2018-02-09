@@ -34,7 +34,9 @@ class Storage
     {
         $this->db = new Capsule;
 
-        $this->createConfigFromLaravel();
+        if ( ! defined('DB_HOST')) {
+            return;
+        }
 
         $this->createConfigFromWordPress();
 
@@ -62,8 +64,6 @@ class Storage
         $this->db->setAsGlobal();
 
         $this->db->bootEloquent();
-        
-        $this->isSupportedMySQLVersion();
     }
 
     private function isSupportedMySQLVersion()
@@ -111,24 +111,6 @@ class Storage
 
             Config::set('mysql', $mysql);
         }
-    }
-
-    private function createConfigFromLaravel()
-    {
-        if (!function_exists('app')) {
-            return;
-        }
-
-        $mysql = [
-            'host'      => env('DB_HOST'),
-            'database'  => env('DB_DATABASE'),
-            'username'  => env('DB_USERNAME'),
-            'password'  => env('DB_PASSWORD'),
-            'charset'   => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-        ];
-
-        Config::set('mysql', $mysql);
     }
 
     private function pull()

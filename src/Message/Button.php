@@ -17,7 +17,6 @@ class Button extends Message
             $content = $this->body;
         } else {
             $this->body['template_type'] = 'button';
-            $this->body['buttons']       = $this->sanitizeButtons($this->body['buttons']);
 
             $content = [
                 'attachment' => [
@@ -26,6 +25,8 @@ class Button extends Message
                 ],
             ];
         }
+
+        $content['attachment']['payload']['buttons'] = $this->sanitizeButtons($content['attachment']['payload']['buttons']);
 
         return [
             'type'    => 'button',

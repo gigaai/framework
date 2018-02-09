@@ -2,7 +2,6 @@
 
 namespace GigaAI\Storage\Eloquent;
 
-use GigaAI\Subscription\Subscription;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use GigaAI\Broadcast\Broadcast as BroadcastManager;

@@ -18,6 +18,7 @@ use GigaAI\Storage\Storage;
 use SuperClosure\Serializer;
 use GigaAI\Message\Raw;
 use GigaAI\Message\Command;
+use GigaAI\Message\Typing;
 
 class Model
 {
@@ -54,7 +55,8 @@ class Model
         'receipt'  => Receipt::class,
         'raw'      => Raw::class,
         'callback' => Callback::class,
-        'command'  => Command::class
+        'command'  => Command::class,
+        'typing'   => Typing::class,
     ];
 
     public function __construct()

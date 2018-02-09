@@ -314,7 +314,7 @@ class MessengerBot
             }
 
             $answers = $this->parse($node->answers);
-
+            
             $this->request->sendMessages($answers);
         }
     }
