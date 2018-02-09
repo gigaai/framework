@@ -4,9 +4,12 @@ namespace GigaAI\Storage\Eloquent;
 
 use GigaAI\Conversation\Conversation;
 use Illuminate\Database\Eloquent\Model;
+use App\RoleFilter;
 
 class Node extends Model
 {
+    use RoleFilter;
+    
     public $table = 'giga_nodes';
 
     protected $fillable = [

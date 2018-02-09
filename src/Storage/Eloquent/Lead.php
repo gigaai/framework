@@ -4,10 +4,11 @@ namespace GigaAI\Storage\Eloquent;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
+use App\RoleFilter;
 
 class Lead extends Model
 {
-    use SoftDeletes, HasMeta;
+    use SoftDeletes, HasMeta, RoleFilter;
 
     public $table = 'giga_leads';
 

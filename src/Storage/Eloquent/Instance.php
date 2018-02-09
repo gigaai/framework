@@ -16,7 +16,7 @@ class Instance extends Model
     protected $fillable = [
         'id',
         'name',
-        'user_id',
+        'creator_id',
         'app_id',
         'app_secret',
         'page_id',
