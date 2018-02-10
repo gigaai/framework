@@ -115,11 +115,10 @@ class Storage
 
     private function pull()
     {
-        $lead_id = Conversation::get('lead_id');
+        $lead_id    = Conversation::get('lead_id');
+        $lead       = Lead::withTrashed()->where('user_id', $lead_id)->first();
 
-        $lead = self::getUser($lead_id);
-
-        if (!empty($lead) || !is_null($lead)) {
+        if ($lead->exists) {
             return $lead;
         }
 
@@ -134,196 +133,11 @@ class Storage
         $lead['subscribe'] = 1;
         $lead['source']    = isset($lead['source']) ? $lead['source'] : Conversation::get('page_id');
 
-        // Then call set method
-        return self::set($lead);
-    }
-
-    private function set($user, $key = '', $value = '')
-    {
-        if (!is_array($user)) {
-            if (is_array($key)) {
-                $key['user_id'] = $user;
-
-                return $this->set($key);
-            }
-
-            $user = [
-                'user_id' => $user,
-                $key      => $value,
-            ];
-        }
-
-        if (is_array($user) && isset($user['user_id'])) {
-            return $this->insertOrUpdateUser($user);
-        }
-    }
-
-    /**
-     * Insert if user has already exists or update if exists
-     *
-     * @param Array $user
-     *
-     * @return void
-     */
-    private function insertOrUpdateUser($user)
-    {
-        $meta = [];
-
-        foreach ($user as $key => $value) {
-            if (!in_array($key, (new Lead)->getFillable())) {
-                $meta[$key] = $value;
-
-                unset($user[$key]);
-            }
-        }
-
-        unset($meta['id']);
-
-        try {
-            $lead = Lead::updateOrCreate([
-                'user_id' => $user['user_id'],
-            ], $user);
-        } catch (\PDOException $pe) {
-            echo '<pre>';
-            dd($pe);
-        }
-
-        if (!empty($meta)) {
-            $this->updateLeadMeta($lead->user_id, $meta);
-        }
+        $lead = Lead::updateOrCreate([
+            'user_id' => $lead['user_id'],
+        ], $lead);
 
         return $lead;
-    }
-
-    /**
-     * Check if current user has given field
-     *
-     * @param Int    $user_id
-     * @param string $key
-     *
-     * @return boolean
-     */
-    private function has($user_id, $key = '')
-    {
-        $user = $this->getUser($user_id);
-
-        return $user || !empty($user->$key);
-    }
-
-    /**
-     * Get User by Facebook app scoped ID
-     *
-     * @param String $user_id App Scoped Id
-     *
-     * @return Mixed
-     */
-    private function getUser($user_id)
-    {
-        $user = Lead::where([
-            'user_id' => $user_id,
-        ])->first();
-
-        if (!is_null($user)) {
-            return $user;
-        }
-
-        return null;
-    }
-
-    /**
-     * Get User Info. If provided user
-     *
-     * @param string $user_id If not provided, load all users. Otherwise, load specified user.
-     * @param string $key If not provided. load all fields. Otherwise, load specified field.
-     * @param mixed  $default Default value.
-     *
-     * @return bool|null|string
-     */
-    private function get($user_id = '', $key = '', $default = '')
-    {
-        if (empty($user_id) || is_null($user_id)) {
-            $user_id = Conversation::get('lead_id');
-        }
-
-        $user = $this->getUser($user_id);
-
-        if (is_null($user)) {
-            return null;
-        }
-
-        if (!empty($key)) {
-            if (isset($user[$key])) {
-                return $user[$key];
-            }
-
-            if (!in_array($key, (new Lead)->getFillable())) {
-                return $this->getUserMeta($user_id, $key, $default);
-            }
-
-            return $default;
-        }
-
-        return $user;
-    }
-
-    /**
-     * Todo: Optimize this method
-     *
-     * @param       $lead_id
-     * @param array $key
-     * @param null  $value
-     */
-    private function updateLeadMeta($lead_id, $key = [], $value = null)
-    {
-        $meta = [];
-
-        if (is_string($key) && !empty($value)) {
-            $meta[$key] = $value;
-        } else {
-            $meta = $key;
-        }
-
-        // Is Lead Exists
-        $exists = Lead::where('user_id', $lead_id)->exists();
-
-        if (!$exists) {
-            return;
-        }
-
-        foreach ($meta as $key => $value) {
-            $exists = $this->db->table('bot_leads_meta')->where([
-                'user_id'  => $lead_id,
-                'meta_key' => $key,
-            ])->exists();
-
-            if ($exists) {
-                $this->db->table('bot_leads_meta')->where([
-                    'user_id'  => $lead_id,
-                    'meta_key' => $key,
-                ])->update([
-                    'meta_value' => $value,
-                ]);
-            } else {
-                $this->db->table('bot_leads_meta')->insert([
-                    'user_id'    => $lead_id,
-                    'meta_key'   => $key,
-                    'meta_value' => $value,
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Search in collection
-     *
-     * @param        $terms
-     * @param string $relation
-     *
-     * @return mixed
-     */
-    private function search($terms, $relation = 'and')
-    {
-        return Lead::where($terms)->get();
     }
 
     /**

@@ -149,7 +149,7 @@ class Facebook implements DriverInterface
 
         $data = giga_remote_get($end_point);
 
-        return json_decode($data, true);
+        return (array) $data;
     }
 
     /**

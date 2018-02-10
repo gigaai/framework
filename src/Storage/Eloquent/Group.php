@@ -5,10 +5,11 @@ namespace GigaAI\Storage\Eloquent;
 use Illuminate\Database\Eloquent\Model;
 use GigaAI\Storage\Eloquent\Lead;
 use GigaAI\Storage\Eloquent\HasMeta;
+use App\ForOwner;
 
 class Group extends Model
 {
-    use HasCreator, HasMeta;
+    use HasCreator, HasMeta, ForOwner;
 
     protected $fillable = [
         'name', 'creator_id', 'slug', 'description', 
@@ -20,6 +21,8 @@ class Group extends Model
         'meta'        => 'json'
     ];
 
+    protected $table = 'groups';
+    
     /**
      * Check if group has specified permission
      * 

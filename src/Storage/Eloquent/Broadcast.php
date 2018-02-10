@@ -5,9 +5,12 @@ namespace GigaAI\Storage\Eloquent;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use GigaAI\Broadcast\Broadcast as BroadcastManager;
+use App\ForOwner;
 
 class Broadcast extends Model
 {
+    use ForOwner;
+
     public $table = 'giga_broadcasts';
     
     protected $fillable = ['instance_id', 'creator_id', 'message_creative_id', 'parent_id',

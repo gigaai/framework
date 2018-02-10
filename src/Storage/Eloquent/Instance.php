@@ -5,11 +5,11 @@ namespace GigaAI\Storage\Eloquent;
 use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
 use Illuminate\Database\Eloquent\Model;
-use App\RoleFilter;
+use App\ForOwner;
 
 class Instance extends Model
 {
-    use RoleFilter;
+    use ForOwner;
     
     public $table = 'giga_instances';
 
