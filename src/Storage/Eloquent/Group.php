@@ -21,7 +21,7 @@ class Group extends Model
         'meta'        => 'json'
     ];
 
-    protected $table = 'groups';
+    protected $table = 'giga_groups';
     
     /**
      * Check if group has specified permission
@@ -65,7 +65,7 @@ class Group extends Model
      */
     public function users()
     {
-        return $this->morphedByMany('App\User', 'groupable');
+        return $this->morphedByMany('App\User', 'giga_groupable');
     }
 
     /**
@@ -73,7 +73,7 @@ class Group extends Model
      */
     public function leads()
     {
-        return $this->morphedByMany(Lead::class, 'groupable');
+        return $this->morphedByMany(Lead::class, 'giga_groupable');
     }
 
     // Class Post extends Content
