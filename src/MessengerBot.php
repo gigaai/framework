@@ -336,19 +336,13 @@ class MessengerBot
         }
 
         // Remove all nodes which are owned by other pages
-        foreach ($nodes as $index => $node) {
-            if (empty($node->sources)) {
-                continue;
-            }
+        return array_filter($nodes, function ($node) {
+            $pageId = Conversation::get('page_id');
 
-            $sources = array_map('trim', explode(',', $node->sources));
-
-            if (!in_array(Conversation::get('page_id'), $sources)) {
-                unset($nodes[$index]);
-            }
-        }
-
-        return $nodes;
+            return (empty($node['sources']) || (isset($node->sources['global']) && $node->sources['global'] == true) 
+                || (isset($node->sources[$pageId]) && $node->sources[$pageId] == true)
+            );
+        });
     }
 
     /**
@@ -374,7 +368,7 @@ class MessengerBot
             if (is_numeric($waiting)) {
                 $nodes = Node::find($waiting);
 
-                if (!empty($nodes)) {
+                if ( ! empty($nodes)) {
                     $nodes = [$nodes];
                 }
             } else {
