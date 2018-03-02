@@ -93,7 +93,7 @@ class Lead extends Model
 
     public function scopeNotIn($query, $value)
     {
-        if (!empty($value)) {
+        if ( ! empty($value)) {
             if (!is_array($value)) {
                 $value = explode(',', $value);
             }
@@ -121,7 +121,7 @@ class Lead extends Model
     
     public function channels()
     {
-        return $this->morphToMany(Group::class, 'groupable');
+        return $this->morphToMany(Group::class, 'giga_groupable');
     }
 
     public function instance()

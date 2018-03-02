@@ -2,6 +2,7 @@
 
 namespace GigaAI\Storage\Eloquent;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use GigaAI\Storage\Eloquent\Lead;
 use GigaAI\Storage\Eloquent\HasMeta;
@@ -9,7 +10,7 @@ use App\ForOwner;
 
 class Group extends Model
 {
-    use HasCreator, HasMeta, ForOwner;
+    use HasCreator, HasMeta, ForOwner, SoftDeletes;
 
     protected $fillable = [
         'name', 'creator_id', 'slug', 'description', 

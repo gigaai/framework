@@ -2,6 +2,7 @@
 
 namespace GigaAI\Storage\Eloquent;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use GigaAI\Broadcast\Broadcast as BroadcastManager;
@@ -9,7 +10,7 @@ use App\ForOwner;
 
 class Broadcast extends Model
 {
-    use ForOwner;
+    use ForOwner, SoftDeletes;
 
     public $table = 'giga_broadcasts';
     
