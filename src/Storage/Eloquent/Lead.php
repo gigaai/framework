@@ -75,13 +75,17 @@ class Lead extends Model
      *
      * @return mixed
      */
-    public function scopeSearch($query, $value)
+    public function scopeSearch($query, $request)
     {
-        if (!empty($value)) {
-            return $query->where('first_name', 'like', '%' . $value . '%')
-                         ->orWhere('last_name', 'like', '%' . $value . '%')
-                         ->orWhere('email', 'like', '%' . $value . '%')
-                         ->orWhere('phone', 'like', '%' . $value . '%');
+        if ( ! empty($request->s)) {
+            $query->where('first_name', 'like', '%' . $request->s . '%')
+                    ->orWhere('last_name', 'like', '%' . $request->s . '%')
+                    ->orWhere('email', 'like', '%' . $request->s . '%')
+                    ->orWhere('phone', 'like', '%' . $request->s . '%');
+        }
+
+        if (isset($request->status) && $request->status === 'trashed') {
+            $query->withTrashed();
         }
 
         return $query;

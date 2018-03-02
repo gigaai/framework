@@ -118,7 +118,7 @@ class Storage
         $lead_id    = Conversation::get('lead_id');
         $lead       = Lead::withTrashed()->where('user_id', $lead_id)->first();
 
-        if ($lead->exists) {
+        if ($lead !== null) {
             return $lead;
         }
 
@@ -136,6 +136,8 @@ class Storage
         $lead = Lead::updateOrCreate([
             'user_id' => $lead['user_id'],
         ], $lead);
+
+        sd($lead);
 
         return $lead;
     }

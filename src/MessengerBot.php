@@ -237,7 +237,7 @@ class MessengerBot
         if (!isset($event['message']['is_echo'])) {
             $lead = $this->storage->pull();
         } else {
-            $lead = Lead::where('user_id', $this->getLeadId())->first();
+            $lead = Lead::withTrashed()->where('user_id', $this->getLeadId())->first();
         }
 
         $this->conversation->set('lead', $lead);
@@ -303,14 +303,12 @@ class MessengerBot
      */
     public function response($nodes, $lead_id = null)
     {
-        if (is_null($lead_id)) {
-            $lead_id = $this->conversation->get('lead_id');
-        }
-
         foreach ($nodes as $node) {
             // Set intended action if this node has
             if (!empty($node->wait)) {
-                $this->storage->set($lead_id, '_wait', $node->wait);
+                $lead = $this->conversation->get('lead');
+
+                $lead->data('_wait', $node->wait);
             }
 
             $answers = $this->parse($node->answers);
@@ -335,8 +333,7 @@ class MessengerBot
             $nodes = Node::findByTypeAndPattern('default');
         }
 
-        // Remove all nodes which are owned by other pages
-        return array_filter($nodes, function ($node) {
+        return $nodes->filter(function ($node) {
             $pageId = Conversation::get('page_id');
 
             return (empty($node['sources']) || (isset($node->sources['global']) && $node->sources['global'] == true) 

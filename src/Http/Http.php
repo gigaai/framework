@@ -39,6 +39,7 @@ class Http
 
         if (false !== $result) {
             $result = json_decode($result);
+
         } else {
             throw new \Exception('Error during making request');
         }

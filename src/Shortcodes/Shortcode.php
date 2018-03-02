@@ -57,7 +57,9 @@ class Shortcode
                 return call_user_func_array("giga_shortcode_{$shortcode_name}", [$params, $content]);
             }
 
-            return Storage::get(null, $shortcode_name);
+            $lead = Conversation::get('lead');
+
+            return $lead->data($shortcode_name);
         });
 
         $processor = new Processor(new RegularParser(), $handlers);
@@ -95,7 +97,7 @@ class Shortcode
                 unset($answer[$key]);
             }
         }
-        
+
         return $answer;
     }
 
