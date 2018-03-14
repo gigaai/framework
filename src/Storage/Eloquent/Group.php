@@ -14,7 +14,7 @@ class Group extends Model
 
     protected $fillable = [
         'name', 'creator_id', 'slug', 'description', 
-        'type', 'parent_id', 'permissions', 'meta'
+        'type', 'parent_id', 'permissions', 'meta', 'instance_id'
     ];
 
     protected $casts = [
