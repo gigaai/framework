@@ -162,7 +162,7 @@ class Broadcast extends Model
 
     public function scopeNotReachedLimit($query)
     {
-        $query->whereRaw('sent_count <= send_limit');
+        $query->whereRaw('(sent_count <= send_limit OR send_limit = 0)');
 
         return $query;
     }
@@ -180,7 +180,7 @@ class Broadcast extends Model
             throw new \Exception('Broadcast expired.');
         }
 
-        if (isset($this->sent_count) && $this->sent_count >= $this->send_limit) {
+        if (isset($this->sent_count) && $this->sent_count >= $this->send_limit && $this->send_limit != 0) {
             throw new \Exception('Your broadcast has reached sent count limit.');
         }
 
