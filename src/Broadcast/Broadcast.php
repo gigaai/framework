@@ -22,6 +22,7 @@ class Broadcast
      */
     public static function send(BroadcastModel $broadcast)
     {
+
         if ( ! empty($broadcast->start_at) && $broadcast->start_at >= Carbon::now()) {
             throw new \Exception('Broadcast have not ready to send');
         }
@@ -37,14 +38,16 @@ class Broadcast
             'tag'                 => $broadcast->tags
         ];
 
-        $receivers = isset($broadcast->receivers) ? $broadcast->receivers : [null];
+        $receivers = $broadcast->getReceivers();
+        $receivers = $receivers !== null && is_array($receivers) ? $receivers : ['all'];
 
         foreach ($receivers as $channel) {
-            if (!is_null($channel)) {
+
+            if ( ! is_null($channel) && $channel !== 'all') {
                 $labelId                                = Group::find($channel)->meta['facebook_label_id'];
                 $broadcastProperties['custom_label_id'] = $labelId;
             }
-
+            
             $response = giga_facebook_post('me/broadcast_messages', $broadcastProperties);
 
             if (isset($response->broadcast_id)) {

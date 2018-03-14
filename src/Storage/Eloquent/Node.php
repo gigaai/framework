@@ -5,10 +5,11 @@ namespace GigaAI\Storage\Eloquent;
 use GigaAI\Conversation\Conversation;
 use Illuminate\Database\Eloquent\Model;
 use App\ForOwner;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Node extends Model
 {
-    use ForOwner;
+    use ForOwner, SoftDeletes;
 
     public $table = 'giga_nodes';
 
@@ -122,8 +123,12 @@ class Node extends Model
     public function scopeSearch($query, $value)
     {
         if (!empty($value)) {
-            return $query->where('pattern', 'like', '%' . $value . '%')
-                         ->orWhere('answers', 'like', '%' . $value . '%');
+
+            $value = '%' . implode(explode(' ', $value), '%') . '%';
+
+            return $query->where('pattern', 'LIKE', $terms)
+                          ->orWhere('answers', 'LIKE', $terms)
+                          ->orWhere('tags', 'LIKE', $terms);
         }
 
         return $query;
@@ -139,6 +144,13 @@ class Node extends Model
     public function scopeNotFluentIntended($query)
     {
         $query->where('pattern', 'not like', 'IA#%');
+
+        return $query;
+    }
+
+    public function scopeWithGlobal($query)
+    {
+        $query->where('sources', '')->orWhereNull('sources')->orWhere('sources', 'LIKE', '"global":true');
 
         return $query;
     }
