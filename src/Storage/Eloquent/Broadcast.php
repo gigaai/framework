@@ -160,11 +160,30 @@ class Broadcast extends Model
         return $query;
     }
 
+    public function scopeNotReachedLimit($query)
+    {
+        $query->whereRaw('sent_count <= send_limit');
+
+        return $query;
+    }
+
     /**
      * Send Broadcast
      */
     public function send()
     {
+        if (!empty($this->start_at) && $this->start_at >= Carbon::now()) {
+            throw new \Exception('Broadcast have not ready to send.');
+        }
+
+        if (!empty($this->end_at) && $this->end_at <= Carbon::now()) {
+            throw new \Exception('Broadcast expired.');
+        }
+
+        if (isset($this->sent_count) && $this->sent_count >= $this->send_limit) {
+            throw new \Exception('Your broadcast has reached sent count limit.');
+        }
+
         $page = Instance::find($this->instance_id);
         \GigaAI\Core\Config::set('access_token', $page->access_token);
 
@@ -172,6 +191,9 @@ class Broadcast extends Model
 
         if (is_string($message_creative_id)) {
             $this->message_creative_id = $message_creative_id;
+
+            $this->sent_count++;
+
             $this->save();
         }
 

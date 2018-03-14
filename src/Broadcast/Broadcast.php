@@ -22,15 +22,6 @@ class Broadcast
      */
     public static function send(BroadcastModel $broadcast)
     {
-
-        if ( ! empty($broadcast->start_at) && $broadcast->start_at >= Carbon::now()) {
-            throw new \Exception('Broadcast have not ready to send');
-        }
-
-        if (! empty($broadcast->end_at) && $broadcast->end_at <= Carbon::now()) {
-            throw new \Exception('Broadcast expired');
-        }
-
         // Send message if people hit send button
         $broadcastProperties = [
             'message_creative_id' => $broadcast->message_creative_id,
@@ -47,7 +38,7 @@ class Broadcast
                 $labelId                                = Group::find($channel)->meta['facebook_label_id'];
                 $broadcastProperties['custom_label_id'] = $labelId;
             }
-            
+
             $response = giga_facebook_post('me/broadcast_messages', $broadcastProperties);
 
             if (isset($response->broadcast_id)) {
