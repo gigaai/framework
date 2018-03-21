@@ -116,7 +116,7 @@ class MessengerBot
     {
         // Framework Version
         if (!defined('GIGAAI_VERSION')) {
-            define('GIGAAI_VERSION', '2.4');
+            define('GIGAAI_VERSION', '3.0');
         }
 
         // Make a conversation instance to share the data across whole application.
