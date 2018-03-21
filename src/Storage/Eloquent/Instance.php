@@ -6,10 +6,11 @@ use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
 use Illuminate\Database\Eloquent\Model;
 use App\ForOwner;
+use GigaAI\Storage\Eloquent\HasCreator;
 
 class Instance extends Model
 {
-    use ForOwner;
+    use ForOwner, HasCreator;
     
     public $table = 'giga_instances';
 

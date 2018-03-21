@@ -5,14 +5,16 @@ namespace GigaAI\Storage\Eloquent;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use App\ForOwner;
+use GigaAI\Storage\Eloquent\HasCreator;
 
 class Lead extends Model
 {
-    use SoftDeletes, HasMeta, ForOwner;
+    use SoftDeletes, HasMeta, HasCreator, ForOwner;
 
     public $table = 'giga_leads';
 
     protected $fillable = [
+        'creator_id',
         'source',
         'user_id',
         'first_name',
