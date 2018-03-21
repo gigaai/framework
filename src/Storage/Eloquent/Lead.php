@@ -31,7 +31,6 @@ class Lead extends Model
         'subscribe',
         'is_payment_enabled',
         'auto_stop',
-
         'last_activity',
         'last_ad_referral',
         'meta',
@@ -85,7 +84,7 @@ class Lead extends Model
         }
 
         if (isset($request->status) && $request->status === 'trashed') {
-            $query->withTrashed();
+            $query->onlyTrashed();
         }
 
         return $query;
