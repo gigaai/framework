@@ -98,14 +98,18 @@ class Attachment extends Message
     public function expectedIs($type)
     {
         // If people set type = message type, return true
-        if (is_array($this->body) && isset($this->body['attachment']['type'])) {
+        if (is_array($this->body) && isset($this->body['attachment']) && isset($this->body['attachment']['type'])) {
             return true;
         }
 
-        // If it's string, maybe it's URL. Check the extension
-        if (is_string($this->body) || is_string($this->body['attachment']['payload']['url'])) {
-            $fileExtension = $this->detectMediaType($this->body['attachment']['payload']['url']);
+        if (is_string($this->body)) {
+            $fileExtension = $this->detectMediaType($this->body);
+            return $fileExtension === $type;
+        }
 
+        // If it's string, maybe it's URL. Check the extension
+        if (isset($this->body['attachment']) && is_string($this->body['attachment']['payload']['url'])) {
+            $fileExtension = $this->detectMediaType($this->body['attachment']['payload']['url']);
             return $fileExtension === $type;
         }
 
