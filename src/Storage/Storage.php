@@ -137,8 +137,6 @@ class Storage
             'user_id' => $lead['user_id'],
         ], $lead);
 
-        sd($lead);
-
         return $lead;
     }
 

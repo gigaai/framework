@@ -75,10 +75,10 @@ class Node extends Model
         }
 
         // If still not found, then try NLP and find
-        if ($nodes->count() === 0) {
+        if ($nodes->count() === 0 && Conversation::has('nlp')) {
             $entities = Conversation::get('nlp')->getNames();
 
-            if (!empty($entities)) {
+            if ( ! empty($entities)) {
                 $entities = '#' . ltrim(implode('|#', $entities), '|');
 
                 $nodes = self::whereRaw('pattern RLIKE :pattern', [
