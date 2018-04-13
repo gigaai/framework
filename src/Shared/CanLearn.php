@@ -77,11 +77,11 @@ trait CanLearn
      */
     public function wait($action)
     {
-        $lead_id = $this->conversation->get('lead_id');
+        $lead = $this->conversation->get('lead');
 
         // For chaining after $bot->say() method
-        if ($lead_id != null) {
-            $this->storage->set($lead_id, '_wait', $action);
+        if ($lead != null) {
+            $lead->data('_wait', $action);
         } // For chaining after $bot->answer() method
         else {
             $this->model->addIntendedAction($action);

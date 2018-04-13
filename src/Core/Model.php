@@ -149,7 +149,7 @@ class Model
         }
     }
 
-    /**
+     /**
      * Add answer to node
      *
      * @param Mixed  $answers Message
@@ -162,7 +162,7 @@ class Model
     {
         foreach ($answers as $index => $answer) {
             if (isset($answer['type']) && isset($answer['content']) && is_callable($answer['content'])) {
-                $answer['content'] = $this->serializer->serialize($answer['content']);
+                $answer['content'] = is_string($answer['content']) ? $answer['content'] : $this->serializer->serialize($answer['content']);
             }
             $answers[$index] = $answer;
         }
