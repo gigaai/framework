@@ -222,7 +222,7 @@ class MessengerBot
 
         $this->conversation->set('received_input', $this->getReceivedInput());
 
-        $this->setAccessToken();
+        $this->setConfigData();
 
         // If auto stop is run and it return true. Terminate
         if (AutoStop::run($event)) {
@@ -288,11 +288,11 @@ class MessengerBot
      * 
      * @return void
      */
-    public function setAccessToken()
+    public function setConfigData()
     {
-        $access_token = Instance::get('access_token');
+        $meta = Instance::get('meta');
 
-        Config::set('access_token', $access_token);
+        Config::set($meta);
     }
 
     /**

@@ -75,7 +75,7 @@ class MessengerProfile
         if ( ! empty($delete)) {
             $messages['delete'] = self::deleteFields($delete);
         }
-        
+
         // Update cache
         self::getFields(self::$fields);
         

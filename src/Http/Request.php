@@ -139,8 +139,6 @@ class Request
     {
         $model   = new Model;
 
-   
-
         if ($message['type'] === 'callback' || $message['type'] === 'command') {
             $serializer = new Serializer;
 
@@ -149,11 +147,11 @@ class Request
             }
 
             $return = DynamicParser::parse($message);
-
+            
             // If the callback return, we'll send that message to user.
             if ($return != null || !empty($return)) {
                 $answers = $model->parse($return);
-
+                
                 $this->sendMessages($answers);
             }
 
@@ -193,15 +191,12 @@ class Request
             return null;
         }
 
-
-                     
         // Text as Raw Message
         if (isset($content['text']) && is_array($content['text'])) {
             $raw     = $model->parseWithoutSave($content['text']);
             $content = $raw[0];
         }
         
-       
         if (is_null($lead_id)) {
             $lead_id = Conversation::get('lead_id');
         }

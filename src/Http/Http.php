@@ -39,7 +39,7 @@ class Http
 
         if (false !== $result) {
             $result = json_decode($result);
-
+            
         } else {
             throw new \Exception('Error during making request');
         }
@@ -58,7 +58,7 @@ class Http
         $result = curl_exec($ch);
 
         curl_close($ch);
-
+        
         if (false !== $result) {
             $result = json_decode($result);
         } else {

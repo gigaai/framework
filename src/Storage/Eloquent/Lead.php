@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use App\ForOwner;
 use GigaAI\Storage\Eloquent\HasCreator;
+use GigaAI\Core\Matching;
 
 class Lead extends Model
 {
@@ -105,6 +106,10 @@ class Lead extends Model
         return $query;
     }
 
+    public function isLinked()
+    {
+        return is_numeric($this->linked_account) && $this->linked_account > 0;
+    }
     /**
      * Laravel linked user
      *
@@ -112,11 +117,19 @@ class Lead extends Model
      */
     public function linkedUser()
     {
-        return $this->hasOne('App\User', 'id', 'linked_account');
+        if ( ! $this->isLinked()) {
+            return Matching::matchCurrentLead();
+        }
+
+        return $this->belongsTo('App\User', 'linked_account', 'id');
     }
 
     public function user()
     {
+        if ( ! $this->isLinked()) {
+            return Matching::matchCurrentLead();
+        }
+
         return $this->linkedUser()->first();
     }
     

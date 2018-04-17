@@ -48,13 +48,13 @@ class Instance extends Model
         if (isset($_GET['page_id'])) {
             $page_id = trim($_GET['page_id']);
         }
-
+        
         if (is_null($page_id)) {
             return Config::get($key, $default);
         }
-
+        
         $instance = self::wherePageId($page_id)->first();
-
+        
         if (isset($instance->$key)) {
             return $instance->$key;
         }
