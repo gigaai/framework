@@ -188,7 +188,7 @@ class Broadcast extends Model
         \GigaAI\Core\Config::set('access_token', $page->access_token);
 
         $message_creative_id = BroadcastManager::createMessageCreative($this);
-
+        
         if (is_string($message_creative_id)) {
             $this->message_creative_id = $message_creative_id;
 

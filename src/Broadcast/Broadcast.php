@@ -7,6 +7,7 @@ use GigaAI\Storage\Eloquent\Instance;
 use GigaAI\Core\Config;
 use Carbon\Carbon;
 use GigaAI\Storage\Eloquent\Node;
+use GigaAI\Core\Model;
 
 /**
  * Handle broadcast with Facebook
@@ -61,7 +62,15 @@ class Broadcast
      */
     public static function createMessageCreative(BroadcastModel $broadcast)
     {
-        $template             = Node::find($broadcast->content)->answers;
+        
+        if (is_numeric($broadcast->content)) {
+            $template             = Node::find($broadcast->content)->answers;
+        }
+        else {
+            $model = new Model;
+            $template = $model->parse(json_decode($broadcast->content, true));
+        }
+
         $messages = [];
 
         foreach ($template as $answer) {

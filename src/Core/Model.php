@@ -211,7 +211,7 @@ class Model
         $parsed = [];
 
         $previous_index = 0;
-
+        
         if ($this->isSingularResponse($answers)) {
             $answers = [$answers];
         }
@@ -263,7 +263,7 @@ class Model
                     }
                 }
             }
-
+            
             if ($index === 'quick_replies') {
                 $parsed[$previous_index]                             = (array)$parsed[$previous_index];
                 $parsed[$previous_index]['content']['quick_replies'] = $answer;
