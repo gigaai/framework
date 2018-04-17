@@ -140,6 +140,6 @@ class Lead extends Model
 
     public function instance()
     {
-        return $this->belongsTo(Instance::class, 'source', 'id');
+        return $this->belongsTo(Instance::class, 'source', 'page_id');
     }
 }

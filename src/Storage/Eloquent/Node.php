@@ -65,7 +65,7 @@ class Node extends Model
             $where_rlike             = " AND :pattern RLIKE CONCAT('^',pattern,'$')";
         }
 
-        $columns = ['type', 'pattern', 'answers', 'wait', 'sources'];
+        $columns = ['type', 'pattern', 'answers', 'wait', 'sources', 'messaging_type', 'notification_type'];
 
         // Where Like First
         $nodes = self::whereRaw($where . $where_type . $where_like, $placeholder)->get($columns);

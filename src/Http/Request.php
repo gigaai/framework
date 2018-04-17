@@ -14,6 +14,7 @@ use GigaAI\Shared\EasyCall;
 use GigaAI\Drivers\Driver;
 use GigaAI\Core\DynamicParser;
 use SuperClosure\Serializer;
+use GigaAI\Storage\Eloquent\Lead;
 
 /**
  * Class Request
@@ -135,7 +136,7 @@ class Request
         return $this->driver->sendSubscribeRequest($attributes);
     }
 
-    private function prepareMessage($message, $lead_id = null)
+    private function prepareMessage($message, $attributes = [], $lead_id = null)
     {
         $model   = new Model;
 
@@ -155,6 +156,12 @@ class Request
                 $this->sendMessages($answers);
             }
 
+            return null;
+        }
+
+        $content = Shortcode::parse($message['content']);
+
+        if (empty($content)) {
             return null;
         }
 
@@ -185,12 +192,6 @@ class Request
             return null;
         }
 
-        $content = Shortcode::parse($message['content']);
-        
-        if (empty($content)) {
-            return null;
-        }
-
         // Text as Raw Message
         if (isset($content['text']) && is_array($content['text'])) {
             $raw     = $model->parseWithoutSave($content['text']);
@@ -203,12 +204,17 @@ class Request
 
         $content['metadata'] = 'SENT_BY_GIGA_AI';
 
-        return [
+        $response = [
+            'messaging_type' => isset($attributes['messaging_type']) ? $attributes['messaging_type'] : 'RESPONSE',
             'recipient' => [
                 'id' => $lead_id,
             ],
             'message'   => $content,
         ];
+
+        $response['tag'] = isset($attributes['tag']) ? $attributes['tag'] : '';
+
+        return $response;
     }
 
     /**
@@ -227,20 +233,31 @@ class Request
      * @param       $messages
      * @param mixed $lead_id
      */
-    private function sendMessages($messages, $lead_id = null)
+    private function sendMessages($messages, $attributes = [], $lead_id = null)
     {
+        $accessToken = Config::get('access_token');
+
+        if ($accessToken === null && $lead_id !== null) {
+            $lead = Lead::whereUserId($lead_id)->first();
+            $instance = $lead->instance()->first();
+            
+            if ($instance !== null) {
+                Config::set($instance->meta);
+            }
+        }
+
         $batch = [];
         
         foreach ($messages as $message) {
-            $message = $this->prepareMessage($message, $lead_id);
+            $message = $this->prepareMessage($message, $attributes, $lead_id);
             
             if ( ! empty($message)) {
                 $batch[] = $message;
             }
         }
-          
+        
         $batch = array_values(array_filter($batch));
- 
+        
         $this->driver->sendMessages($batch);
     }
 

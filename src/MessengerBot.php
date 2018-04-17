@@ -313,7 +313,9 @@ class MessengerBot
 
             $answers = $this->parse($node->answers);
             
-            $this->request->sendMessages($answers);
+            $this->request->sendMessages($answers, [
+                'messaging_type' => $node->messaging_type
+            ]);
         }
     }
 

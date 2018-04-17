@@ -57,13 +57,13 @@ trait CanLearn
      */
     public function says($messages, $attributes = [], $lead_ids = null)
     {
-        $messages = $this->model->parse($messages, $attributes);
+        $messages = $this->model->parse($messages);
 
         if ( ! is_array($lead_ids)) {
-            $this->request->sendMessages($messages, $lead_ids);
+            $this->request->sendMessages($messages, $attributes, $lead_ids);
         } else {
             foreach ($lead_ids as $id) {
-                $this->request->sendMessages($messages, $id);
+                $this->request->sendMessages($messages, $attributes, $id);
             }
         }
 
