@@ -70,6 +70,8 @@ trait CanLearn
                 Conversation::set('lead', $lead);
                 $this->request->sendMessages($messages, $attributes, $lead);
             }
+        } else {
+            $this->request->sendMessages($messages, $attributes, $lead_ids);
         }
 
         return $this;

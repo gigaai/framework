@@ -146,7 +146,7 @@ class Request
             if (is_string($message['content']) && giga_match('%SerializableClosure%', $message['content'])) {
                 $message['content'] = $serializer->unserialize($message['content']);
             }
-
+            
             $return = DynamicParser::parse($message);
             
             // If the callback return, we'll send that message to user.

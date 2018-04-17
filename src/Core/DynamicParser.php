@@ -31,7 +31,7 @@ class DynamicParser
         }
 
         $parser = $this->supports[$answer['type']];
-
+        
         return @call_user_func_array($parser, [$answer['content']]);
     }
 }

@@ -266,7 +266,7 @@ class MessengerBot
         }
 
         $nodes = $this->findNodes($type_pattern['type'], $type_pattern['pattern']);
-
+        
         $this->response($nodes);
     }
 
