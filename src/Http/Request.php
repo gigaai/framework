@@ -136,7 +136,7 @@ class Request
         return $this->driver->sendSubscribeRequest($attributes);
     }
 
-    private function prepareMessage($message, $attributes = [], $lead_id = null)
+    private function prepareMessage($message, $attributes = [], $lead = null)
     {
         $model   = new Model;
 
@@ -158,9 +158,9 @@ class Request
 
             return null;
         }
-
+        
         $content = Shortcode::parse($message['content']);
-
+        
         if (empty($content)) {
             return null;
         }
@@ -198,8 +198,8 @@ class Request
             $content = $raw[0];
         }
         
-        if (is_null($lead_id)) {
-            $lead_id = Conversation::get('lead_id');
+        if (is_null($lead)) {
+            $lead = Conversation::get('lead');
         }
 
         $content['metadata'] = 'SENT_BY_GIGA_AI';
@@ -207,7 +207,7 @@ class Request
         $response = [
             'messaging_type' => isset($attributes['messaging_type']) ? $attributes['messaging_type'] : 'RESPONSE',
             'recipient' => [
-                'id' => $lead_id,
+                'id' => $lead->user_id,
             ],
             'message'   => $content,
         ];
@@ -231,14 +231,13 @@ class Request
      * Send multiple messages
      *
      * @param       $messages
-     * @param mixed $lead_id
+     * @param mixed $lead
      */
-    private function sendMessages($messages, $attributes = [], $lead_id = null)
+    private function sendMessages($messages, $attributes = [], $lead = null)
     {
         $accessToken = Config::get('access_token');
 
-        if ($accessToken === null && $lead_id !== null) {
-            $lead = Lead::whereUserId($lead_id)->first();
+        if ($accessToken === null && $lead !== null) {
             $instance = $lead->instance()->first();
             
             if ($instance !== null) {
@@ -249,7 +248,7 @@ class Request
         $batch = [];
         
         foreach ($messages as $message) {
-            $message = $this->prepareMessage($message, $attributes, $lead_id);
+            $message = $this->prepareMessage($message, $attributes, $lead);
             
             if ( ! empty($message)) {
                 $batch[] = $message;

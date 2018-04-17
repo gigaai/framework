@@ -2,6 +2,9 @@
 
 namespace GigaAI\Shared;
 
+use GigaAI\Conversation\Conversation;
+use GigaAI\Storage\Eloquent\Lead;
+
 trait CanLearn
 {
     /**
@@ -59,11 +62,13 @@ trait CanLearn
     {
         $messages = $this->model->parse($messages);
 
-        if ( ! is_array($lead_ids)) {
-            $this->request->sendMessages($messages, $attributes, $lead_ids);
-        } else {
+        if ( ! is_null($lead_ids)) {
+            $lead_ids = (array) $lead_ids;
+
             foreach ($lead_ids as $id) {
-                $this->request->sendMessages($messages, $attributes, $id);
+                $lead = Lead::whereUserId($id)->withTrashed()->first();
+                Conversation::set('lead', $lead);
+                $this->request->sendMessages($messages, $attributes, $lead);
             }
         }
 
