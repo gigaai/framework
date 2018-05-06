@@ -40,7 +40,12 @@ class Resolver
      */
     public function resolve($closure)
     {
-        $reflection    = new \ReflectionFunction($closure);
+        if (is_array($closure)) {
+            $reflection = new \ReflectionMethod($closure[0], $closure[1]);
+        } else {
+            $reflection = new \ReflectionFunction($closure);
+        }
+
         $arguments     = $reflection->getParameters();
 
         $arguments = array_map(function ($argument) {
