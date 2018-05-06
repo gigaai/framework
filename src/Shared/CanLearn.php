@@ -65,11 +65,16 @@ trait CanLearn
         if ( ! is_null($lead_ids)) {
             $lead_ids = (array) $lead_ids;
 
-            foreach ($lead_ids as $id) {
-                $lead = Lead::whereUserId($id)->withTrashed()->first();
+            $leads = Lead::withTrashed()->whereIn('id', $lead_ids)->get();
+
+            if (empty($leads) || $leads === null) {
+                return;
+            }
+
+            $leads->each(function ($lead) {
                 Conversation::set('lead', $lead);
                 $this->request->sendMessages($messages, $attributes, $lead);
-            }
+            });
         } else {
             $this->request->sendMessages($messages, $attributes, $lead_ids);
         }

@@ -129,7 +129,7 @@ class Attachment extends Message
             $url = $this->body['attachment']['payload']['url'];
         }
 
-        $url = ltrim($url, $mediaType . ':');
+        $url = str_replace($mediaType . ':', '', $url);
 
         return $url;
     }

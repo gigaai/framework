@@ -22,6 +22,10 @@ class Nlp
      */
     public function __construct($nlp)
     {
+        if (empty($nlp['entities'])) {
+            return;
+        }
+
         // Sort entities by their confidences. From highest to lowest
         $this->entities = collect($nlp['entities'])->sortByDesc(function ($entity) {
             return $entity[0]['confidence'];
@@ -149,7 +153,7 @@ class Nlp
     public function __call($name, $arguments)
     {
         if (starts_with($name, 'get')) {
-            $name = snake_case(ltrim($name, 'get'));
+            $name = snake_case(str_replace('get', '', $name));
         }
 
         return $this->get($name);

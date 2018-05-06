@@ -17,8 +17,7 @@ class AccountLinking
         // Link Lead with User
         if ($event->account_linking->status === 'linked') {
             $authorization_code = $event->account_linking->authorization_code;
-            
-            $user_id = ltrim($authorization_code, 'user_id:');
+            $user_id = str_replace('user_id:', '', $authorization_code);
             
             return self::linkWithExistingUser($event->sender->id, $user_id);
         } // Unlink, Logout user

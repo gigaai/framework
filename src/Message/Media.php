@@ -49,11 +49,7 @@ class Media extends Message
 
         $media_type = $this->detectMediaType($url);
 
-        foreach (['image', 'audio', 'video', 'file'] as $type) {
-            if (strpos($url, $type . ':') !== false) {
-                $url = ltrim($url, $type . ':');
-            }
-        }
+        $url = str_replace(['image:', 'audio:', 'video:', 'file:'], '', $url);
 
         $output = [
             'type'    => $media_type,

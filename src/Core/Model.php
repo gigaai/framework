@@ -125,13 +125,13 @@ class Model
         foreach (['payload', 'default', 'attachment'] as $type) {
             if (strpos($pattern, $type . ':') !== false) {
                 $node_type = $type;
-                $pattern   = ltrim($pattern, $node_type . ':');
+                $pattern = str_replace($node_type . ':', '', $pattern);
             }
         }
 
         if (!empty($pattern) && $pattern[0] == '@') {
             $node_type = 'intended';
-            $pattern   = ltrim($pattern, '@');
+            $pattern = str_replace('@', '', $pattern);
         }
 
         return [$node_type, $pattern];
