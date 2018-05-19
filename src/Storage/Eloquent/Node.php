@@ -126,9 +126,9 @@ class Node extends Model
 
             $value = '%' . implode(explode(' ', $value), '%') . '%';
 
-            return $query->where('pattern', 'LIKE', $terms)
-                          ->orWhere('answers', 'LIKE', $terms)
-                          ->orWhere('tags', 'LIKE', $terms);
+            return $query->where('pattern', 'LIKE', $value)
+                          ->orWhere('answers', 'LIKE', $value)
+                          ->orWhere('tags', 'LIKE', $value);
         }
 
         return $query;
