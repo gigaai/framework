@@ -14,7 +14,7 @@ trait HasMeta
      */
     public function setMeta($key, $value)
     {
-        $meta       = $this->meta;
+        $meta = $this->meta;
         $meta[$key] = $value;
         $this->meta = $meta;
 
@@ -29,8 +29,12 @@ trait HasMeta
      * 
      * @return mixed
      */
-    public function getMeta($key, $default = null)
+    public function getMeta($key = null, $default = null)
     {
+        if ($key === null) {
+            return $this->meta;
+        }
+
         return isset($this->meta[$key]) ? $this->meta[$key] : $default;
     }
 
@@ -42,7 +46,7 @@ trait HasMeta
      * 
      * @return mixed
      */
-    public function meta($key, $value = null)
+    public function meta($key = null, $value = null)
     {
         if (is_null($value)) {
             return $this->getMeta($key);
@@ -70,7 +74,7 @@ trait HasMeta
 
             return $this->save();
         }
-        
+
         return $this->setMeta($field, $value);
     }
 }
