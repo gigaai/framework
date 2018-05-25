@@ -113,20 +113,22 @@ class Lead extends Model
     /**
      * Laravel linked user
      *
-     * @return App\User
+     * @param $props
+     *
+     * @return mixed
      */
-    public function linkedUser()
+    public function linkedUser($props = [])
     {
-        if ( ! $this->isLinked()) {
+        if (!$this->isLinked() && isset($props['try_matching']) && $props['try_matching'] === true) {
             return Matching::matchCurrentLead();
         }
 
         return $this->belongsTo('App\User', 'linked_account', 'id');
     }
 
-    public function user()
+    public function user($props = [])
     {
-        if ( ! $this->isLinked()) {
+        if (!$this->isLinked() && isset($props['try_matching']) && $props['try_matching'] === true) {
             return Matching::matchCurrentLead();
         }
 
