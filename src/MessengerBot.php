@@ -171,9 +171,9 @@ class MessengerBot
 
             foreach ($entry['messaging'] as $event) {
                 $this->conversation->set([
-                    'sender_id'    => $event['sender']['id'],
+                    'sender_id' => $event['sender']['id'],
                     'recipient_id' => $event['recipient']['id'],
-                    'timestamp'    => $event['timestamp'],
+                    'timestamp' => $event['timestamp'],
                 ]);
 
                 $this->processEvent($event);
@@ -224,15 +224,6 @@ class MessengerBot
 
         $this->setConfigData();
 
-        // If auto stop is run and it return true. Terminate
-        if (AutoStop::run($event)) {
-            return null;
-        }
-
-        if (AutoStop::isStopped()) {
-            return null;
-        }
-
         // Save lead data if not exists.
         if (!isset($event['message']['is_echo'])) {
             $lead = $this->storage->pull();
@@ -242,17 +233,26 @@ class MessengerBot
 
         $this->conversation->set('lead', $lead);
 
+        // If auto stop is run and it return true. Terminate
+        if (AutoStop::run($event)) {
+            return null;
+        }
+
+        if (AutoStop::isStopped()) {
+            return null;
+        }
+
         // Message was sent by page, we don't need to response.
         if (isset($event['message']) && isset($event['message']['is_echo']) && $event['message']['is_echo'] == true) {
             return null;
         }
 
         DynamicParser::support([
-            'type'     => 'callback',
+            'type' => 'callback',
             'callback' => function ($content) use ($lead) {
                 return $this->resolver->bind([
-                    'bot'   => $this,
-                    'lead'  => $lead,
+                    'bot' => $this,
+                    'lead' => $lead,
                     'input' => $this->getReceivedInput(),
                 ])->resolve($content);
             },
@@ -266,7 +266,7 @@ class MessengerBot
         }
 
         $nodes = $this->findNodes($type_pattern['type'], $type_pattern['pattern']);
-        
+
         $this->response($nodes);
     }
 
@@ -312,7 +312,7 @@ class MessengerBot
             }
 
             $answers = $this->parse($node->answers);
-            
+
             $this->request->sendMessages($answers, [
                 'messaging_type' => $node->messaging_type
             ]);
@@ -338,9 +338,8 @@ class MessengerBot
         return $nodes->filter(function ($node) {
             $pageId = Conversation::get('page_id');
 
-            return (empty($node['sources']) || (isset($node->sources['global']) && $node->sources['global'] == true) 
-                || (isset($node->sources[$pageId]) && $node->sources[$pageId] == true)
-            );
+            return (empty($node['sources']) || (isset($node->sources['global']) && $node->sources['global'] == true)
+                || (isset($node->sources[$pageId]) && $node->sources[$pageId] == true));
         });
     }
 
@@ -367,7 +366,7 @@ class MessengerBot
             if (is_numeric($waiting)) {
                 $nodes = Node::find($waiting);
 
-                if ( ! empty($nodes)) {
+                if (!empty($nodes)) {
                     $nodes = [$nodes];
                 }
             } else {

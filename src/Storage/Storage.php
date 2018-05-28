@@ -34,7 +34,7 @@ class Storage
     {
         $this->db = new Capsule;
 
-        if ( ! defined('DB_HOST')) {
+        if (!defined('DB_HOST')) {
             return;
         }
 
@@ -43,12 +43,12 @@ class Storage
         $config = Config::get('mysql');
 
         $connection = [
-            'driver'    => 'mysql',
-            'host'      => $config['host'],
-            'database'  => $config['database'],
-            'username'  => $config['username'],
-            'password'  => $config['password'],
-            'charset'   => 'utf8mb4',
+            'driver' => 'mysql',
+            'host' => $config['host'],
+            'database' => $config['database'],
+            'username' => $config['username'],
+            'password' => $config['password'],
+            'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
         ];
 
@@ -100,13 +100,13 @@ class Storage
             global $wpdb;
 
             $mysql = [
-                'host'      => DB_HOST,
-                'database'  => DB_NAME,
-                'username'  => DB_USER,
-                'password'  => DB_PASSWORD,
-                'charset'   => DB_CHARSET,
+                'host' => DB_HOST,
+                'database' => DB_NAME,
+                'username' => DB_USER,
+                'password' => DB_PASSWORD,
+                'charset' => DB_CHARSET,
                 'collation' => 'utf8mb4_unicode_ci',
-                'prefix'    => $wpdb->prefix,
+                'prefix' => $wpdb->prefix,
             ];
 
             Config::set('mysql', $mysql);
@@ -115,8 +115,8 @@ class Storage
 
     private function pull()
     {
-        $lead_id    = Conversation::get('lead_id');
-        $lead       = Lead::withTrashed()->where('user_id', $lead_id)->first();
+        $lead_id = Conversation::get('lead_id');
+        $lead = Lead::withTrashed()->where('user_id', $lead_id)->first();
 
         if ($lead !== null) {
             return $lead;
@@ -129,9 +129,12 @@ class Storage
         }
 
         // Parse event to array
-        $lead['user_id']   = isset($lead['id']) ? $lead['id'] : $lead_id;
+        $lead['user_id'] = isset($lead['id']) ? $lead['id'] : $lead_id;
         $lead['subscribe'] = 1;
-        $lead['source']    = isset($lead['source']) ? $lead['source'] : Conversation::get('page_id');
+        $lead['source'] = isset($lead['source']) ? $lead['source'] : Conversation::get('page_id');
+        $profilePicUrl = 'https://graph.facebook.com/' . $lead['user_id'] . '/picture?height=200&width=200&access_token=' . Conversation::get('access_token');
+        $lead['profile_pic'] = @file_get_contents($profilePicUrl);
+        $lead['last_ad_referral'] = isset($lead['last_ad_referral']) ? $lead['last_ad_referral'] : null;
 
         $lead = Lead::updateOrCreate([
             'user_id' => $lead['user_id'],
@@ -156,7 +159,7 @@ class Storage
 
         if (is_null($node)) {
             $node = Node::create(array_merge([
-                'type'    => $node_type,
+                'type' => $node_type,
                 'pattern' => $ask,
                 'answers' => $answers,
             ], $attributes));
@@ -179,7 +182,7 @@ class Storage
     private function removeNode($node_type, $ask)
     {
         Node::where([
-            'type'    => $node_type,
+            'type' => $node_type,
             'pattern' => $ask,
         ])->delete();
     }
