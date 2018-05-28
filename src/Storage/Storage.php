@@ -132,7 +132,7 @@ class Storage
         $lead['user_id'] = isset($lead['id']) ? $lead['id'] : $lead_id;
         $lead['subscribe'] = 1;
         $lead['source'] = isset($lead['source']) ? $lead['source'] : Conversation::get('page_id');
-        $profilePicUrl = 'https://graph.facebook.com/' . $lead['user_id'] . '/picture?height=200&width=200&access_token=' . Conversation::get('access_token');
+        $profilePicUrl = 'https://graph.facebook.com/' . $lead['user_id'] . '/picture?height=200&width=200&access_token=' . Config::get('access_token');
         $lead['profile_pic'] = @file_get_contents($profilePicUrl);
         $lead['last_ad_referral'] = isset($lead['last_ad_referral']) ? $lead['last_ad_referral'] : null;
 
