@@ -42,7 +42,7 @@ class Command
 
     public static function updateLead($field, $value)
     {
-        $lead_id    = Conversation::get('lead_id');
+        $lead = Conversation::get('lead');
 
         if ($value === '$input' || $value === '[input]') {
             $value = Conversation::get('received_input');
@@ -52,6 +52,6 @@ class Command
             $value = json_encode($value);
         }
 
-        Storage::set($lead_id, $field, $value);
+        $lead->data($field, $value);
     }
 }

@@ -92,12 +92,6 @@ if (!function_exists('sd')) {
     }
 }
 
-if (!function_exists('cl')) {
-    function cl($content)
-    {
-        file_put_contents(GigaAI\Core\Config::get('cache_path') . 'log.txt', print_r($content, true));
-    }
-}
 
 /**
  * Recursive filter array elements and remove empty key => value pairs.

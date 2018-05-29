@@ -48,6 +48,10 @@ trait HasMeta
      */
     public function meta($key = null, $value = null)
     {
+        if (is_null($key)) {
+            return $this->getMeta();
+        }
+
         if (is_null($value)) {
             return $this->getMeta($key);
         }
