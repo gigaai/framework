@@ -6,6 +6,8 @@ trait HasCreator
 {
     public function creator()
     {
-        return $this->belongsTo('App\User', 'creator_id', 'id');
+        $userModel = is_inside_wp() ? WPUser::class : 'App\User';
+
+        return $this->belongsTo($userModel, 'creator_id', 'id');
     }
 }

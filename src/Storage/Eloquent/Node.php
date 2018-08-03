@@ -4,12 +4,10 @@ namespace GigaAI\Storage\Eloquent;
 
 use GigaAI\Conversation\Conversation;
 use Illuminate\Database\Eloquent\Model;
-use App\ForOwner;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Node extends Model
 {
-    use ForOwner, SoftDeletes;
+    use ForOwner, SoftDeletes, HasCreator;
 
     public $table = 'giga_nodes';
 
@@ -31,11 +29,6 @@ class Node extends Model
         'tags'    => 'json',
         'sources' => 'json'
     ];
-
-    public function creator()
-    {
-        return $this->belongsTo('App\User', 'creator_id', 'id');
-    }
 
     /**
      * Get node by node type and pattern
@@ -78,7 +71,7 @@ class Node extends Model
         if ($nodes->count() === 0 && Conversation::has('nlp')) {
             $entities = Conversation::get('nlp')->getNames();
 
-            if ( ! empty($entities)) {
+            if (! empty($entities)) {
                 $entities = '#' . ltrim(implode('|#', $entities), '|');
 
                 $nodes = self::whereRaw('pattern RLIKE :pattern', [
@@ -123,7 +116,6 @@ class Node extends Model
     public function scopeSearch($query, $value)
     {
         if (!empty($value)) {
-
             $value = '%' . implode(explode(' ', $value), '%') . '%';
 
             return $query->where('pattern', 'LIKE', $value)

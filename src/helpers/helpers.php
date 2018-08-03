@@ -156,3 +156,10 @@ function command_parser_callback($content)
         GigaAI\Core\Command::run($command, $args);
     }
 }
+
+if (! function_exists('is_inside_wp')) {
+    function is_inside_wp()
+    {
+        return defined('DB_HOST');
+    }
+}

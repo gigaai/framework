@@ -6,11 +6,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use GigaAI\Broadcast\Broadcast as BroadcastManager;
-use App\ForOwner;
 
 class Broadcast extends Model
 {
-    use ForOwner, SoftDeletes;
+    use ForOwner, SoftDeletes, HasCreator;
 
     public $table = 'giga_broadcasts';
     
@@ -35,7 +34,7 @@ class Broadcast extends Model
 
     public function getSendLimitAttribute($value)
     {
-        return ( ! empty($value)) ? $value : 0;
+        return (! empty($value)) ? $value : 0;
     }
     
     public function setContentAttribute($value)
@@ -74,7 +73,7 @@ class Broadcast extends Model
     
     public function getUniqueIdAttribute($value)
     {
-        return ( ! empty($value)) ? $value : $this->attributes['id'];
+        return (! empty($value)) ? $value : $this->attributes['id'];
     }
 
     /**
@@ -128,21 +127,16 @@ class Broadcast extends Model
 
     public function getReceivers()
     {
-        if ( is_array($this->receivers) && ! empty($this->receivers)) {
+        if (is_array($this->receivers) && ! empty($this->receivers)) {
             return Group::whereIn('id', $this->receivers)->pluck('name', 'id');
         }
 
         return null;
     }
 
-    public function creator()
-    {
-        return $this->belongsTo('App\User', 'creator_id', 'id');
-    }
-
     /**
      * Get active broadcast
-     * 
+     *
      * @return $query
      */
     public function scopeStillActive($query)

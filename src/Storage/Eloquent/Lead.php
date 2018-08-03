@@ -4,13 +4,12 @@ namespace GigaAI\Storage\Eloquent;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
-use App\ForOwner;
 use GigaAI\Storage\Eloquent\HasCreator;
 use GigaAI\Core\Matching;
 
 class Lead extends Model
 {
-    use SoftDeletes, HasMeta, HasCreator, ForOwner;
+    use SoftDeletes, HasMeta, HasCreator, ForOwner, UserModel;
 
     public $table = 'giga_leads';
 
@@ -79,7 +78,7 @@ class Lead extends Model
      */
     public function scopeSearch($query, $request)
     {
-        if ( ! empty($request->s)) {
+        if (! empty($request->s)) {
             $query->where('first_name', 'like', '%' . $request->s . '%')
                     ->orWhere('last_name', 'like', '%' . $request->s . '%')
                     ->orWhere('email', 'like', '%' . $request->s . '%')
@@ -95,7 +94,7 @@ class Lead extends Model
 
     public function scopeNotIn($query, $value)
     {
-        if ( ! empty($value)) {
+        if (! empty($value)) {
             if (!is_array($value)) {
                 $value = explode(',', $value);
             }
@@ -123,7 +122,7 @@ class Lead extends Model
             return Matching::matchCurrentLead();
         }
 
-        return $this->belongsTo('App\User', 'linked_account', 'id');
+        return $this->belongsTo($this->getUserModel(), 'linked_account', $this->getUserModelKey());
     }
 
     public function user($props = [])

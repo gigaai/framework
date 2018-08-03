@@ -4,16 +4,13 @@ namespace GigaAI\Storage\Eloquent;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
-use GigaAI\Storage\Eloquent\Lead;
-use GigaAI\Storage\Eloquent\HasMeta;
-use App\ForOwner;
 
 class Group extends Model
 {
-    use HasCreator, HasMeta, ForOwner, SoftDeletes;
+    use HasCreator, HasMeta, ForOwner, SoftDeletes, UserModel;
 
     protected $fillable = [
-        'name', 'creator_id', 'slug', 'description', 
+        'name', 'creator_id', 'slug', 'description',
         'type', 'parent_id', 'permissions', 'meta', 'instance_id'
     ];
 
@@ -26,9 +23,9 @@ class Group extends Model
     
     /**
      * Check if group has specified permission
-     * 
+     *
      * @param String $permission
-     * 
+     *
      * @return bool
      */
     public function hasPermission($permission)
@@ -66,7 +63,7 @@ class Group extends Model
      */
     public function users()
     {
-        return $this->morphedByMany('App\User', 'giga_groupable');
+        return $this->morphedByMany($this->getUserModel(), 'giga_groupable');
     }
 
     /**

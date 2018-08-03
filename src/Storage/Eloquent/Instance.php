@@ -5,8 +5,6 @@ namespace GigaAI\Storage\Eloquent;
 use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Config;
 use Illuminate\Database\Eloquent\Model;
-use App\ForOwner;
-use GigaAI\Storage\Eloquent\HasCreator;
 
 class Instance extends Model
 {
