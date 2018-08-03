@@ -4,6 +4,7 @@ namespace GigaAI\Storage\Eloquent;
 
 use GigaAI\Conversation\Conversation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Node extends Model
 {
