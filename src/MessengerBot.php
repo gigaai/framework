@@ -13,7 +13,7 @@ use GigaAI\Http\Request;
 use GigaAI\Conversation\Conversation;
 use GigaAI\Core\Model;
 use GigaAI\Core\Config;
-use GigaAI\Core\Resolver;
+use GigaAI\Resolver\Resolver;
 use SuperClosure\Serializer;
 use GigaAI\Storage\Eloquent\Node;
 use GigaAI\Conversation\Nlp;
