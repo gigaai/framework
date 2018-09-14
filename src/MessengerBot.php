@@ -272,7 +272,7 @@ class MessengerBot
 
     /**
      * Load NLP Data
-     * 
+     *
      * @return void
      */
     private function initNlp($message)
@@ -285,7 +285,7 @@ class MessengerBot
 
     /**
      * Load page access token from database and set
-     * 
+     *
      * @return void
      */
     public function setConfigData()
@@ -419,6 +419,11 @@ class MessengerBot
         return null;
     }
 
+    /**
+     * Get user sent text
+     *
+     * @return string
+     */
     public function getReceivedText()
     {
         if ($this->isUserMessage()) {
@@ -428,6 +433,11 @@ class MessengerBot
         return '';
     }
 
+    /**
+     * Get received input (user text or clicked button payload)
+     *
+     * @return mixed|null|void
+     */
     public function getReceivedInput()
     {
         if (!$this->isUserMessage()) {
