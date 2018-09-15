@@ -2,6 +2,11 @@
 
 namespace GigaAI\Shortcodes;
 
+/**
+ * The [random-text] shortcode.
+ *
+ * @package GigaAI\Shortcodes
+ */
 class RandomText
 {
     public $attributes = null;

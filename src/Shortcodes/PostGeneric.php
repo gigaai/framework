@@ -2,7 +2,7 @@
 
 namespace GigaAI\Shortcodes;
 /**
- * Notice: This shortcode was built for WordPress only!
+ * This shortcode was built for WordPress only!
  *
  * @package GigaAI\Shortcodes
  */

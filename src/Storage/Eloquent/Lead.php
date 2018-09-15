@@ -139,6 +139,22 @@ class Lead extends Model
         return $this->morphToMany(Group::class, 'giga_groupable');
     }
 
+    /**
+     * Returns user avatar if exists, otherwise, returns default avatar
+     *
+     * @param $value
+     *
+     * @return string
+     */
+    public function getProfilePicAttribute($value)
+    {
+        if (!empty($value)) {
+            return 'data:image/png;base64,' . base64_encode($value);
+        }
+
+        return '/img/no-photo.jpg';
+    }
+
     public function instance()
     {
         return $this->belongsTo(Instance::class, 'source', 'page_id');
