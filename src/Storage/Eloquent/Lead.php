@@ -105,10 +105,16 @@ class Lead extends Model
         return $query;
     }
 
+    /**
+     * Check if current user is linked
+     *
+     * @return bool
+     */
     public function isLinked()
     {
         return is_numeric($this->linked_account) && $this->linked_account > 0;
     }
+
     /**
      * Laravel linked user
      *
@@ -125,6 +131,12 @@ class Lead extends Model
         return $this->belongsTo($this->getUserModel(), 'linked_account', $this->getUserModelKey());
     }
 
+    /**
+     * Linked user relationship
+     *
+     * @param array $props
+     * @return null
+     */
     public function user($props = [])
     {
         if (!$this->isLinked() && isset($props['try_matching']) && $props['try_matching'] === true) {
@@ -133,7 +145,12 @@ class Lead extends Model
 
         return $this->linkedUser()->first();
     }
-    
+
+    /**
+     * Relationship with Group
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     */
     public function channels()
     {
         return $this->morphToMany(Group::class, 'giga_groupable');
@@ -155,6 +172,11 @@ class Lead extends Model
         return '/img/no-photo.jpg';
     }
 
+    /**
+     * Relationship with Instance
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function instance()
     {
         return $this->belongsTo(Instance::class, 'source', 'page_id');
