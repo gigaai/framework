@@ -95,9 +95,7 @@ class Lead extends Model
     public function scopeNotIn($query, $value)
     {
         if (! empty($value)) {
-            if (!is_array($value)) {
-                $value = explode(',', $value);
-            }
+            $value = is_array($value) ? $value : explode(',', $value);
 
             return $query->whereNotIn('id', $value);
         }
