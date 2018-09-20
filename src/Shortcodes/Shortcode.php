@@ -21,6 +21,7 @@ class Shortcode
         'lead'         => Lead::class,
         'post-generic' => PostGeneric::class,
         'input'        => Input::class,
+        'nlp'          => Nlp::class
     ];
 
     /**
@@ -101,7 +102,7 @@ class Shortcode
         return $answer;
     }
 
-    private static function parseVariables($content)
+    public static function parseVariables($content)
     {
         // Replace user input variable
         $content = str_replace('$input', Conversation::get('received_input'), $content);

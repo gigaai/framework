@@ -6,6 +6,7 @@ use GigaAI\Conversation\Conversation;
 use GigaAI\Subscription\Subscription;
 use GigaAI\Storage\Storage;
 use GigaAI\Http\HandoverProtocol;
+use GigaAI\Shortcodes\Shortcode;
 
 class Command
 {
@@ -45,7 +46,11 @@ class Command
     {
         $lead = Conversation::get('lead');
 
-        if ($value === '$input' || $value === '[input]') {
+        if ($value[0] === '#') {
+            $value  = Shortcode::parseVariables($value);
+        }
+
+        if (in_array($value, ['$input', '#input', '[input]'])) {
             $value = Conversation::get('received_input');
         }
 

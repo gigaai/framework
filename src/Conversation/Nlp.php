@@ -138,8 +138,8 @@ class Nlp
      */
     public function get($field)
     {
-        if (!is_null($this->filtered)) {
-            return isset($this->filtered[0][$field]) ? $this->filtered[0][$field] : null;
+        if (!is_null($this->filtered) && ! is_null($this->filtered[0])) {
+            return isset($this->filtered[0][0][$field]) ? $this->filtered[0][0][$field] : null;
         }
 
         // Todo: Get values of entities

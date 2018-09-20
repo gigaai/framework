@@ -74,7 +74,7 @@ class Node extends Model
 
             if (! empty($entities)) {
                 $entities = '#' . ltrim(implode('|#', $entities), '|');
-
+                
                 $nodes = self::whereRaw('pattern RLIKE :pattern', [
                     ':pattern' => $entities,
                 ])->get($columns);

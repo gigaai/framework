@@ -186,11 +186,21 @@ trait CanLearn
         return $this;
     }
 
+    /**
+     * Natural language processing
+     * 
+     * @return String
+     */
     public function nlp($entity = null)
     {
         return $this->nlp->filter($entity);
     }
 
+    /**
+     * Let the Page Inbox app handle the message instead of bot
+     * 
+     * @return Json
+     */
     public function passToInbox()
     {
         $handover = new HandoverProtocol;
