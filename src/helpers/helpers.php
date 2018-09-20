@@ -157,6 +157,14 @@ function command_parser_callback($content)
     }
 }
 
+if ( ! function_exists('is_phone_number')) {
+    function is_phone_number($phone)
+    {
+        $phone = str_replace('-', '', filter_var($phone, FILTER_SANITIZE_NUMBER_INT));
+        return strlen($phone) >= 10 && strlen($phone) <= 14;
+    }
+}
+
 if (! function_exists('is_inside_wp')) {
     function is_inside_wp()
     {

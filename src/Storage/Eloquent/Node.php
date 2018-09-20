@@ -48,6 +48,12 @@ class Node extends Model
 
         $placeholder = [];
 
+        // Check type, pattern is email or phone number when passing from quick replies
+        if ($type === 'payload') {
+            $pattern = filter_var($pattern, FILTER_VALIDATE_EMAIL) ? 'user_email' : $pattern;
+            $pattern = is_phone_number($pattern) ? 'user_phone_number' : $pattern;
+        }
+
         if (!empty($type)) {
             $where_type           = ' AND type = :type';
             $placeholder[':type'] = $type;
@@ -63,6 +69,7 @@ class Node extends Model
 
         // Where Like First
         $nodes = self::whereRaw($where . $where_type . $where_like, $placeholder)->get($columns);
+        
         // If Not Found. Then Where Rlike
         if ($nodes->count() === 0) {
             $nodes = self::whereRaw($where . $where_type . $where_rlike, $placeholder)->get($columns);

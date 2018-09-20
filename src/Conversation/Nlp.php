@@ -147,7 +147,9 @@ class Nlp
 
     public function getNames()
     {
-        return $this->entities->keys()->toArray();
+        if ( ! empty($this->entities)) {
+            return $this->entities->keys()->toArray();
+        }
     }
 
     public function __call($name, $arguments)
