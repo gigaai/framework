@@ -5,6 +5,7 @@ namespace GigaAI\Core;
 use GigaAI\Conversation\Conversation;
 use GigaAI\Subscription\Subscription;
 use GigaAI\Storage\Storage;
+use GigaAI\Http\HandoverProtocol;
 
 class Command
 {
@@ -53,5 +54,11 @@ class Command
         }
 
         $lead->data($field, $value);
+    }
+
+    public static function chatWithHuman()
+    {
+        $handover = new HandoverProtocol;
+        $handover->passToInbox();
     }
 }

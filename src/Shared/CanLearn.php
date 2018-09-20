@@ -4,6 +4,7 @@ namespace GigaAI\Shared;
 
 use GigaAI\Conversation\Conversation;
 use GigaAI\Storage\Eloquent\Lead;
+use GigaAI\Http\HandoverProtocol;
 
 trait CanLearn
 {
@@ -188,6 +189,13 @@ trait CanLearn
     public function nlp($entity = null)
     {
         return $this->nlp->filter($entity);
+    }
+
+    public function passToInbox()
+    {
+        $handover = new HandoverProtocol;
+        
+        return $handover->passToInbox();
     }
 
     /**

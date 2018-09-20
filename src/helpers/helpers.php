@@ -152,7 +152,7 @@ function command_parser_callback($content)
 {
     if (isset($content['command'])) {
         $command = $content['command'];
-        $args    = $content['args'];
+        $args    = isset($content['args']) ? $content['args'] : [];
         GigaAI\Core\Command::run($command, $args);
     }
 }

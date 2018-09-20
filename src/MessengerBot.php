@@ -2,7 +2,6 @@
 
 namespace GigaAI;
 
-use GigaAI\Conversation\AutoStop;
 use GigaAI\Core\AccountLinking;
 use GigaAI\Core\DynamicParser;
 use GigaAI\Shared\CanLearn;
@@ -171,8 +170,8 @@ class MessengerBot
 
             foreach ($entry['messaging'] as $event) {
                 $this->conversation->set([
-                    'sender_id' => $event['sender']['id'],
-                    'recipient_id' => $event['recipient']['id'],
+                    'lead_id' => $event['sender']['id'],
+                    'page_id' => $event['recipient']['id'],
                     'timestamp' => $event['timestamp'],
                 ]);
 
@@ -190,6 +189,11 @@ class MessengerBot
      */
     public function processEvent($event)
     {
+        // Pass thread control to Inbox if Page Administrators move from Done to Inbox
+        if (isset($event['request_thread_control'])) {
+            return $this->passToInbox();
+        }
+
         // Handle Account Linking and Unlinking
         if (isset($event['account_linking'])) {
             return AccountLinking::process($event);
@@ -211,9 +215,6 @@ class MessengerBot
             $this->postback = $event['postback'];
         }
 
-        $this->conversation->set('lead_id', $event['sender']['id']);
-        $this->conversation->set('page_id', $event['recipient']['id']);
-
         // If current message is sent from Page
         if (isset($event['message']['is_echo'])) {
             $this->conversation->set('lead_id', $event['recipient']['id']);
@@ -232,16 +233,7 @@ class MessengerBot
         }
 
         $this->conversation->set('lead', $lead);
-
-        // If auto stop is run and it return true. Terminate
-        if (AutoStop::run($event)) {
-            return null;
-        }
-
-        if (AutoStop::isStopped()) {
-            return null;
-        }
-
+        
         // Message was sent by page, we don't need to response.
         if (isset($event['message']) && isset($event['message']['is_echo']) && $event['message']['is_echo'] == true) {
             return null;
@@ -477,18 +469,6 @@ class MessengerBot
     public function getLeadId()
     {
         return $this->conversation->get('lead_id', null);
-    }
-
-    /**
-     * Save the auto stop state
-     *
-     * @param $event
-     *
-     * @return bool
-     */
-    public function verifyAutoStop($event)
-    {
-        return false;
     }
 
     /**
