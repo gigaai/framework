@@ -31,10 +31,8 @@ class Lead extends Model
         '_wait',
         'linked_account',
         'subscribe',
-        'is_payment_enabled',
         'auto_stop',
         'last_activity',
-        'last_ad_referral',
         'meta',
     ];
 
