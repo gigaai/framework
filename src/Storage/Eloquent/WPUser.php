@@ -102,7 +102,7 @@ class WPUser extends Model
         return ! empty($accessToken) && ! empty($providerId);
     }
 
-      /**
+    /**
      * Get Facebook Pages of current user if connected to Facebook
      *
      * @return mixed
@@ -114,12 +114,37 @@ class WPUser extends Model
             return null;
         }
 
-        $response = Facebook::load()->get('/me/accounts', $this->data('access_token'))->getDecodedBody();
+        $response = Facebook::load()->get('/me/accounts', $this->data('access_token'));
+        
+        $chunks = [];
+        $edges = [];
 
-        $pages = collect($response['data'])->keyBy('id');
+        // Load data through pagination
+        for ($i = 0; $i <= 100; $i++) {
+            if ($i === 0) {
+                $edges[0] = $response->getGraphEdge();
+            } else {
+                $edges[$i] = Facebook::load()->next($edges[$i-1]);
+            }
 
+            $metaData = $edges[$i]->getMetaData();
+            
+            $chunks[$i] = $edges[$i]->asArray();
+
+            if ( ! isset($metaData['paging']['next'])) {
+                break;
+            }
+        }
+
+        $pages = [];
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $page) {
+                $pages[$page['id']] = $page;
+            }
+        }
+        
         // Returns the list of pages.
-        return $pages;
+        return collect($pages);
     }
 
     public function instances()
