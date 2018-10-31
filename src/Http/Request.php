@@ -191,11 +191,15 @@ class Request
 
             return null;
         }
-
+        
         // Text as Raw Message
         if (isset($content['text']) && is_array($content['text'])) {
-            $raw     = $model->parseWithoutSave($content['text']);
+            $raw     = $model->parse($content['text']);
             $content = $raw[0];
+
+            if (isset($content['content'])) {
+                $content = $content['content'];
+            }
         }
         
         if (is_null($lead)) {
