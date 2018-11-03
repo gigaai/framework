@@ -90,7 +90,7 @@ class Shortcode
         }
 
         foreach ($answer as $key => $value) {
-            $parsed = is_string($value) ? self::process($value) : self::parse($value);
+            $parsed = is_array($value) ? self::parse($value) : self::process($value);
 
             if ( ! empty($parsed)) {
                 $answer[$key] = $parsed;
