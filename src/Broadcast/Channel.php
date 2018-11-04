@@ -152,7 +152,7 @@ class Channel
         return isset($response->success);
     }
 
-    public function empty()
+    public function clear()
     {
         $channels = $this->all();
 
