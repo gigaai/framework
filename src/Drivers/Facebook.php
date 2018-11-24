@@ -41,7 +41,7 @@ class Facebook implements DriverInterface
      */
     private function getResource()
     {
-        return 'https://graph.facebook.com/v2.11/';
+        return 'https://graph.facebook.com/v3.2/';
     }
 
     /**
@@ -160,7 +160,12 @@ class Facebook implements DriverInterface
     public function sendSubscribeRequest($attributes)
     {
         $token = isset($attributes['access_token']) ? $attributes['access_token'] : $this->getAccessToken();
+        
+        $page_id = $attributes['page_id'];
+        $end_point = $this->getResource() . '/' . $page_id . '/subscribed_apps?access_token=' . $token;
 
-        return giga_remote_post($this->getResource() . 'me/subscribed_apps?access_token=' . $token);
+        return giga_remote_post($end_point, [
+            'subscribed_fields' => $attributes['subscribed_fields']
+        ]);
     }
 }
